@@ -1,78 +1,67 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { useStore } from '../store/useStore';
-import { Shield, Zap, Globe, Target, Cpu, Database } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 
 export const Features = () => {
-  const { language } = useStore();
+  const { language, globalFeatures } = useStore();
+  const t = (en: string, bn: string) => language === 'en' ? en : bn;
 
-  const features = [
-    {
-      icon: Database,
-      title: language === 'en' ? 'Private Database' : 'প্রাইভেট ডাটাবেস',
-      desc: language === 'en' ? 'Access to 250,000+ premium resources exclusively for VIPs.' : '২৫০,০০০+ প্রিমিয়াম রিসোর্সে ভিআইপিদের জন্য বিশেষ অ্যাক্সেস।'
-    },
-    {
-      icon: Cpu,
-      title: language === 'en' ? 'AI Agent Mastery' : 'এআই এজেন্ট মাস্টারি',
-      desc: language === 'en' ? 'Latest 2026 AI methods to automate your business.' : 'আপনার ব্যবসাকে অটোমেট করতে ২০২৬-এর লেটেস্ট এআই মেথড।'
-    },
-    {
-      icon: Target,
-      title: language === 'en' ? 'Secret Methods' : 'সিক্রেট মেথড',
-      desc: language === 'en' ? 'Highly effective methods that actually generate results.' : 'কার্যকরী মেথড যা আসলে ফলাফল এনে দেয়।'
-    },
-    {
-      icon: Shield,
-      title: language === 'en' ? 'Verified Quality' : 'ভেরিফাইড কোয়ালিটি',
-      desc: language === 'en' ? 'Every resource is tested and verified by our experts.' : 'প্রতিটি রিসোর্স আমাদের বিশেষজ্ঞদের দ্বারা পরীক্ষিত ও ভেরিফাইড।'
-    },
-    {
-      icon: Globe,
-      title: language === 'en' ? 'International Standards' : 'ইন্টারন্যাশনাল স্ট্যান্ডার্ড',
-      desc: language === 'en' ? 'Learn world-class skills that are in demand globally.' : 'বিশ্বমানের স্কিল শিখুন যা বিশ্বজুড়ে ডিমান্ডে আছে।'
-    },
-    {
-      icon: Zap,
-      title: language === 'en' ? 'Instant Delivery' : 'তাত্ক্ষণিক ডেলিভারি',
-      desc: language === 'en' ? 'Get access immediately after your payment confirmation.' : 'পেমেন্ট কনফার্মেশনের সাথে সাথেই অ্যাক্সেস পান।'
-    }
-  ];
+  const visibleFeatures = globalFeatures.filter(f => f.visible).sort((a, b) => a.order - b.order);
 
   return (
-    <section className="py-24 lg:py-32 bg-white/[0.01]">
-      <div className="container mx-auto px-6">
-        <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-24">
+    <section id="features" className="py-24 lg:py-40 bg-white/[0.01] relative">
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="text-center max-w-3xl mx-auto mb-20 lg:mb-32">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-4xl lg:text-5xl font-bold mb-6"
+            className="text-4xl lg:text-6xl font-black mb-8 tracking-tighter"
           >
-            {language === 'en' ? 'Why Choose ' : 'কেন '}
-            <span className="grad-text">Pro Access VIP</span>?
+            {t('Why Choose ', 'কেন ')}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Pro Access Hub</span>?
           </motion.h2>
+          <motion.p
+             initial={{ opacity: 0, y: 20 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: true }}
+             className="text-text-secondary text-lg font-medium"
+          >
+             {t('We provide the highest quality resources and secret methods to help you succeed in the digital world.', 'আমরা আপনাকে ডিজিটাল বিশ্বে সফল হতে সাহায্য করার জন্য সর্বোচ্চ মানের রিসোর্স এবং সিক্রেট মেথড প্রদান করি।')}
+          </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((feature, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="p-8 rounded-[32px] glass-card hover:bg-white/[0.05] group transition-all"
-            >
-              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
-                <feature.icon className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold mb-4 text-text-primary">{feature.title}</h3>
-              <p className="text-text-secondary leading-relaxed">{feature.desc}</p>
-            </motion.div>
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          {visibleFeatures.map((feature, i) => {
+            const IconComponent = (LucideIcons as any)[feature.icon] || LucideIcons.Zap;
+            return (
+              <motion.div
+                key={feature.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="p-10 rounded-[40px] glass-card hover:bg-white/[0.05] group transition-all duration-500 border-white/[0.05]"
+              >
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-8 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
+                  <IconComponent className="w-8 h-8" />
+                </div>
+                <h3 className="text-2xl font-black mb-4 text-text-primary tracking-tight">
+                  {t(feature.title, feature.titleBn)}
+                </h3>
+                <p className="text-text-secondary leading-relaxed font-medium">
+                  {t(feature.description, feature.descriptionBn)}
+                </p>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
+      
+      {/* Decorative background elements */}
+      <div className="absolute top-1/2 left-0 w-96 h-96 bg-primary/5 blur-[120px] rounded-full -translate-x-1/2 -z-10" />
+      <div className="absolute top-1/3 right-0 w-64 h-64 bg-secondary/5 blur-[120px] rounded-full translate-x-1/2 -z-10" />
     </section>
   );
 };

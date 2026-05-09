@@ -43,7 +43,27 @@
 
 @layer base {
   body {
-    @apply bg-bg-dark text-text-primary antialiased selection:bg-primary selection:text-white;
+    @apply bg-bg-dark text-text-primary antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #020617;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 10px;
+    border: 2px solid #020617;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #334155;
   }
 }
 
@@ -52,7 +72,10 @@
 }
 
 .glass-card {
-  @apply bg-white/[0.02] border border-white/[0.08] backdrop-blur-md transition-all duration-300;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
 .premium-shadow {
@@ -60,11 +83,39 @@
 }
 
 .glow-btn {
-  @apply relative overflow-hidden transition-all duration-300;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
   box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+}
+
+.glow-btn::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
 }
 
 .glow-btn:hover {
   box-shadow: 0 0 30px rgba(124, 58, 237, 0.5);
+}
+
+/* CMS Specific Styles */
+.cms-input {
+  @apply w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-text-muted;
+}
+
+.cms-label {
+  @apply block text-sm font-bold text-text-secondary mb-2;
+}
+
+.cms-section-card {
+  @apply bg-white/[0.03] border border-white/10 rounded-2xl p-6 mb-6;
 }
 

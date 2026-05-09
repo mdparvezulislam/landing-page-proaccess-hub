@@ -2,96 +2,83 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { useStore } from '../store/useStore';
 import { ArrowRight, Zap, Shield, Users } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
 export const Hero = () => {
   const { language, hero } = useStore();
-  const content = hero[language];
+  
+  const t = (en: string, bn: string) => language === 'en' ? en : bn;
 
   return (
     <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          src={hero.backgroundImage} 
+          className="w-full h-full object-cover opacity-20"
+          alt="Hero Background"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#020617] via-[#020617]/90 to-[#020617]" />
+      </div>
+
       <div className="container mx-auto px-6 relative z-10">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary-light text-sm font-semibold mb-8"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-primary/10 border border-primary/20 text-primary-light text-xs font-black tracking-[2px] uppercase mb-10"
           >
             <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
-            {content.badge}
+            {t(hero.badge, hero.badgeBn)}
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-5xl lg:text-7xl font-extrabold text-text-primary leading-tight mb-6"
+            className="text-5xl lg:text-8xl font-black text-text-primary leading-[1.1] mb-8 tracking-tighter"
           >
-            {content.title}{' '}
-            <span className="grad-text">{content.titleAccent}</span>{' '}
-            {content.subtitle}
+            {t(hero.title, hero.titleBn)}{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-light to-secondary">
+              {t(hero.titleAccent, hero.titleAccentBn)}
+            </span>{' '}
+            {t(hero.subtitle, hero.subtitleBn)}
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-lg lg:text-xl text-text-secondary mb-10 max-w-2xl"
+            className="text-lg lg:text-xl text-text-secondary mb-12 max-w-2xl font-medium leading-relaxed"
           >
-            {content.description}
+            {t(hero.description, hero.descriptionBn)}
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
+            className="flex flex-col sm:flex-row gap-6 w-full sm:w-auto"
           >
             <a
-              href="#pricing"
-              className="px-8 py-4 bg-primary hover:bg-primary-light text-white font-bold rounded-2xl flex items-center justify-center gap-2 transition-all glow-btn group"
+              href="#products"
+              className="px-10 py-5 bg-primary hover:bg-primary-light text-white font-black rounded-[20px] flex items-center justify-center gap-3 transition-all glow-btn group shadow-xl shadow-primary/20"
             >
-              {content.cta1}
+              {t(hero.cta1, hero.cta1Bn)}
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </a>
             <a
-              href="#products"
-              className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-text-primary font-bold rounded-2xl flex items-center justify-center gap-2 transition-all"
+              href="#reviews"
+              className="px-10 py-5 bg-white/5 hover:bg-white/10 border border-white/10 text-text-primary font-black rounded-[20px] flex items-center justify-center gap-3 transition-all backdrop-blur-md"
             >
-              {content.cta2}
+              {t(hero.cta2, hero.cta2Bn)}
             </a>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 w-full"
-          >
-            {[
-              { icon: Zap, label: 'Instant Access', labelBn: 'তাত্ক্ষণিক অ্যাক্সেস' },
-              { icon: Shield, label: 'Secure Payment', labelBn: 'নিরাপদ পেমেন্ট' },
-              { icon: Users, label: '10K+ Members', labelBn: '১০ হাজার+ সদস্য' },
-              { icon: Shield, label: '24/7 Support', labelBn: '২৪/৭ সাপোর্ট' },
-            ].map((item, i) => (
-              <div key={i} className="flex flex-col items-center gap-2">
-                <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-primary">
-                  <item.icon className="w-6 h-6" />
-                </div>
-                <span className="text-sm font-medium text-text-muted">
-                  {language === 'en' ? item.label : item.labelBn}
-                </span>
-              </div>
-            ))}
           </motion.div>
         </div>
       </div>
 
-      {/* Hero Background Elements */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full -z-10 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/20 blur-[120px] rounded-full animate-float" />
-        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-secondary/10 blur-[100px] rounded-full animate-float" style={{ animationDelay: '2s' }} />
-      </div>
+      {/* Floating Atmosphere Elements */}
+      <div className="absolute top-1/4 left-0 w-64 h-64 bg-primary/10 blur-[120px] rounded-full -z-10 animate-float" />
+      <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-secondary/5 blur-[120px] rounded-full -z-10 animate-float" style={{ animationDelay: '2s' }} />
     </section>
   );
 };

@@ -1,623 +1,1202 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useStore } from '../store/useStore';
+import { useStore, Product, FAQ, Review, BulletPoint, Feature, ProductPlan } from '../store/useStore';
 import {
-  LayoutDashboard,
-  Package,
-  ShoppingCart,
-  Settings,
-  HelpCircle,
-  Star,
-  Type,
-  Bell,
-  LogOut,
-  ChevronRight,
-  Save,
-  Plus,
-  Trash2,
-  Check,
-  X,
-  Languages,
-  DollarSign,
-  Send,
-  Globe
+   LayoutDashboard,
+   Package,
+   ShoppingCart,
+   Settings,
+   HelpCircle,
+   Star,
+   Type,
+   Bell,
+   LogOut,
+   ChevronRight,
+   Save,
+   Plus,
+   Trash2,
+   Check,
+   X,
+   Languages,
+   DollarSign,
+   Send,
+   Globe,
+   GripVertical,
+   Image as ImageIcon,
+   Link as LinkIcon,
+   ShieldCheck,
+   Zap,
+   Clock,
+   Eye,
+   EyeOff,
+   ChevronDown,
+   ChevronUp,
+   Layout
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-export const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('overview');
-  const navigate = useNavigate();
-  const {
-    setAdminStatus,
-    language,
-    setLanguage,
-    products,
-    updateProduct,
-    hero,
-    updateHero,
-    faqs,
-    addFAQ,
-    updateFAQ,
-    deleteFAQ,
-    orders,
-    updateOrderStatus,
-    deleteOrder,
-    reviews,
-    addReview,
-    updateReview,
-    deleteReview,
-    settings,
-    updateSettings,
-    paymentSettings,
-    updatePaymentSettings,
-    pixelSettings,
-    updatePixelSettings,
-    countdown,
-    updateCountdown
-  } = useStore();
+// DnD Kit Imports
+import {
+   DndContext,
+   closestCenter,
+   KeyboardSensor,
+   PointerSensor,
+   useSensor,
+   useSensors,
+   DragEndEvent,
+} from '@dnd-kit/core';
+import {
+   arrayMove,
+   SortableContext,
+   sortableKeyboardCoordinates,
+   verticalListSortingStrategy,
+   useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
-  const handleLogout = () => {
-    setAdminStatus(false);
-    navigate('/');
-    toast.info('Logged out from Admin Dashboard');
-  };
+// --- Reusable Sortable Item Component ---
+interface SortableItemProps {
+   id: string;
+   children: React.ReactNode;
+   handleClassName?: string;
+   key?: any;
+}
 
-  const tabs = [
-    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'hero', label: 'Hero Section', icon: Type },
-    { id: 'products', label: 'Products', icon: Package },
-    { id: 'orders', label: 'Orders', icon: ShoppingCart },
-    { id: 'reviews', label: 'Reviews', icon: Star },
-    { id: 'faq', label: 'FAQ', icon: HelpCircle },
-    { id: 'settings', label: 'Settings', icon: Settings },
-  ];
+const SortableItem = ({ id, children, handleClassName }: SortableItemProps) => {
+   const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+   } = useSortable({ id });
 
-  return (
-    <div className="min-h-screen pt-20 bg-[#020617]">
-      <div className="flex">
-        {/* Sidebar */}
-        <aside className="w-72 fixed left-0 top-20 bottom-0 bg-[#0F172A] border-r border-white/5 overflow-y-auto hidden lg:block">
-          <div className="p-6">
-            <div className="flex items-center gap-3 mb-8 px-2">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold">A</div>
-              <span className="font-bold text-lg">Admin Panel</span>
-            </div>
+   const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      zIndex: isDragging ? 50 : 'auto',
+      opacity: isDragging ? 0.5 : 1,
+   };
 
-            <nav className="space-y-1">
-              {tabs.map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === tab.id
-                      ? 'bg-primary text-white shadow-lg'
-                      : 'text-text-muted hover:bg-white/5 hover:text-text-primary'
-                    }`}
-                >
-                  <tab.icon className="w-5 h-5" />
-                  {tab.label}
-                  {tab.id === 'orders' && orders.filter(o => o.status === 'Pending').length > 0 && (
-                    <span className="ml-auto bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full">
-                      {orders.filter(o => o.status === 'Pending').length}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </nav>
-
-            <div className="mt-8 pt-8 border-t border-white/5">
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 transition-all"
-              >
-                <LogOut className="w-5 h-5" />
-                Logout
-              </button>
-            </div>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 lg:ml-72 p-6 lg:p-12">
-          <header className="mb-12">
-            <h1 className="text-3xl font-black text-text-primary mb-2">
-              {tabs.find(t => t.id === activeTab)?.label}
-            </h1>
-            <p className="text-text-secondary">Manage your platform content and operations.</p>
-          </header>
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              {activeTab === 'overview' && (
-                <OverviewTab orders={orders} products={products} />
-              )}
-              {activeTab === 'hero' && (
-                <HeroTab hero={hero} updateHero={updateHero} />
-              )}
-              {activeTab === 'products' && (
-                <ProductsTab products={products} updateProduct={updateProduct} />
-              )}
-              {activeTab === 'orders' && (
-                <OrdersTab orders={orders} updateOrderStatus={updateOrderStatus} deleteOrder={deleteOrder} />
-              )}
-              {activeTab === 'reviews' && (
-                <ReviewsTab reviews={reviews} addReview={addReview} updateReview={updateReview} deleteReview={deleteReview} />
-              )}
-              {activeTab === 'faq' && (
-                <FAQTab faqs={faqs} addFAQ={addFAQ} updateFAQ={updateFAQ} deleteFAQ={deleteFAQ} />
-              )}
-              {activeTab === 'settings' && (
-                <SettingsTab
-                  settings={settings}
-                  updateSettings={updateSettings}
-                  paymentSettings={paymentSettings}
-                  updatePaymentSettings={updatePaymentSettings}
-                  pixelSettings={pixelSettings}
-                  updatePixelSettings={updatePixelSettings}
-                  countdown={countdown}
-                  updateCountdown={updateCountdown}
-                />
-              )}
-            </motion.div>
-          </AnimatePresence>
-        </main>
+   return (
+      <div ref={setNodeRef} style={style} className="relative group">
+         <div {...attributes} {...listeners} className={`absolute left-2 top-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing p-2 text-text-muted hover:text-primary transition-colors z-10 ${handleClassName}`}>
+            <GripVertical className="w-4 h-4" />
+         </div>
+         {children}
       </div>
-    </div>
-  );
+   );
 };
 
-// --- Sub-components for Tabs ---
+export const AdminDashboard = () => {
+   const [activeTab, setActiveTab] = useState('overview');
+   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+   const navigate = useNavigate();
+   const {
+      setAdminStatus,
+      language,
+      products,
+      setProducts,
+      hero,
+      updateHero,
+      faqs,
+      setFAQs,
+      reviews,
+      setReviews,
+      settings,
+      updateSettings,
+      paymentSettings,
+      updatePaymentSettings,
+      pixelSettings,
+      updatePixelSettings,
+      countdown,
+      updateCountdown,
+      footer,
+      updateFooter,
+      navbar,
+      updateNavbar,
+      trustBadges,
+      setTrustBadges,
+      globalFeatures,
+      setGlobalFeatures,
+      pricingFeatures,
+      setPricingFeatures
+   } = useStore();
 
-const OverviewTab = ({ orders, products }: any) => {
-  const stats = [
-    { label: 'Total Sales', value: `${orders.filter((o: any) => o.status === 'Completed').reduce((acc: number, o: any) => acc + o.amount, 0)} TK`, icon: DollarSign, color: 'text-success' },
-    { label: 'Pending Orders', value: orders.filter((o: any) => o.status === 'Pending').length, icon: ShoppingCart, color: 'text-warning' },
-    { label: 'Total Products', value: products.length, icon: Package, color: 'text-primary' },
-    { label: 'Total Orders', value: orders.length, icon: Bell, color: 'text-secondary' },
-  ];
+   const handleLogout = () => {
+      setAdminStatus(false);
+      navigate('/');
+      toast.info('Logged out from Admin Dashboard');
+   };
 
-  return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, i) => (
-          <div key={i} className="glass-card p-6 rounded-2xl">
-            <div className="flex justify-between items-start mb-4">
-              <div className={`p-3 rounded-xl bg-white/5 ${stat.color}`}>
-                <stat.icon className="w-6 h-6" />
-              </div>
+   const tabs = [
+      { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+      { id: 'hero', label: 'Hero', icon: Type },
+      { id: 'navbar', label: 'Navbar', icon: Layout },
+      { id: 'features', label: 'Features', icon: Zap },
+      { id: 'products', label: 'Products', icon: Package },
+      { id: 'reviews', label: 'Reviews', icon: Star },
+      { id: 'faq', label: 'FAQ', icon: HelpCircle },
+      { id: 'countdown', label: 'Countdown', icon: Clock },
+      { id: 'pricing', label: 'Pricing', icon: DollarSign },
+      { id: 'payment', label: 'Payment', icon: DollarSign },
+      { id: 'footer', label: 'Footer', icon: ShieldCheck },
+      { id: 'settings', label: 'Settings', icon: Settings },
+   ];
+
+   return (
+      <div className="min-h-screen bg-[#020617] text-text-primary font-sans selection:bg-primary/30">
+         {/* Mobile Header */}
+         <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#0F172A] border-b border-white/5 z-[60] flex items-center justify-between px-6">
+            <div className="flex items-center gap-3">
+               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-black">A</div>
+               <span className="font-bold">Admin CMS</span>
             </div>
-            <p className="text-text-secondary text-sm font-medium">{stat.label}</p>
-            <p className="text-2xl font-black text-text-primary mt-1">{stat.value}</p>
-          </div>
-        ))}
-      </div>
+            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 text-text-primary">
+               {isSidebarOpen ? <X /> : <MenuIcon />}
+            </button>
+         </div>
 
-      <div className="glass-card p-8 rounded-2xl">
-        <h3 className="text-xl font-bold mb-6">Recent Activity</h3>
-        <div className="space-y-4">
-          {orders.slice(0, 5).map((order: any) => (
-            <div key={order.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5">
-              <div className="flex items-center gap-4">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${order.status === 'Completed' ? 'bg-success/20 text-success' : 'bg-warning/20 text-warning'
-                  }`}>
-                  {order.customerName[0]}
-                </div>
-                <div>
-                  <p className="font-bold">{order.customerName}</p>
-                  <p className="text-xs text-text-muted">{order.productName} - {order.plan}</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-bold">{order.amount} TK</p>
-                <p className="text-[10px] text-text-muted uppercase font-bold tracking-widest">{order.status}</p>
-              </div>
-            </div>
-          ))}
-          {orders.length === 0 && <p className="text-center text-text-muted py-8">No orders yet.</p>}
-        </div>
+         <div className="flex pt-16 lg:pt-0">
+            {/* Sidebar */}
+            <aside className={`fixed inset-y-0 left-0 w-72 bg-[#0F172A] border-r border-white/5 z-50 transition-transform duration-300 lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+               <div className="flex flex-col h-full">
+                  <div className="p-8 hidden lg:flex items-center gap-4">
+                     <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-black text-xl shadow-lg shadow-primary/20">A</div>
+                     <div>
+                        <h1 className="font-black text-lg leading-none">Command</h1>
+                        <p className="text-[10px] text-text-muted uppercase tracking-widest font-bold mt-1">Center CMS</p>
+                     </div>
+                  </div>
+
+                  <nav className="flex-1 px-4 space-y-1 overflow-y-auto py-4 scrollbar-hide">
+                     {tabs.map(tab => (
+                        <button
+                           key={tab.id}
+                           onClick={() => { setActiveTab(tab.id); setIsSidebarOpen(false); }}
+                           className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === tab.id
+                              ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                              : 'text-text-muted hover:bg-white/5 hover:text-text-primary'
+                              }`}
+                        >
+                           <tab.icon className="w-5 h-5" />
+                           {tab.label}
+                        </button>
+                     ))}
+                  </nav>
+
+                  <div className="p-4 border-t border-white/5">
+                     <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-red-400 hover:bg-red-500/10 transition-all"
+                     >
+                        <LogOut className="w-5 h-5" />
+                        Logout System
+                     </button>
+                  </div>
+               </div>
+            </aside>
+
+            {/* Main Content */}
+            <main className="flex-1 lg:ml-72 min-h-screen p-6 lg:p-12">
+               <header className="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div>
+                     <div className="flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-[3px] mb-2">
+                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                        Admin Dashboard
+                     </div>
+                     <h1 className="text-4xl font-black text-text-primary tracking-tight">
+                        {tabs.find(t => t.id === activeTab)?.label}
+                     </h1>
+                  </div>
+
+                  <div className="flex items-center gap-3 bg-white/5 p-1.5 rounded-2xl border border-white/10">
+                     <div className="px-4 py-2 text-xs font-black text-text-muted border-r border-white/10 uppercase">Autosave Active</div>
+                     <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center text-success">
+                        <Check className="w-5 h-5" />
+                     </div>
+                  </div>
+               </header>
+
+               <AnimatePresence mode="wait">
+                  <motion.div
+                     key={activeTab}
+                     initial={{ opacity: 0, y: 20 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     exit={{ opacity: 0, y: -20 }}
+                     transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                     className="pb-20"
+                  >
+                     {activeTab === 'overview' && <OverviewTab products={products} />}
+                     {activeTab === 'hero' && <HeroTab hero={hero} updateHero={updateHero} />}
+                     {activeTab === 'navbar' && <NavbarTab navbar={navbar} updateNavbar={updateNavbar} />}
+                     {activeTab === 'features' && <FeaturesTab globalFeatures={globalFeatures} setGlobalFeatures={setGlobalFeatures} />}
+                     {activeTab === 'products' && <ProductsTab products={products} setProducts={setProducts} />}
+                     {activeTab === 'reviews' && <ReviewsTab reviews={reviews} setReviews={setReviews} />}
+                     {activeTab === 'faq' && <FAQTab faqs={faqs} setFAQs={setFAQs} />}
+                     {activeTab === 'countdown' && <CountdownTab countdown={countdown} updateCountdown={updateCountdown} />}
+                     {activeTab === 'payment' && <PaymentTab paymentSettings={paymentSettings} updatePaymentSettings={updatePaymentSettings} />}
+                     {activeTab === 'pricing' && <PricingTab pricingFeatures={pricingFeatures} setPricingFeatures={setPricingFeatures} />}
+                     {activeTab === 'footer' && <FooterTab footer={footer} updateFooter={updateFooter} />}
+                     {activeTab === 'settings' && (
+                        <SettingsTab
+                           settings={settings}
+                           updateSettings={updateSettings}
+                           pixelSettings={pixelSettings}
+                           updatePixelSettings={updatePixelSettings}
+                           trustBadges={trustBadges}
+                           setTrustBadges={setTrustBadges}
+                        />
+                     )}
+                  </motion.div>
+               </AnimatePresence>
+            </main>
+         </div>
+
+         {/* Admin Quick Float */}
+         <Link to="/" className="fixed bottom-8 right-8 w-14 h-14 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center text-text-primary hover:bg-white/10 transition-all shadow-2xl z-[100] group">
+            <Eye className="w-6 h-6 group-hover:scale-110 transition-transform" />
+         </Link>
       </div>
-    </div>
-  );
+   );
+};
+
+// --- Tab Components ---
+
+const OverviewTab = ({ products }: { products: Product[] }) => {
+   const stats = [
+      { label: 'Platform Status', value: 'Operational', color: 'text-success', icon: Zap },
+      { label: 'Active Products', value: products.filter(p => p.visible).length, color: 'text-primary', icon: Package },
+      { label: 'Total Products', value: products.length, color: 'text-secondary', icon: Layout },
+      { label: 'Last Updated', value: 'Just Now', color: 'text-warning', icon: Clock },
+   ];
+
+   return (
+      <div className="space-y-8">
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {stats.map((stat, i) => (
+               <div key={i} className="glass-card p-8 rounded-3xl group hover:border-primary/30 transition-all duration-500">
+                  <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ${stat.color}`}>
+                     <stat.icon className="w-6 h-6" />
+                  </div>
+                  <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">{stat.label}</p>
+                  <p className="text-2xl font-black text-text-primary">{stat.value}</p>
+               </div>
+            ))}
+         </div>
+
+         <div className="glass-card p-10 rounded-[40px] border-white/5 relative overflow-hidden">
+            <div className="relative z-10">
+               <h3 className="text-2xl font-black mb-2">Welcome to your CMS</h3>
+               <p className="text-text-secondary max-w-lg mb-8">Everything you see here is instantly reflected on your live landing page. No manual deployments needed.</p>
+               <div className="flex flex-wrap gap-4">
+                  <div className="px-6 py-4 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
+                     <div className="w-2 h-2 rounded-full bg-success" />
+                     <span className="text-sm font-bold">LocalStorage Sync Enabled</span>
+                  </div>
+                  <div className="px-6 py-4 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
+                     <div className="w-2 h-2 rounded-full bg-primary" />
+                     <span className="text-sm font-bold">Autosave Active</span>
+                  </div>
+               </div>
+            </div>
+            <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-primary/10 to-transparent -z-0" />
+         </div>
+      </div>
+   );
 };
 
 const HeroTab = ({ hero, updateHero }: any) => {
-  const [lang, setLang] = useState<'en' | 'bn'>('en');
-  const [content, setContent] = useState(hero[lang]);
+   const [activeLang, setActiveLang] = useState<'en' | 'bn'>('en');
 
-  const handleSave = () => {
-    updateHero(lang, content);
-    toast.success(`Hero (${lang}) updated successfully`);
-  };
+   const handleChange = (field: string, value: any) => {
+      updateHero({ ...hero, [field]: value });
+   };
 
-  return (
-    <div className="glass-card p-8 rounded-2xl space-y-8">
-      <div className="flex gap-4 p-1 bg-white/5 rounded-xl w-fit">
-        <button onClick={() => setLang('en')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${lang === 'en' ? 'bg-white text-black' : 'text-text-muted hover:text-text-primary'}`}>English</button>
-        <button onClick={() => setLang('bn')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${lang === 'bn' ? 'bg-white text-black' : 'text-text-muted hover:text-text-primary'}`}>Bangla</button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Input label="Badge" value={content.badge} onChange={(v) => setContent({ ...content, badge: v })} />
-        <Input label="Title Main" value={content.title} onChange={(v) => setContent({ ...content, title: v })} />
-        <Input label="Title Accent" value={content.titleAccent} onChange={(v) => setContent({ ...content, titleAccent: v })} />
-        <Input label="Subtitle" value={content.subtitle} onChange={(v) => setContent({ ...content, subtitle: v })} />
-        <div className="md:col-span-2">
-          <label className="block text-sm font-bold text-text-secondary mb-2 uppercase tracking-wider">Description</label>
-          <textarea
-            value={content.description}
-            onChange={(e) => setContent({ ...content, description: e.target.value })}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-text-primary focus:outline-none focus:ring-1 focus:ring-primary h-24"
-          />
-        </div>
-        <Input label="CTA Primary" value={content.cta1} onChange={(v) => setContent({ ...content, cta1: v })} />
-        <Input label="CTA Secondary" value={content.cta2} onChange={(v) => setContent({ ...content, cta2: v })} />
-      </div>
-
-      <button onClick={handleSave} className="bg-primary text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-primary-light transition-all">
-        <Save className="w-5 h-5" /> Save Changes
-      </button>
-    </div>
-  );
-};
-
-const ProductsTab = ({ products, updateProduct }: any) => {
-  return (
-    <div className="space-y-8">
-      {products.map((p: any) => (
-        <div key={p.id} className="glass-card p-8 rounded-2xl">
-          <h3 className="text-xl font-black mb-6 text-primary">{p.nameEn}</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <Input label="Name (EN)" value={p.nameEn} onChange={(v) => updateProduct(p.id, { ...p, nameEn: v })} />
-            <Input label="Name (BN)" value={p.nameBn} onChange={(v) => updateProduct(p.id, { ...p, nameBn: v })} />
-            <Input label="Description (EN)" value={p.descriptionEn} onChange={(v) => updateProduct(p.id, { ...p, descriptionEn: v })} />
-            <Input label="Description (BN)" value={p.descriptionBn} onChange={(v) => updateProduct(p.id, { ...p, descriptionBn: v })} />
-          </div>
-
-          <div className="mb-8">
-            <label className="block text-sm font-bold text-text-secondary mb-4 uppercase tracking-wider">Pricing Plans</label>
-            <div className="space-y-4">
-              {p.plans.map((plan: any, i: number) => (
-                <div key={i} className="grid grid-cols-3 gap-4 bg-white/5 p-4 rounded-xl items-end">
-                  <Input label="Plan Name" value={plan.name} onChange={(v) => {
-                    const newPlans = [...p.plans];
-                    newPlans[i].name = v;
-                    updateProduct(p.id, { ...p, plans: newPlans });
-                  }} />
-                  <Input label="Price (TK)" value={plan.priceTk} type="number" onChange={(v) => {
-                    const newPlans = [...p.plans];
-                    newPlans[i].priceTk = parseInt(v);
-                    updateProduct(p.id, { ...p, plans: newPlans });
-                  }} />
-                  <div className="flex gap-2">
-                    <button onClick={() => {
-                      const newPlans = p.plans.filter((_: any, idx: number) => idx !== i);
-                      updateProduct(p.id, { ...p, plans: newPlans });
-                    }} className="p-3 text-red-400 hover:bg-red-500/10 rounded-lg"><Trash2 className="w-5 h-5" /></button>
-                  </div>
-                </div>
-              ))}
-              <button onClick={() => {
-                const newPlans = [...p.plans, { name: 'New Plan', priceTk: 0, duration: 'Monthly' }];
-                updateProduct(p.id, { ...p, plans: newPlans });
-              }} className="text-primary-light font-bold flex items-center gap-2 px-4 py-2 hover:bg-primary/5 rounded-lg transition-all">
-                <Plus className="w-4 h-4" /> Add Plan
-              </button>
+   return (
+      <div className="space-y-8">
+         <div className="glass-card p-10 rounded-[40px] border-white/5">
+            <div className="flex items-center justify-between mb-8">
+               <h3 className="text-xl font-black">Hero Content</h3>
+               <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
+                  <button onClick={() => setActiveLang('en')} className={`px-4 py-2 rounded-lg text-xs font-black transition-all ${activeLang === 'en' ? 'bg-white text-black shadow-lg' : 'text-text-muted hover:text-text-primary'}`}>ENGLISH</button>
+                  <button onClick={() => setActiveLang('bn')} className={`px-4 py-2 rounded-lg text-xs font-black transition-all ${activeLang === 'bn' ? 'bg-white text-black shadow-lg' : 'text-text-muted hover:text-text-primary'}`}>বাংলা</button>
+               </div>
             </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               <Input label={activeLang === 'en' ? "Badge Text" : "ব্যাজ টেক্সট"} value={activeLang === 'en' ? hero.badge : hero.badgeBn} onChange={(v) => handleChange(activeLang === 'en' ? 'badge' : 'badgeBn', v)} />
+               <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <Input label={activeLang === 'en' ? "Title Main" : "টাইটেল (প্রধান)"} value={activeLang === 'en' ? hero.title : hero.titleBn} onChange={(v) => handleChange(activeLang === 'en' ? 'title' : 'titleBn', v)} />
+                  <Input label={activeLang === 'en' ? "Title Accent" : "টাইটেল (অ্যাকসেন্ট)"} value={activeLang === 'en' ? hero.titleAccent : hero.titleAccentBn} onChange={(v) => handleChange(activeLang === 'en' ? 'titleAccent' : 'titleAccentBn', v)} />
+                  <Input label={activeLang === 'en' ? "Subtitle" : "সাবটাইটেল"} value={activeLang === 'en' ? hero.subtitle : hero.subtitleBn} onChange={(v) => handleChange(activeLang === 'en' ? 'subtitle' : 'subtitleBn', v)} />
+               </div>
+               <div className="md:col-span-2">
+                  <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-3 block">Description</label>
+                  <textarea
+                     value={activeLang === 'en' ? hero.description : hero.descriptionBn}
+                     onChange={(e) => handleChange(activeLang === 'en' ? 'description' : 'descriptionBn', e.target.value)}
+                     className="w-full bg-white/5 border border-white/10 rounded-[24px] px-6 py-5 text-sm font-medium focus:ring-2 focus:ring-primary/50 focus:outline-none transition-all h-32"
+                  />
+               </div>
+               <Input label="CTA Button 1" value={activeLang === 'en' ? hero.cta1 : hero.cta1Bn} onChange={(v) => handleChange(activeLang === 'en' ? 'cta1' : 'cta1Bn', v)} />
+               <Input label="CTA Button 2" value={activeLang === 'en' ? hero.cta2 : hero.cta2Bn} onChange={(v) => handleChange(activeLang === 'en' ? 'cta2' : 'cta2Bn', v)} />
+               <div className="md:col-span-2">
+                  <Input label="Background Image URL" value={hero.backgroundImage} onChange={(v) => handleChange('backgroundImage', v)} />
+               </div>
+            </div>
+         </div>
+
+         <div className="glass-card p-10 rounded-[40px] border-white/5">
+            <h3 className="text-xl font-black mb-8">Hero Statistics</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+               {hero.stats.map((stat: any, i: number) => (
+                  <div key={i} className="p-6 rounded-3xl bg-white/5 border border-white/10 space-y-4">
+                     <div className="flex justify-between items-center mb-2">
+                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">Stat #{i + 1}</span>
+                     </div>
+                     <Input label="Value (EN)" value={stat.value} onChange={(v) => {
+                        const newStats = [...hero.stats];
+                        newStats[i].value = v;
+                        handleChange('stats', newStats);
+                     }} />
+                     <Input label="Value (BN)" value={stat.valueBn} onChange={(v) => {
+                        const newStats = [...hero.stats];
+                        newStats[i].valueBn = v;
+                        handleChange('stats', newStats);
+                     }} />
+                     <Input label="Label (EN)" value={stat.label} onChange={(v) => {
+                        const newStats = [...hero.stats];
+                        newStats[i].label = v;
+                        handleChange('stats', newStats);
+                     }} />
+                     <Input label="Label (BN)" value={stat.labelBn} onChange={(v) => {
+                        const newStats = [...hero.stats];
+                        newStats[i].labelBn = v;
+                        handleChange('stats', newStats);
+                     }} />
+                  </div>
+               ))}
+            </div>
+         </div>
+
+         <div className="glass-card p-10 rounded-[40px] border-white/5">
+            <div className="flex items-center justify-between mb-8">
+               <h3 className="text-xl font-black">Announcement Banner</h3>
+               <button onClick={() => handleChange('showAnnouncement', !hero.showAnnouncement)} className={`px-6 py-3 rounded-2xl font-black text-xs transition-all ${hero.showAnnouncement ? 'bg-success/10 text-success border border-success/20' : 'bg-white/5 text-text-muted border border-white/10'}`}>
+                  {hero.showAnnouncement ? 'VISIBLE' : 'HIDDEN'}
+               </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               <Input label="Announcement (EN)" value={hero.announcement} onChange={(v) => handleChange('announcement', v)} />
+               <Input label="Announcement (BN)" value={hero.announcementBn} onChange={(v) => handleChange('announcementBn', v)} />
+            </div>
+         </div>
+      </div>
+   );
 };
 
-const OrdersTab = ({ orders, updateOrderStatus, deleteOrder }: any) => {
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+const NavbarTab = ({ navbar, updateNavbar }: any) => {
+   const sensors = useSensors(
+      useSensor(PointerSensor),
+      useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+   );
 
-  return (
-    <div className="space-y-6">
-      <div className="glass-card rounded-2xl overflow-hidden overflow-x-auto">
-        <table className="w-full text-left">
-          <thead className="bg-white/5">
-            <tr>
-              <th className="p-6 text-xs font-bold uppercase text-text-muted">Customer</th>
-              <th className="p-6 text-xs font-bold uppercase text-text-muted">Product</th>
-              <th className="p-6 text-xs font-bold uppercase text-text-muted">Amount</th>
-              <th className="p-6 text-xs font-bold uppercase text-text-muted">Transaction ID</th>
-              <th className="p-6 text-xs font-bold uppercase text-text-muted">Status</th>
-              <th className="p-6 text-xs font-bold uppercase text-text-muted">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-white/5">
-            {orders.map((o: any) => (
-              <tr key={o.id} className="hover:bg-white/[0.02]">
-                <td className="p-6">
-                  <p className="font-bold text-text-primary">{o.customerName}</p>
-                  <p className="text-xs text-text-muted">@{o.telegramUsername}</p>
-                </td>
-                <td className="p-6">
-                  <p className="text-sm font-medium">{o.productName}</p>
-                  <p className="text-[10px] uppercase font-black text-primary-light">{o.plan}</p>
-                </td>
-                <td className="p-6 font-bold">{o.amount} TK</td>
-                <td className="p-6">
-                  <button 
-                    onClick={() => setSelectedOrder(o)}
-                    className="font-mono text-xs text-primary-light hover:underline"
-                  >
-                    {o.transactionId}
-                  </button>
-                </td>
-                <td className="p-6">
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${o.status === 'Completed' ? 'bg-success/20 text-success' :
-                      o.status === 'Rejected' ? 'bg-red-500/20 text-red-400' : 'bg-warning/20 text-warning'
-                    }`}>
-                    {o.status}
-                  </span>
-                </td>
-                <td className="p-6">
-                  <div className="flex gap-2">
-                    <button onClick={() => updateOrderStatus(o.id, 'Completed')} className="p-2 bg-success/10 text-success rounded-lg hover:bg-success/20 transition-all" title="Approve"><Check className="w-4 h-4" /></button>
-                    <button onClick={() => updateOrderStatus(o.id, 'Rejected')} className="p-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-all" title="Reject"><X className="w-4 h-4" /></button>
-                    <button onClick={() => deleteOrder(o.id)} className="p-2 bg-white/5 text-text-muted rounded-lg hover:text-red-400 transition-all" title="Delete"><Trash2 className="w-4 h-4" /></button>
-                  </div>
-                </td>
-              </tr>
+   const handleDragEnd = (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (over && active.id !== over.id) {
+         const oldIndex = navbar.items.findIndex((i: any) => i.url === active.id);
+         const newIndex = navbar.items.findIndex((i: any) => i.url === over.id);
+         const newItems = arrayMove(navbar.items, oldIndex, newIndex).map((item: any, index: number) => Object.assign({}, item, { order: index + 1 }));
+         updateNavbar({ ...navbar, items: newItems });
+      }
+   };
+
+   const addItem = () => {
+      const newItem = { label: 'New Link', labelBn: 'নতুন লিঙ্ক', url: '#', order: navbar.items.length + 1 };
+      updateNavbar({ ...navbar, items: [...navbar.items, newItem] });
+   };
+
+   const removeItem = (url: string) => {
+      const newItems = navbar.items.filter((i: any) => i.url !== url).map((item: any, index: number) => ({ ...item, order: index + 1 }));
+      updateNavbar({ ...navbar, items: newItems });
+   };
+
+   const updateItem = (url: string, field: string, value: string) => {
+      const newItems = navbar.items.map((i: any) => i.url === url ? { ...i, [field]: value } : i);
+      updateNavbar({ ...navbar, items: newItems });
+   };
+
+   return (
+      <div className="glass-card p-10 rounded-[40px] border-white/5">
+         <div className="flex justify-between items-center mb-10">
+            <h3 className="text-xl font-black">Navbar Menu</h3>
+            <button onClick={addItem} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-sm flex items-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-primary/20">
+               <Plus className="w-5 h-5" /> Add Menu Item
+            </button>
+         </div>
+
+         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={navbar.items.map((i: any) => i.url)} strategy={verticalListSortingStrategy}>
+               <div className="space-y-4">
+                  {navbar.items.map((item: any) => (
+                     <SortableItem key={item.url} id={item.url}>
+                        <div className="pl-14 pr-6 py-6 bg-white/5 border border-white/10 rounded-[28px] grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                           <Input label="Label (EN)" value={item.label} onChange={(v) => updateItem(item.url, 'label', v)} />
+                           <Input label="Label (BN)" value={item.labelBn} onChange={(v) => updateItem(item.url, 'labelBn', v)} />
+                           <div className="flex items-end gap-4">
+                              <div className="flex-1">
+                                 <Input label="URL / ID" value={item.url} onChange={(v) => updateItem(item.url, 'url', v)} />
+                              </div>
+                              <button onClick={() => removeItem(item.url)} className="p-3.5 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 transition-all">
+                                 <Trash2 className="w-5 h-5" />
+                              </button>
+                           </div>
+                        </div>
+                     </SortableItem>
+                  ))}
+               </div>
+            </SortableContext>
+         </DndContext>
+      </div>
+   );
+};
+
+const FeaturesTab = ({ globalFeatures, setGlobalFeatures }: any) => {
+   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
+
+   const handleDragEnd = (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (over && active.id !== over.id) {
+         const oldIndex = globalFeatures.findIndex((i: any) => i.id === active.id);
+         const newIndex = globalFeatures.findIndex((i: any) => i.id === over.id);
+         setGlobalFeatures(arrayMove(globalFeatures, oldIndex, newIndex).map((f: any, i: number) => ({ ...f, order: i + 1 })));
+      }
+   };
+
+   const addFeature = () => {
+      setGlobalFeatures([...globalFeatures, { id: Date.now().toString(), title: 'New Feature', titleBn: 'নতুন ফিচার', description: 'Description', descriptionBn: 'বিবরণ', icon: 'Zap', visible: true, order: globalFeatures.length + 1 }]);
+   };
+
+   const updateFeature = (id: string, updates: any) => {
+      setGlobalFeatures(globalFeatures.map((f: any) => f.id === id ? { ...f, ...updates } : f));
+   };
+
+   const deleteFeature = (id: string) => {
+      setGlobalFeatures(globalFeatures.filter((f: any) => f.id !== id));
+   };
+
+   return (
+      <div className="space-y-8">
+         <div className="flex justify-between items-center">
+            <h3 className="text-xl font-black">Global Features</h3>
+            <button onClick={addFeature} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-sm flex items-center gap-2 shadow-lg shadow-primary/20">
+               <Plus className="w-5 h-5" /> Add Feature
+            </button>
+         </div>
+
+         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={globalFeatures.map((f: any) => f.id)} strategy={verticalListSortingStrategy}>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {globalFeatures.map((f: any) => (
+                     <SortableItem key={f.id} id={f.id}>
+                        <div className="glass-card p-8 rounded-[32px] border-white/5 space-y-6">
+                           <div className="flex justify-between items-center">
+                              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                                 <Zap className="w-5 h-5" />
+                              </div>
+                              <div className="flex gap-2">
+                                 <button onClick={() => updateFeature(f.id, { visible: !f.visible })} className={`p-2 rounded-xl ${f.visible ? 'text-primary' : 'text-text-muted'}`}>
+                                    {f.visible ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                                 </button>
+                                 <button onClick={() => deleteFeature(f.id)} className="p-2 text-red-400"><Trash2 className="w-5 h-5" /></button>
+                              </div>
+                           </div>
+                           <div className="grid grid-cols-1 gap-6">
+                              <Input label="Title (EN)" value={f.title} onChange={(v: string) => updateFeature(f.id, { title: v })} />
+                              <Input label="Title (BN)" value={f.titleBn} onChange={(v: string) => updateFeature(f.id, { titleBn: v })} />
+                              <Input label="Icon (Lucide)" value={f.icon} onChange={(v: string) => updateFeature(f.id, { icon: v })} />
+                              <div className="md:col-span-2">
+                                 <label className="text-[10px] font-black text-text-muted uppercase mb-1.5 tracking-widest px-1">Description (EN)</label>
+                                 <textarea value={f.description} onChange={(e) => updateFeature(f.id, { description: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm h-24 focus:outline-none" />
+                              </div>
+                              <div className="md:col-span-2">
+                                 <label className="text-[10px] font-black text-text-muted uppercase mb-1.5 tracking-widest px-1">Description (BN)</label>
+                                 <textarea value={f.descriptionBn} onChange={(e) => updateFeature(f.id, { descriptionBn: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm h-24 focus:outline-none" />
+                              </div>
+                           </div>
+                        </div>
+                     </SortableItem>
+                  ))}
+               </div>
+            </SortableContext>
+         </DndContext>
+      </div>
+   );
+};
+
+const ProductsTab = ({ products, setProducts }: any) => {
+   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
+
+   const handleDragEnd = (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (over && active.id !== over.id) {
+         const oldIndex = products.findIndex((i: any) => i.id === active.id);
+         const newIndex = products.findIndex((i: any) => i.id === over.id);
+         const newProducts = arrayMove(products, oldIndex, newIndex).map((p: any, i: number) => ({ ...p, order: i + 1 }));
+         setProducts(newProducts);
+      }
+   };
+
+   const addProduct = () => {
+      const id = Date.now().toString();
+      const newProduct: Product = {
+         id,
+         title: 'New Product',
+         titleBn: 'নতুন পণ্য',
+         subtitle: 'Premium Access',
+         subtitleBn: 'প্রিমিয়াম অ্যাক্সেস',
+         badge: 'New',
+         badgeBn: 'নতুন',
+         shortDescription: 'Description here',
+         shortDescriptionBn: 'বিবরণ এখানে',
+         buttonText: 'Buy Now',
+         buttonTextBn: 'এখনই কিনুন',
+         telegramLink: '#',
+         image: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop',
+         visible: true,
+         order: products.length + 1,
+         plans: [],
+         bulletPoints: [],
+         features: []
+      };
+      setProducts([...products, newProduct]);
+      setExpandedId(id);
+   };
+
+   const deleteProduct = (id: string) => {
+      setProducts(products.filter((p: any) => p.id !== id));
+   };
+
+   const updateProduct = (id: string, updates: Partial<Product>) => {
+      setProducts(products.map((p: any) => p.id === id ? { ...p, ...updates } : p));
+   };
+
+   return (
+      <div className="space-y-10">
+         <div className="flex justify-between items-center">
+            <h3 className="text-xl font-black">Manage Products</h3>
+            <button onClick={addProduct} className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-sm flex items-center gap-2 hover:opacity-90 transition-all shadow-xl shadow-primary/20">
+               <Plus className="w-5 h-5" /> Create New Product
+            </button>
+         </div>
+
+         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={products.map((p: any) => p.id)} strategy={verticalListSortingStrategy}>
+               <div className="space-y-6">
+                  {products.map((p: Product) => (
+                     <SortableItem key={p.id} id={p.id}>
+                        <div className={`glass-card rounded-[40px] border-white/5 transition-all duration-500 ${expandedId === p.id ? 'ring-2 ring-primary/50' : ''}`}>
+                           <div className="p-8 flex items-center justify-between cursor-pointer" onClick={() => setExpandedId(expandedId === p.id ? null : p.id)}>
+                              <div className="pl-8 flex items-center gap-6">
+                                 <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+                                    <img src={p.image} className="w-full h-full object-cover" />
+                                 </div>
+                                 <div>
+                                    <h4 className="text-xl font-black">{p.title}</h4>
+                                    <p className="text-sm text-text-muted font-medium">{p.subtitle}</p>
+                                 </div>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                 <button onClick={(e) => { e.stopPropagation(); updateProduct(p.id, { visible: !p.visible }); }} className={`p-3 rounded-xl transition-all ${p.visible ? 'text-primary bg-primary/10' : 'text-text-muted bg-white/5'}`}>
+                                    {p.visible ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                                 </button>
+                                 <button onClick={(e) => { e.stopPropagation(); deleteProduct(p.id); }} className="p-3 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20">
+                                    <Trash2 className="w-5 h-5" />
+                                 </button>
+                                 <div className="ml-4">
+                                    {expandedId === p.id ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
+                                 </div>
+                              </div>
+                           </div>
+
+                           <AnimatePresence>
+                              {expandedId === p.id && (
+                                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                                    <div className="px-8 pb-12 space-y-12 border-t border-white/5 pt-10">
+                                       {/* Basic Info */}
+                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                          <div className="space-y-6">
+                                             <Input label="Title (EN)" value={p.title} onChange={(v) => updateProduct(p.id, { title: v })} />
+                                             <Input label="Title (BN)" value={p.titleBn} onChange={(v) => updateProduct(p.id, { titleBn: v })} />
+                                             <Input label="Subtitle (EN)" value={p.subtitle} onChange={(v) => updateProduct(p.id, { subtitle: v })} />
+                                             <Input label="Subtitle (BN)" value={p.subtitleBn} onChange={(v) => updateProduct(p.id, { subtitleBn: v })} />
+                                          </div>
+                                          <div className="space-y-6">
+                                             <Input label="Badge (EN)" value={p.badge} onChange={(v) => updateProduct(p.id, { badge: v })} />
+                                             <Input label="Badge (BN)" value={p.badgeBn} onChange={(v) => updateProduct(p.id, { badgeBn: v })} />
+                                             <Input label="Product Image URL" value={p.image} onChange={(v) => updateProduct(p.id, { image: v })} />
+                                             <Input label="Telegram Link" value={p.telegramLink} onChange={(v) => updateProduct(p.id, { telegramLink: v })} />
+                                          </div>
+                                          <div className="md:col-span-2">
+                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-3 block">Short Description (EN)</label>
+                                             <textarea value={p.shortDescription} onChange={(e) => updateProduct(p.id, { shortDescription: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-4 text-sm h-24 focus:outline-none focus:ring-1 focus:ring-primary" />
+                                          </div>
+                                          <div className="md:col-span-2">
+                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-3 block">Short Description (BN)</label>
+                                             <textarea value={p.shortDescriptionBn} onChange={(e) => updateProduct(p.id, { shortDescriptionBn: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-4 text-sm h-24 focus:outline-none focus:ring-1 focus:ring-primary" />
+                                          </div>
+                                       </div>
+
+                                       {/* Pricing Plans */}
+                                       <div className="space-y-6">
+                                          <div className="flex justify-between items-center">
+                                             <h5 className="font-black text-primary uppercase tracking-widest text-xs">Pricing Plans</h5>
+                                             <button onClick={() => updateProduct(p.id, { plans: [...p.plans, { id: Date.now().toString(), name: 'New Plan', nameBn: 'নতুন প্ল্যান', priceTk: 0, duration: 'Monthly' }] })} className="text-primary font-bold text-xs flex items-center gap-2 px-4 py-2 hover:bg-primary/5 rounded-xl transition-all">
+                                                <Plus className="w-4 h-4" /> Add Plan
+                                             </button>
+                                          </div>
+                                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                             {p.plans.map((plan, idx) => (
+                                                <div key={plan.id} className="p-6 rounded-3xl bg-white/5 border border-white/10 flex flex-col gap-4 relative group">
+                                                   <button onClick={() => updateProduct(p.id, { plans: p.plans.filter((_, i) => i !== idx) })} className="absolute top-4 right-4 text-red-400 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-4 h-4" /></button>
+                                                   <div className="grid grid-cols-2 gap-4">
+                                                      <Input label="Name (EN)" value={plan.name} onChange={(v) => {
+                                                         const newPlans = [...p.plans];
+                                                         newPlans[idx].name = v;
+                                                         updateProduct(p.id, { plans: newPlans });
+                                                      }} />
+                                                      <Input label="Name (BN)" value={plan.nameBn} onChange={(v) => {
+                                                         const newPlans = [...p.plans];
+                                                         newPlans[idx].nameBn = v;
+                                                         updateProduct(p.id, { plans: newPlans });
+                                                      }} />
+                                                   </div>
+                                                   <div className="grid grid-cols-2 gap-4">
+                                                      <Input label="Price (TK)" value={plan.priceTk} type="number" onChange={(v) => {
+                                                         const newPlans = [...p.plans];
+                                                         newPlans[idx].priceTk = parseInt(v);
+                                                         updateProduct(p.id, { plans: newPlans });
+                                                      }} />
+                                                      <div className="flex flex-col">
+                                                         <label className="text-[10px] font-black text-text-muted uppercase mb-1.5 tracking-widest">Duration</label>
+                                                         <select
+                                                            value={plan.duration}
+                                                            onChange={(e) => {
+                                                               const newPlans = [...p.plans];
+                                                               newPlans[idx].duration = e.target.value as any;
+                                                               updateProduct(p.id, { plans: newPlans });
+                                                            }}
+                                                            className="h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-sm font-bold text-text-primary focus:outline-none"
+                                                         >
+                                                            <option value="Monthly">Monthly</option>
+                                                            <option value="Yearly">Yearly</option>
+                                                            <option value="Lifetime">Lifetime</option>
+                                                         </select>
+                                                      </div>
+                                                   </div>
+                                                </div>
+                                             ))}
+                                          </div>
+                                       </div>
+
+                                       {/* Bullet Points */}
+                                       <div className="space-y-6">
+                                          <div className="flex justify-between items-center">
+                                             <h5 className="font-black text-secondary uppercase tracking-widest text-xs">Bullet Points</h5>
+                                             <button onClick={() => updateProduct(p.id, { bulletPoints: [...p.bulletPoints, { id: Date.now().toString(), text: 'New Point', textBn: 'নতুন পয়েন্ট', visible: true, order: p.bulletPoints.length + 1 }] })} className="text-secondary font-bold text-xs flex items-center gap-2 px-4 py-2 hover:bg-secondary/5 rounded-xl transition-all">
+                                                <Plus className="w-4 h-4" /> Add Bullet Point
+                                             </button>
+                                          </div>
+                                          <div className="space-y-4">
+                                             {p.bulletPoints.map((bp, idx) => (
+                                                <div key={bp.id} className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-4">
+                                                   <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                      <Input label="Text (EN)" value={bp.text} onChange={(v) => {
+                                                         const newBps = [...p.bulletPoints];
+                                                         newBps[idx].text = v;
+                                                         updateProduct(p.id, { bulletPoints: newBps });
+                                                      }} />
+                                                      <Input label="Text (BN)" value={bp.textBn} onChange={(v) => {
+                                                         const newBps = [...p.bulletPoints];
+                                                         newBps[idx].textBn = v;
+                                                         updateProduct(p.id, { bulletPoints: newBps });
+                                                      }} />
+                                                   </div>
+                                                   <button onClick={() => {
+                                                      const newBps = [...p.bulletPoints];
+                                                      newBps[idx].visible = !newBps[idx].visible;
+                                                      updateProduct(p.id, { bulletPoints: newBps });
+                                                   }} className={`p-2 rounded-lg ${bp.visible ? 'text-primary' : 'text-text-muted'}`}>
+                                                      {bp.visible ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                                                   </button>
+                                                   <button onClick={() => updateProduct(p.id, { bulletPoints: p.bulletPoints.filter((_, i) => i !== idx) })} className="p-2 text-red-400"><Trash2 className="w-5 h-5" /></button>
+                                                </div>
+                                             ))}
+                                          </div>
+                                       </div>
+
+                                       {/* Features */}
+                                       <div className="space-y-6">
+                                          <div className="flex justify-between items-center">
+                                             <h5 className="font-black text-warning uppercase tracking-widest text-xs">Featured Services</h5>
+                                             <button onClick={() => updateProduct(p.id, { features: [...p.features, { id: Date.now().toString(), text: 'New Feature', textBn: 'নতুন ফিচার', visible: true, highlighted: false, order: p.features.length + 1 }] })} className="text-warning font-bold text-xs flex items-center gap-2 px-4 py-2 hover:bg-warning/5 rounded-xl transition-all">
+                                                <Plus className="w-4 h-4" /> Add Feature
+                                             </button>
+                                          </div>
+                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                             {p.features.map((f, idx) => (
+                                                <div key={f.id} className="p-6 rounded-3xl bg-white/5 border border-white/10 space-y-4">
+                                                   <div className="grid grid-cols-1 gap-4">
+                                                      <Input label="Feature (EN)" value={f.text} onChange={(v) => {
+                                                         const newFs = [...p.features];
+                                                         newFs[idx].text = v;
+                                                         updateProduct(p.id, { features: newFs });
+                                                      }} />
+                                                      <Input label="Feature (BN)" value={f.textBn} onChange={(v) => {
+                                                         const newFs = [...p.features];
+                                                         newFs[idx].textBn = v;
+                                                         updateProduct(p.id, { features: newFs });
+                                                      }} />
+                                                   </div>
+                                                   <div className="flex gap-4">
+                                                      <button onClick={() => {
+                                                         const newFs = [...p.features];
+                                                         newFs[idx].highlighted = !newFs[idx].highlighted;
+                                                         updateProduct(p.id, { features: newFs });
+                                                      }} className={`flex-1 py-3 rounded-xl font-bold text-xs transition-all ${f.highlighted ? 'bg-primary text-white' : 'bg-white/5 text-text-muted'}`}>
+                                                         {f.highlighted ? 'HIGHLIGHTED' : 'STANDARD'}
+                                                      </button>
+                                                      <button onClick={() => updateProduct(p.id, { features: p.features.filter((_, i) => i !== idx) })} className="p-3 bg-red-500/10 text-red-400 rounded-xl"><Trash2 className="w-4 h-4" /></button>
+                                                   </div>
+                                                </div>
+                                             ))}
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </motion.div>
+                              )}
+                           </AnimatePresence>
+                        </div>
+                     </SortableItem>
+                  ))}
+               </div>
+            </SortableContext>
+         </DndContext>
+      </div>
+   );
+};
+
+const ReviewsTab = ({ reviews, setReviews }: any) => {
+   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
+
+   const handleDragEnd = (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (over && active.id !== over.id) {
+         const oldIndex = reviews.findIndex((i: any) => i.id === active.id);
+         const newIndex = reviews.findIndex((i: any) => i.id === over.id);
+         setReviews(arrayMove(reviews, oldIndex, newIndex).map((r: any, i: number) => ({ ...r, order: i + 1 })));
+      }
+   };
+
+   const addReview = () => {
+      const newReview: Review = {
+         id: Date.now().toString(),
+         name: 'New User',
+         role: 'Customer',
+         roleBn: 'ক্রেতা',
+         image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + Date.now(),
+         rating: 5,
+         review: 'Excellent service!',
+         reviewBn: 'অসাধারণ সার্ভিস!',
+         featured: true,
+         visible: true,
+         order: reviews.length + 1
+      };
+      setReviews([...reviews, newReview]);
+   };
+
+   const updateReview = (id: string, updates: Partial<Review>) => {
+      setReviews(reviews.map((r: any) => r.id === id ? { ...r, ...updates } : r));
+   };
+
+   const deleteReview = (id: string) => {
+      setReviews(reviews.filter((r: any) => r.id !== id));
+   };
+
+   return (
+      <div className="space-y-10">
+         <div className="flex justify-between items-center">
+            <h3 className="text-xl font-black">User Reviews</h3>
+            <button onClick={addReview} className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-sm flex items-center gap-2 hover:opacity-90 transition-all shadow-xl shadow-primary/20">
+               <Plus className="w-5 h-5" /> Add Review
+            </button>
+         </div>
+
+         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={reviews.map((r: any) => r.id)} strategy={verticalListSortingStrategy}>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {reviews.map((r: Review) => (
+                     <SortableItem key={r.id} id={r.id}>
+                        <div className="glass-card p-8 rounded-[32px] border-white/5 space-y-6">
+                           <div className="flex items-center gap-4">
+                              <div className="w-14 h-14 rounded-full overflow-hidden bg-white/5 border border-white/10">
+                                 <img src={r.image} className="w-full h-full object-cover" />
+                              </div>
+                              <div className="flex-1">
+                                 <Input label="Name" value={r.name} onChange={(v) => updateReview(r.id, { name: v })} />
+                              </div>
+                              <div className="flex gap-2">
+                                 <button onClick={() => updateReview(r.id, { visible: !r.visible })} className={`p-2.5 rounded-xl ${r.visible ? 'bg-primary/10 text-primary' : 'bg-white/5 text-text-muted'}`}>
+                                    {r.visible ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                                 </button>
+                                 <button onClick={() => deleteReview(r.id)} className="p-2.5 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20">
+                                    <Trash2 className="w-5 h-5" />
+                                 </button>
+                              </div>
+                           </div>
+                           <div className="grid grid-cols-2 gap-6">
+                              <Input label="Role (EN)" value={r.role} onChange={(v) => updateReview(r.id, { role: v })} />
+                              <Input label="Role (BN)" value={r.roleBn} onChange={(v) => updateReview(r.id, { roleBn: v })} />
+                           </div>
+                           <div className="grid grid-cols-2 gap-6">
+                              <Input label="Rating (1-5)" value={r.rating} type="number" onChange={(v) => updateReview(r.id, { rating: parseInt(v) })} />
+                              <div className="flex flex-col">
+                                 <label className="text-[10px] font-black text-text-muted uppercase mb-1.5 tracking-widest">Featured</label>
+                                 <button onClick={() => updateReview(r.id, { featured: !r.featured })} className={`h-12 rounded-xl font-bold text-xs transition-all ${r.featured ? 'bg-success/10 text-success border border-success/20' : 'bg-white/5 text-text-muted border border-white/10'}`}>
+                                    {r.featured ? 'FEATURED' : 'STANDARD'}
+                                 </button>
+                              </div>
+                           </div>
+                           <div className="grid grid-cols-1 gap-6">
+                              <div className="md:col-span-2">
+                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-3 block">Review (EN)</label>
+                                 <textarea value={r.review} onChange={(e) => updateReview(r.id, { review: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm h-24 focus:outline-none" />
+                              </div>
+                              <div className="md:col-span-2">
+                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-3 block">Review (BN)</label>
+                                 <textarea value={r.reviewBn} onChange={(e) => updateReview(r.id, { reviewBn: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm h-24 focus:outline-none" />
+                              </div>
+                           </div>
+                        </div>
+                     </SortableItem>
+                  ))}
+               </div>
+            </SortableContext>
+         </DndContext>
+      </div>
+   );
+};
+
+const FAQTab = ({ faqs, setFAQs }: any) => {
+   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
+
+   const handleDragEnd = (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (over && active.id !== over.id) {
+         const oldIndex = faqs.findIndex((i: any) => i.id === active.id);
+         const newIndex = faqs.findIndex((i: any) => i.id === over.id);
+         setFAQs(arrayMove(faqs, oldIndex, newIndex).map((f: any, i: number) => ({ ...f, order: i + 1 })));
+      }
+   };
+
+   const addFAQ = () => {
+      const newFAQ: FAQ = {
+         id: Date.now().toString(),
+         q: 'New Question?',
+         qBn: 'নতুন প্রশ্ন?',
+         a: 'Answer content...',
+         aBn: 'উত্তর এখানে...',
+         visible: true,
+         order: faqs.length + 1
+      };
+      setFAQs([...faqs, newFAQ]);
+   };
+
+   const updateFAQ = (id: string, updates: Partial<FAQ>) => {
+      setFAQs(faqs.map((f: any) => f.id === id ? { ...f, ...updates } : f));
+   };
+
+   const deleteFAQ = (id: string) => {
+      setFAQs(faqs.filter((f: any) => f.id !== id));
+   };
+
+   return (
+      <div className="space-y-10">
+         <div className="flex justify-between items-center">
+            <h3 className="text-xl font-black">FAQ Items</h3>
+            <button onClick={addFAQ} className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-sm flex items-center gap-2 hover:opacity-90 transition-all shadow-xl shadow-primary/20">
+               <Plus className="w-5 h-5" /> Add Question
+            </button>
+         </div>
+
+         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={faqs.map((f: any) => f.id)} strategy={verticalListSortingStrategy}>
+               <div className="space-y-6">
+                  {faqs.map((f: FAQ) => (
+                     <SortableItem key={f.id} id={f.id}>
+                        <div className="glass-card p-8 rounded-[32px] border-white/5 space-y-8">
+                           <div className="flex justify-between items-start">
+                              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-black ml-10">?</div>
+                              <div className="flex gap-2">
+                                 <button onClick={() => updateFAQ(f.id, { visible: !f.visible })} className={`p-2.5 rounded-xl ${f.visible ? 'bg-primary/10 text-primary' : 'bg-white/5 text-text-muted'}`}>
+                                    {f.visible ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                                 </button>
+                                 <button onClick={() => deleteFAQ(f.id)} className="p-2.5 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20">
+                                    <Trash2 className="w-5 h-5" />
+                                 </button>
+                              </div>
+                           </div>
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                              <div className="space-y-6">
+                                 <Input label="Question (EN)" value={f.q} onChange={(v) => updateFAQ(f.id, { q: v })} />
+                                 <div>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-3 block">Answer (EN)</label>
+                                    <textarea value={f.a} onChange={(e) => updateFAQ(f.id, { a: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm h-32 focus:outline-none" />
+                                 </div>
+                              </div>
+                              <div className="space-y-6">
+                                 <Input label="Question (BN)" value={f.qBn} onChange={(v) => updateFAQ(f.id, { qBn: v })} />
+                                 <div>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-3 block">Answer (BN)</label>
+                                    <textarea value={f.aBn} onChange={(e) => updateFAQ(f.id, { aBn: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm h-32 focus:outline-none" />
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </SortableItem>
+                  ))}
+               </div>
+            </SortableContext>
+         </DndContext>
+      </div>
+   );
+};
+
+const CountdownTab = ({ countdown, updateCountdown }: any) => {
+   return (
+      <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-10">
+         <div className="flex items-center justify-between">
+            <h3 className="text-xl font-black">Promo Countdown</h3>
+            <button onClick={() => updateCountdown({ ...countdown, enabled: !countdown.enabled })} className={`px-8 py-3 rounded-2xl font-black text-xs transition-all ${countdown.enabled ? 'bg-success/10 text-success border border-success/20' : 'bg-white/5 text-text-muted border border-white/10'}`}>
+               {countdown.enabled ? 'ACTIVE' : 'DISABLED'}
+            </button>
+         </div>
+
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="md:col-span-2">
+               <Input label="Target Date (Format: YYYY-MM-DDTHH:mm:ss)" value={countdown.targetDate} onChange={(v) => updateCountdown({ ...countdown, targetDate: v })} />
+               <p className="text-[10px] text-text-muted mt-2 uppercase font-bold tracking-widest">Current System Time: {new Date().toISOString()}</p>
+            </div>
+            <Input label="Title (EN)" value={countdown.title} onChange={(v) => updateCountdown({ ...countdown, title: v })} />
+            <Input label="Title (BN)" value={countdown.titleBn} onChange={(v) => updateCountdown({ ...countdown, titleBn: v })} />
+            <Input label="Subtitle (EN)" value={countdown.subtitle} onChange={(v) => updateCountdown({ ...countdown, subtitle: v })} />
+            <Input label="Subtitle (BN)" value={countdown.subtitleBn} onChange={(v) => updateCountdown({ ...countdown, subtitleBn: v })} />
+         </div>
+      </div>
+   );
+};
+
+const PricingTab = ({ pricingFeatures, setPricingFeatures }: any) => {
+   const addFeature = () => {
+      setPricingFeatures([...pricingFeatures, { id: Date.now().toString(), text: 'New Feature', textBn: 'নতুন ফিচার' }]);
+   };
+
+   const removeFeature = (id: string) => {
+      setPricingFeatures(pricingFeatures.filter((f: any) => f.id !== id));
+   };
+
+   const updateFeature = (id: string, updates: any) => {
+      setPricingFeatures(pricingFeatures.map((f: any) => f.id === id ? { ...f, ...updates } : f));
+   };
+
+   return (
+      <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-10">
+         <div className="flex justify-between items-center">
+            <h3 className="text-xl font-black">Pricing Comparison Features</h3>
+            <button onClick={addFeature} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-sm flex items-center gap-2 shadow-lg shadow-primary/20">
+               <Plus className="w-5 h-5" /> Add Comparison Point
+            </button>
+         </div>
+         <div className="space-y-4">
+            {pricingFeatures.map((f: any) => (
+               <div key={f.id} className="p-6 rounded-3xl bg-white/5 border border-white/10 grid grid-cols-1 md:grid-cols-2 gap-6 relative group">
+                  <button onClick={() => removeFeature(f.id)} className="absolute top-4 right-4 text-red-400 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-4 h-4" /></button>
+                  <Input label="Feature Name (EN)" value={f.text} onChange={(v: string) => updateFeature(f.id, { text: v })} />
+                  <Input label="Feature Name (BN)" value={f.textBn} onChange={(v: string) => updateFeature(f.id, { textBn: v })} />
+               </div>
             ))}
-            {orders.length === 0 && <tr><td colSpan={6} className="p-12 text-center text-text-muted">No orders found.</td></tr>}
-          </tbody>
-        </table>
+         </div>
       </div>
+   );
+};
 
-      {/* Order Detail Modal */}
-      <AnimatePresence>
-        {selectedOrder && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="w-full max-w-2xl bg-[#0F172A] rounded-[32px] border border-white/10 overflow-hidden relative"
-            >
-              <button 
-                onClick={() => setSelectedOrder(null)}
-                className="absolute top-6 right-6 p-2 bg-white/5 hover:bg-white/10 rounded-full text-text-muted transition-all"
-              >
-                <X className="w-6 h-6" />
-              </button>
+const PaymentTab = ({ paymentSettings, updatePaymentSettings }: any) => {
+   return (
+      <div className="space-y-8">
+         <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-8">
+            <h3 className="text-xl font-black">Payment Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               <Input label="Payment Method Name" value={paymentSettings.methodName} onChange={(v) => updatePaymentSettings({ ...paymentSettings, methodName: v })} />
+               <Input label="Account Number" value={paymentSettings.number} onChange={(v) => updatePaymentSettings({ ...paymentSettings, number: v })} />
+               <Input label="Account Type (EN)" value={paymentSettings.accountType} onChange={(v) => updatePaymentSettings({ ...paymentSettings, accountType: v })} />
+               <Input label="Account Type (BN)" value={paymentSettings.accountTypeBn} onChange={(v) => updatePaymentSettings({ ...paymentSettings, accountTypeBn: v })} />
+               <Input label="QR Code URL" value={paymentSettings.qrCode} onChange={(v) => updatePaymentSettings({ ...paymentSettings, qrCode: v })} />
+               <Input label="Telegram Contact Link" value={paymentSettings.telegramLink} onChange={(v) => updatePaymentSettings({ ...paymentSettings, telegramLink: v })} />
+               <Input label="Currency Symbol" value={paymentSettings.currency} onChange={(v) => updatePaymentSettings({ ...paymentSettings, currency: v })} />
+            </div>
+         </div>
 
-              <div className="p-8 md:p-12">
-                <h3 className="text-2xl font-black mb-8">Order Details</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-                  <div className="space-y-6">
-                    <div>
-                      <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Customer</p>
-                      <p className="font-bold text-lg">{selectedOrder.customerName}</p>
-                      <p className="text-primary-light font-medium">@{selectedOrder.telegramUsername}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Product & Plan</p>
-                      <p className="font-bold">{selectedOrder.productName}</p>
-                      <p className="text-sm text-text-secondary">{selectedOrder.plan}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Transaction ID</p>
-                      <p className="font-mono text-xl font-bold text-primary">{selectedOrder.transactionId}</p>
-                    </div>
+         <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-8">
+            <h3 className="text-xl font-black">Payment Instructions</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               <Input label="Instruction Title (EN)" value={paymentSettings.instructionTitle} onChange={(v) => updatePaymentSettings({ ...paymentSettings, instructionTitle: v })} />
+               <Input label="Instruction Title (BN)" value={paymentSettings.instructionTitleBn} onChange={(v) => updatePaymentSettings({ ...paymentSettings, instructionTitleBn: v })} />
+               <div>
+                  <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-3 block">Step-by-Step (EN) - One per line</label>
+                  <textarea value={paymentSettings.instructions.join('\n')} onChange={(e) => updatePaymentSettings({ ...paymentSettings, instructions: e.target.value.split('\n').filter(l => l.trim() !== '') })} className="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-5 text-sm h-40 focus:outline-none" />
+               </div>
+               <div>
+                  <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-3 block">Step-by-Step (BN) - One per line</label>
+                  <textarea value={paymentSettings.instructionsBn.join('\n')} onChange={(e) => updatePaymentSettings({ ...paymentSettings, instructionsBn: e.target.value.split('\n').filter(l => l.trim() !== '') })} className="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-5 text-sm h-40 focus:outline-none" />
+               </div>
+            </div>
+         </div>
+
+         <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-8">
+            <h3 className="text-xl font-black text-red-400">Payment Warning</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               <Input label="Warning (EN)" value={paymentSettings.warningText} onChange={(v) => updatePaymentSettings({ ...paymentSettings, warningText: v })} />
+               <Input label="Warning (BN)" value={paymentSettings.warningTextBn} onChange={(v) => updatePaymentSettings({ ...paymentSettings, warningTextBn: v })} />
+            </div>
+         </div>
+      </div>
+   );
+};
+
+const FooterTab = ({ footer, updateFooter }: any) => {
+   return (
+      <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-10">
+         <h3 className="text-xl font-black">Footer Management</h3>
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Input label="Copyright Text (EN)" value={footer.copyright} onChange={(v) => updateFooter({ ...footer, copyright: v })} />
+            <Input label="Copyright Text (BN)" value={footer.copyrightBn} onChange={(v) => updateFooter({ ...footer, copyrightBn: v })} />
+         </div>
+
+         <div className="space-y-6">
+            <div className="flex justify-between items-center">
+               <h4 className="text-xs font-black text-primary uppercase tracking-widest">Footer Links</h4>
+               <button onClick={() => updateFooter({ ...footer, links: [...footer.links, { label: 'New Link', labelBn: 'নতুন লিঙ্ক', url: '#' }] })} className="text-primary font-bold text-xs flex items-center gap-2">
+                  <Plus className="w-4 h-4" /> Add Link
+               </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               {footer.links.map((link: any, idx: number) => (
+                  <div key={idx} className="p-6 rounded-3xl bg-white/5 border border-white/10 space-y-4 relative group">
+                     <button onClick={() => updateFooter({ ...footer, links: footer.links.filter((_: any, i: number) => i !== idx) })} className="absolute top-4 right-4 text-red-400 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-4 h-4" /></button>
+                     <Input label="Label (EN)" value={link.label} onChange={(v) => {
+                        const newLinks = [...footer.links];
+                        newLinks[idx].label = v;
+                        updateFooter({ ...footer, links: newLinks });
+                     }} />
+                     <Input label="Label (BN)" value={link.labelBn} onChange={(v) => {
+                        const newLinks = [...footer.links];
+                        newLinks[idx].labelBn = v;
+                        updateFooter({ ...footer, links: newLinks });
+                     }} />
+                     <Input label="URL" value={link.url} onChange={(v) => {
+                        const newLinks = [...footer.links];
+                        newLinks[idx].url = v;
+                        updateFooter({ ...footer, links: newLinks });
+                     }} />
                   </div>
+               ))}
+            </div>
+         </div>
+      </div>
+   );
+};
 
-                  <div className="bg-white/5 rounded-2xl p-6 border border-white/5 flex flex-col items-center justify-center min-h-[200px]">
-                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-4">Payment Proof</p>
-                    {selectedOrder.screenshotUrl ? (
-                      <img 
-                        src={selectedOrder.screenshotUrl} 
-                        alt="Screenshot" 
-                        className="max-h-[300px] rounded-xl object-contain shadow-2xl"
-                        onError={(e: any) => { e.target.src = 'https://via.placeholder.com/400x600?text=Invalid+Image+URL'; }}
-                      />
-                    ) : (
-                      <div className="text-center">
-                        <X className="w-12 h-12 text-white/10 mx-auto mb-2" />
-                        <p className="text-sm text-text-muted">No screenshot provided</p>
-                      </div>
-                    )}
+const SettingsTab = ({ settings, updateSettings, pixelSettings, updatePixelSettings, trustBadges, setTrustBadges }: any) => {
+   return (
+      <div className="space-y-10">
+         <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-8">
+            <h3 className="text-xl font-black">General Platform Settings</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               <Input label="Site Name (EN)" value={settings.siteName} onChange={(v) => updateSettings({ ...settings, siteName: v })} />
+               <Input label="Site Name (BN)" value={settings.siteNameBn} onChange={(v) => updateSettings({ ...settings, siteNameBn: v })} />
+               <Input label="Logo Text / Initial" value={settings.logo} onChange={(v) => updateSettings({ ...settings, logo: v })} />
+               <Input label="Global Telegram Handle" value={settings.telegramHandle} onChange={(v) => updateSettings({ ...settings, telegramHandle: v })} />
+               <Input label="Global Telegram Link" value={settings.telegramLink} onChange={(v) => updateSettings({ ...settings, telegramLink: v })} />
+               <Input label="Floating CTA (EN)" value={settings.floatingCTA} onChange={(v) => updateSettings({ ...settings, floatingCTA: v })} />
+               <Input label="Floating CTA (BN)" value={settings.floatingCTABn} onChange={(v) => updateSettings({ ...settings, floatingCTABn: v })} />
+            </div>
+         </div>
+
+         <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-8">
+            <div className="flex items-center justify-between">
+               <h3 className="text-xl font-black">Tracking & Pixels</h3>
+               <button onClick={() => updatePixelSettings({ ...pixelSettings, enabled: !pixelSettings.enabled })} className={`px-6 py-3 rounded-2xl font-black text-xs transition-all ${pixelSettings.enabled ? 'bg-success/10 text-success border border-success/20' : 'bg-white/5 text-text-muted border border-white/10'}`}>
+                  {pixelSettings.enabled ? 'PIXEL ON' : 'PIXEL OFF'}
+               </button>
+            </div>
+            <div className="max-w-md">
+               <Input label="Facebook Pixel ID" value={pixelSettings.pixelId} onChange={(v) => updatePixelSettings({ ...pixelSettings, pixelId: v })} />
+            </div>
+         </div>
+
+         <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-8">
+            <div className="flex justify-between items-center">
+               <h3 className="text-xl font-black">Trust Badges</h3>
+               <button onClick={() => setTrustBadges([...trustBadges, { id: Date.now().toString(), text: 'Secure', textBn: 'নিরাপদ', icon: 'Shield', visible: true, order: trustBadges.length + 1 }])} className="text-primary font-bold text-sm flex items-center gap-2">
+                  <Plus className="w-4 h-4" /> Add Badge
+               </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+               {trustBadges.map((badge: any, idx: number) => (
+                  <div key={badge.id} className="p-6 rounded-3xl bg-white/5 border border-white/10 space-y-4 relative group">
+                     <button onClick={() => setTrustBadges(trustBadges.filter((_: any, i: number) => i !== idx))} className="absolute top-4 right-4 text-red-400 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-4 h-4" /></button>
+                     <Input label="Text (EN)" value={badge.text} onChange={(v) => {
+                        const newBadges = [...trustBadges];
+                        newBadges[idx].text = v;
+                        setTrustBadges(newBadges);
+                     }} />
+                     <Input label="Text (BN)" value={badge.textBn} onChange={(v) => {
+                        const newBadges = [...trustBadges];
+                        newBadges[idx].textBn = v;
+                        setTrustBadges(newBadges);
+                     }} />
+                     <Input label="Icon Name (Lucide)" value={badge.icon} onChange={(v) => {
+                        const newBadges = [...trustBadges];
+                        newBadges[idx].icon = v;
+                        setTrustBadges(newBadges);
+                     }} />
                   </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <button 
-                    onClick={() => { updateOrderStatus(selectedOrder.id, 'Completed'); setSelectedOrder(null); }}
-                    className="flex-1 bg-success text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:opacity-90 transition-all"
-                  >
-                    <Check className="w-5 h-5" /> Approve
-                  </button>
-                  <button 
-                    onClick={() => { updateOrderStatus(selectedOrder.id, 'Rejected'); setSelectedOrder(null); }}
-                    className="flex-1 bg-red-500 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:opacity-90 transition-all"
-                  >
-                    <X className="w-5 h-5" /> Reject
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+               ))}
+            </div>
+         </div>
+      </div>
+   );
 };
 
-const ReviewsTab = ({ reviews, addReview, updateReview, deleteReview }: any) => {
-  return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold">User Testimonials</h2>
-        <button onClick={() => addReview({ id: Date.now().toString(), name: 'New Review', role: 'User', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + Date.now(), rating: 5, review: 'Fantastic service!', featured: true })} className="bg-primary text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-primary-light transition-all">
-          <Plus className="w-5 h-5" /> Add New Review
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {reviews.map((r: any) => (
-          <div key={r.id} className="glass-card p-6 rounded-2xl relative border-white/5">
-            <button onClick={() => deleteReview(r.id)} className="absolute top-4 right-4 text-text-muted hover:text-red-400 p-2"><Trash2 className="w-5 h-5" /></button>
-            <div className="flex items-center gap-4 mb-6">
-              <img src={r.image} className="w-12 h-12 rounded-full bg-white/5 border border-white/10" />
-              <div className="flex-1">
-                <Input label="Name" value={r.name} onChange={(v) => updateReview(r.id, { ...r, name: v })} />
-              </div>
-            </div>
-            <div className="space-y-4">
-              <Input label="Role" value={r.role} onChange={(v) => updateReview(r.id, { ...r, role: v })} />
-              <Input label="Image URL" value={r.image} onChange={(v) => updateReview(r.id, { ...r, image: v })} />
-              <div className="grid grid-cols-2 gap-4">
-                <Input label="Rating (1-5)" type="number" value={r.rating} onChange={(v) => updateReview(r.id, { ...r, rating: parseInt(v) })} />
-                <div className="flex flex-col">
-                  <label className="text-[10px] font-bold text-text-muted uppercase mb-1.5 tracking-widest">Featured</label>
-                  <button onClick={() => updateReview(r.id, { ...r, featured: !r.featured })} className={`h-12 rounded-xl font-bold text-sm transition-all ${r.featured ? 'bg-success/10 text-success border border-success/20' : 'bg-white/5 text-text-muted border border-white/10'}`}>
-                    {r.featured ? 'Featured' : 'Not Featured'}
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-text-muted uppercase mb-1.5 tracking-widest">Review Content</label>
-                <textarea
-                  value={r.review}
-                  onChange={(e) => updateReview(r.id, { ...r, review: e.target.value })}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-text-primary h-24 focus:ring-1 focus:ring-primary focus:outline-none"
-                />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const FAQTab = ({ faqs, addFAQ, updateFAQ, deleteFAQ }: any) => {
-  return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold">Frequently Asked Questions</h2>
-        <button onClick={() => addFAQ({ id: Date.now().toString(), q: 'New Question?', qBn: 'নতুন প্রশ্ন?', a: 'Answer here.', aBn: 'উত্তর এখানে।' })} className="bg-primary text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-primary-light transition-all">
-          <Plus className="w-5 h-5" /> Add New FAQ
-        </button>
-      </div>
-
-      <div className="space-y-4">
-        {faqs.map((f: any) => (
-          <div key={f.id} className="glass-card p-6 rounded-2xl border-white/5">
-            <div className="flex justify-between items-start mb-6">
-              <h4 className="font-bold text-primary">FAQ Item</h4>
-              <button onClick={() => deleteFAQ(f.id)} className="text-red-400 p-2 hover:bg-red-500/10 rounded-lg transition-all"><Trash2 className="w-5 h-5" /></button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <Input label="Question (EN)" value={f.q} onChange={(v) => updateFAQ(f.id, { ...f, q: v })} />
-                <div className="flex flex-col">
-                  <label className="text-[10px] font-bold text-text-muted uppercase mb-1.5 tracking-widest">Answer (EN)</label>
-                  <textarea value={f.a} onChange={(e) => updateFAQ(f.id, { ...f, a: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm h-24" />
-                </div>
-              </div>
-              <div className="space-y-4">
-                <Input label="Question (BN)" value={f.qBn} onChange={(v) => updateFAQ(f.id, { ...f, qBn: v })} />
-                <div className="flex flex-col">
-                  <label className="text-[10px] font-bold text-text-muted uppercase mb-1.5 tracking-widest">Answer (BN)</label>
-                  <textarea value={f.aBn} onChange={(e) => updateFAQ(f.id, { ...f, aBn: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm h-24" />
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const SettingsTab = ({ settings, updateSettings, paymentSettings, updatePaymentSettings, pixelSettings, updatePixelSettings, countdown, updateCountdown }: any) => {
-  return (
-    <div className="space-y-8 pb-20">
-      {/* Site Info */}
-      <div className="glass-card p-8 rounded-2xl border-white/5">
-        <h3 className="text-xl font-bold mb-6 flex items-center gap-2"><Globe className="w-5 h-5 text-primary" /> Site Settings</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Input label="Site Name (EN)" value={settings.siteName} onChange={(v) => updateSettings({ ...settings, siteName: v })} />
-          <Input label="Site Name (BN)" value={settings.siteNameBn} onChange={(v) => updateSettings({ ...settings, siteNameBn: v })} />
-          <Input label="Telegram Link" value={settings.telegramLink} onChange={(v) => updateSettings({ ...settings, telegramLink: v })} />
-          <Input label="Telegram Handle" value={settings.telegramHandle} onChange={(v) => updateSettings({ ...settings, telegramHandle: v })} />
-        </div>
-      </div>
-
-      {/* Payment Settings */}
-      <div className="glass-card p-8 rounded-2xl border-white/5">
-        <h3 className="text-xl font-bold mb-6 flex items-center gap-2"><DollarSign className="w-5 h-5 text-success" /> Payment Settings</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Input label="Method Name" value={paymentSettings.methodName} onChange={(v) => updatePaymentSettings({ ...paymentSettings, methodName: v })} />
-          <Input label="Account Number" value={paymentSettings.number} onChange={(v) => updatePaymentSettings({ ...paymentSettings, number: v })} />
-          <Input label="Account Type (Personal/Merchant)" value={paymentSettings.accountType} onChange={(v) => updatePaymentSettings({ ...paymentSettings, accountType: v })} />
-          <Input label="QR Code URL" value={paymentSettings.qrCode} onChange={(v) => updatePaymentSettings({ ...paymentSettings, qrCode: v })} />
-          <div className="md:col-span-2">
-            <Input label="Warning Text" value={paymentSettings.warningText} onChange={(v) => updatePaymentSettings({ ...paymentSettings, warningText: v })} />
-          </div>
-          <div className="md:col-span-2">
-            <Input label="Instructions Title" value={paymentSettings.instructionTitle} onChange={(v) => updatePaymentSettings({ ...paymentSettings, instructionTitle: v })} />
-          </div>
-          <div className="md:col-span-2 space-y-4">
-             <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px]">Payment Instructions (One per line)</label>
-             <textarea 
-               value={paymentSettings.instructions.join('\n')}
-               onChange={(e) => updatePaymentSettings({ ...paymentSettings, instructions: e.target.value.split('\n').filter(l => l.trim() !== '') })}
-               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm h-32 focus:ring-1 focus:ring-primary focus:outline-none font-medium"
-             />
-          </div>
-        </div>
-      </div>
-
-      {/* Facebook Pixel */}
-      <div className="glass-card p-8 rounded-2xl border-white/5">
-        <h3 className="text-xl font-bold mb-6 flex items-center gap-2"><Languages className="w-5 h-5 text-blue-400" /> Facebook Pixel</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-          <Input label="Pixel ID" value={pixelSettings.pixelId} onChange={(v) => updatePixelSettings({ ...pixelSettings, pixelId: v })} />
-          <button
-            onClick={() => updatePixelSettings({ ...pixelSettings, enabled: !pixelSettings.enabled })}
-            className={`h-12 rounded-xl font-bold transition-all ${pixelSettings.enabled ? 'bg-success/10 text-success border border-success/20' : 'bg-white/5 text-text-muted border border-white/10'}`}
-          >
-            {pixelSettings.enabled ? 'Pixel Enabled' : 'Pixel Disabled'}
-          </button>
-        </div>
-      </div>
-
-      {/* Countdown */}
-      <div className="glass-card p-8 rounded-2xl border-white/5">
-        <h3 className="text-xl font-bold mb-6 flex items-center gap-2"><Bell className="w-5 h-5 text-warning" /> Countdown Timer</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Input label="Target Date (ISO)" value={countdown.targetDate} onChange={(v) => updateCountdown({ ...countdown, targetDate: v })} />
-          <Input label="Title (EN)" value={countdown.title} onChange={(v) => updateCountdown({ ...countdown, title: v })} />
-          <Input label="Title (BN)" value={countdown.titleBn} onChange={(v) => updateCountdown({ ...countdown, titleBn: v })} />
-          <Input label="Subtitle (EN)" value={countdown.subtitle} onChange={(v) => updateCountdown({ ...countdown, subtitle: v })} />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Reusable Input Component
-const Input = ({ label, value, onChange, type = 'text' }: any) => (
-  <div className="flex flex-col">
-    <label className="text-[10px] font-black text-text-muted uppercase mb-1.5 tracking-[1.5px]">{label}</label>
-    <input
-      type={type}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary/50 transition-all font-medium"
-    />
-  </div>
+// Reusable Components
+const Input = ({ label, value, onChange, type = 'text', placeholder = '' }: any) => (
+   <div className="flex flex-col">
+      <label className="text-[10px] font-black text-text-muted uppercase mb-2 tracking-[1.5px] px-1">{label}</label>
+      <input
+         type={type}
+         value={value}
+         onChange={(e) => onChange(e.target.value)}
+         placeholder={placeholder}
+         className="h-14 bg-white/5 border border-white/10 rounded-[20px] px-6 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/30 transition-all font-bold placeholder:text-text-muted/30"
+      />
+   </div>
 );
 
+const MenuIcon = () => (
+   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
+);
