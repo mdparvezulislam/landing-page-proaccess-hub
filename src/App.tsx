@@ -29,8 +29,61 @@ const ScrollToTop = () => {
 };
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAdmin } = useStore();
-  if (!isAdmin) return <Navigate to="/" replace />;
+  const { isAdmin, setAdminStatus } = useStore();
+  const [inputKey, setInputKey] = React.useState('');
+  const [error, setError] = React.useState(false);
+
+  const handleVerify = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputKey === 'pro_access_23') {
+      setAdminStatus(true);
+    } else {
+      setError(true);
+      setTimeout(() => setError(false), 1000);
+    }
+  };
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6 relative overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/20 blur-[120px] rounded-full" />
+
+        <div className="w-full max-w-md relative z-10">
+          <div className="glass-card rounded-[32px] p-8 md:p-10 border-white/10 text-center shadow-2xl">
+            <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-8 shadow-inner">
+              <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white font-black text-xl">A</div>
+            </div>
+
+            <h1 className="text-3xl font-black text-text-primary mb-3">Admin Access</h1>
+            <p className="text-text-secondary text-sm mb-8 px-4">
+              Enter the secret access key to unlock the command center and manage your platform.
+            </p>
+
+            <form onSubmit={handleVerify} className="space-y-6">
+              <div className="relative group">
+                <input
+                  type="password"
+                  placeholder="Secret Access Key"
+                  value={inputKey}
+                  onChange={(e) => setInputKey(e.target.value)}
+                  className={`w-full bg-white/5 border ${error ? 'border-red-500' : 'border-white/10'} rounded-2xl px-6 py-4 text-center text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-mono tracking-widest placeholder:font-sans placeholder:tracking-normal`}
+                />
+                {error && <p className="absolute -bottom-6 left-0 w-full text-xs text-red-500 font-bold animate-shake">Incorrect Secret Key</p>}
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-primary hover:bg-primary-light text-white font-black py-4 rounded-2xl transition-all glow-btn shadow-xl active:scale-95"
+              >
+                Authorize System
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return <>{children}</>;
 };
 
