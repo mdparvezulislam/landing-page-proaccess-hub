@@ -159,11 +159,11 @@ export const AdminDashboard = () => {
             </button>
          </div>
 
-         <div className="flex pt-16 lg:pt-0">
+         <div className="flex pt-16 lg:pt-6">
             {/* Sidebar */}
             <aside className={`fixed inset-y-0 left-0 w-72 bg-[#0F172A] border-r border-white/5 z-50 transition-transform duration-300 lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                <div className="flex flex-col h-full">
-                  <div className="p-8 hidden lg:flex items-center gap-4">
+                  <div className="p-10 hidden lg:flex items-center gap-4">
                      <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-black text-xl shadow-lg shadow-primary/20">A</div>
                      <div>
                         <h1 className="font-black text-lg leading-none">Command</h1>
@@ -171,7 +171,7 @@ export const AdminDashboard = () => {
                      </div>
                   </div>
 
-                  <nav className="flex-1 px-4 space-y-1 overflow-y-auto py-4 scrollbar-hide">
+                  <nav className="flex-1 px-6 space-y-2 overflow-y-auto py-6 scrollbar-hide">
                      {tabs.map(tab => (
                         <button
                            key={tab.id}
@@ -200,7 +200,7 @@ export const AdminDashboard = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 lg:ml-72 min-h-screen p-6 lg:p-12">
+            <main className="flex-1 lg:ml-72 min-h-screen p-8 lg:pt-20 lg:pl-20 lg:pr-12 lg:pb-24">
                <header className="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div>
                      <div className="flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-[3px] mb-2">
