@@ -122,7 +122,9 @@ export const AdminDashboard = () => {
       globalFeatures,
       setGlobalFeatures,
       pricingFeatures,
-      setPricingFeatures
+      setPricingFeatures,
+      paymentMethods,
+      setPaymentMethods
    } = useStore();
 
    const handleLogout = () => {
@@ -237,7 +239,7 @@ export const AdminDashboard = () => {
                      {activeTab === 'reviews' && <ReviewsTab reviews={reviews} setReviews={setReviews} />}
                      {activeTab === 'faq' && <FAQTab faqs={faqs} setFAQs={setFAQs} />}
                      {activeTab === 'countdown' && <CountdownTab countdown={countdown} updateCountdown={updateCountdown} />}
-                     {activeTab === 'payment' && <PaymentTab paymentSettings={paymentSettings} updatePaymentSettings={updatePaymentSettings} />}
+                     {activeTab === 'payment' && <PaymentTab paymentSettings={paymentSettings} updatePaymentSettings={updatePaymentSettings} paymentMethods={paymentMethods} setPaymentMethods={setPaymentMethods} />}
                      {activeTab === 'pricing' && <PricingTab pricingFeatures={pricingFeatures} setPricingFeatures={setPricingFeatures} />}
                      {activeTab === 'footer' && <FooterTab footer={footer} updateFooter={updateFooter} />}
                      {activeTab === 'settings' && (
@@ -744,7 +746,7 @@ const ProductsTab = ({ products, setProducts }: any) => {
                                        <div className="space-y-6">
                                           <div className="flex justify-between items-center">
                                              <h5 className="font-black text-warning uppercase tracking-widest text-xs">Featured Services</h5>
-                                             <button onClick={() => updateProduct(p.id, { features: [...p.features, { id: Date.now().toString(), text: 'New Feature', textBn: 'নতুন ফিচার', visible: true, highlighted: false, order: p.features.length + 1 }] })} className="text-warning font-bold text-xs flex items-center gap-2 px-4 py-2 hover:bg-warning/5 rounded-xl transition-all">
+                                             <button onClick={() => updateProduct(p.id, { features: [...p.features, { id: Date.now().toString(), text: 'New Feature', textBn: 'নতুন ফিচার', available: true, visible: true, highlighted: false, order: p.features.length + 1 }] })} className="text-warning font-bold text-xs flex items-center gap-2 px-4 py-2 hover:bg-warning/5 rounded-xl transition-all">
                                                 <Plus className="w-4 h-4" /> Add Feature
                                              </button>
                                           </div>
@@ -763,16 +765,25 @@ const ProductsTab = ({ products, setProducts }: any) => {
                                                          updateProduct(p.id, { features: newFs });
                                                       }} />
                                                    </div>
-                                                   <div className="flex gap-4">
+                                                   <div className="grid grid-cols-2 gap-4">
+                                                      <button onClick={() => {
+                                                         const newFs = [...p.features];
+                                                         newFs[idx].available = !newFs[idx].available;
+                                                         updateProduct(p.id, { features: newFs });
+                                                      }} className={`py-3 rounded-xl font-bold text-[10px] transition-all border ${f.available ? 'bg-success/10 text-success border-success/20' : 'bg-white/5 text-text-muted border-white/10'}`}>
+                                                         {f.available ? 'AVAILABLE' : 'UNAVAILABLE'}
+                                                      </button>
                                                       <button onClick={() => {
                                                          const newFs = [...p.features];
                                                          newFs[idx].highlighted = !newFs[idx].highlighted;
                                                          updateProduct(p.id, { features: newFs });
-                                                      }} className={`flex-1 py-3 rounded-xl font-bold text-xs transition-all ${f.highlighted ? 'bg-primary text-white' : 'bg-white/5 text-text-muted'}`}>
+                                                      }} className={`py-3 rounded-xl font-bold text-[10px] transition-all border ${f.highlighted ? 'bg-primary/10 text-primary border-primary/20' : 'bg-white/5 text-text-muted border-white/10'}`}>
                                                          {f.highlighted ? 'HIGHLIGHTED' : 'STANDARD'}
                                                       </button>
-                                                      <button onClick={() => updateProduct(p.id, { features: p.features.filter((_, i) => i !== idx) })} className="p-3 bg-red-500/10 text-red-400 rounded-xl"><Trash2 className="w-4 h-4" /></button>
                                                    </div>
+                                                   <button onClick={() => updateProduct(p.id, { features: p.features.filter((_, i) => i !== idx) })} className="w-full py-3 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 transition-all font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
+                                                      <Trash2 className="w-4 h-4" /> Remove Feature
+                                                   </button>
                                                 </div>
                                              ))}
                                           </div>
@@ -1002,8 +1013,27 @@ const CountdownTab = ({ countdown, updateCountdown }: any) => {
 };
 
 const PricingTab = ({ pricingFeatures, setPricingFeatures }: any) => {
+   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
+
+   const handleDragEnd = (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (over && active.id !== over.id) {
+         const oldIndex = pricingFeatures.findIndex((i: any) => i.id === active.id);
+         const newIndex = pricingFeatures.findIndex((i: any) => i.id === over.id);
+         setPricingFeatures(arrayMove(pricingFeatures, oldIndex, newIndex).map((f: any, i: number) => ({ ...f, order: i + 1 })));
+      }
+   };
+
    const addFeature = () => {
-      setPricingFeatures([...pricingFeatures, { id: Date.now().toString(), text: 'New Feature', textBn: 'নতুন ফিচার' }]);
+      setPricingFeatures([...pricingFeatures, { 
+         id: Date.now().toString(), 
+         text: 'New Feature', 
+         textBn: 'নতুন ফিচার', 
+         available: true, 
+         visible: true, 
+         order: pricingFeatures.length + 1,
+         highlighted: false
+      }]);
    };
 
    const removeFeature = (id: string) => {
@@ -1015,63 +1045,174 @@ const PricingTab = ({ pricingFeatures, setPricingFeatures }: any) => {
    };
 
    return (
-      <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-10">
+      <div className="space-y-10">
          <div className="flex justify-between items-center">
-            <h3 className="text-xl font-black">Pricing Comparison Features</h3>
-            <button onClick={addFeature} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-sm flex items-center gap-2 shadow-lg shadow-primary/20">
-               <Plus className="w-5 h-5" /> Add Comparison Point
+            <h3 className="text-xl font-black">Feature Comparison Manager</h3>
+            <button onClick={addFeature} className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-sm flex items-center gap-2 shadow-xl shadow-primary/20 hover:scale-105 transition-all active:scale-95">
+               <Plus className="w-5 h-5" /> Add Comparison Feature
             </button>
          </div>
-         <div className="space-y-4">
-            {pricingFeatures.map((f: any) => (
-               <div key={f.id} className="p-6 rounded-3xl bg-white/5 border border-white/10 grid grid-cols-1 md:grid-cols-2 gap-6 relative group">
-                  <button onClick={() => removeFeature(f.id)} className="absolute top-4 right-4 text-red-400 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-4 h-4" /></button>
-                  <Input label="Feature Name (EN)" value={f.text} onChange={(v: string) => updateFeature(f.id, { text: v })} />
-                  <Input label="Feature Name (BN)" value={f.textBn} onChange={(v: string) => updateFeature(f.id, { textBn: v })} />
+
+         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={pricingFeatures.map((f: any) => f.id)} strategy={verticalListSortingStrategy}>
+               <div className="space-y-4">
+                  {pricingFeatures.map((f: any) => (
+                     <SortableItem key={f.id} id={f.id}>
+                        <div className="glass-card p-8 rounded-[32px] border-white/5 grid grid-cols-1 md:grid-cols-12 gap-8 items-center relative group">
+                           <div className="md:col-span-4 grid grid-cols-1 gap-4">
+                              <Input label="Feature (EN)" value={f.text} onChange={(v: string) => updateFeature(f.id, { text: v })} />
+                              <Input label="Feature (BN)" value={f.textBn} onChange={(v: string) => updateFeature(f.id, { textBn: v })} />
+                           </div>
+
+                           <div className="md:col-span-5 grid grid-cols-2 gap-4">
+                              <div className="flex flex-col">
+                                 <label className="text-[10px] font-black text-text-muted uppercase mb-2 tracking-widest px-1">Availability</label>
+                                 <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
+                                    <button 
+                                       onClick={() => updateFeature(f.id, { available: true })}
+                                       className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[10px] font-black transition-all ${f.available ? 'bg-success text-white shadow-lg' : 'text-text-muted hover:text-text-primary'}`}
+                                    >
+                                       <Check className="w-3 h-3" /> AVAILABLE
+                                    </button>
+                                    <button 
+                                       onClick={() => updateFeature(f.id, { available: false })}
+                                       className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[10px] font-black transition-all ${!f.available ? 'bg-red-500 text-white shadow-lg' : 'text-text-muted hover:text-text-primary'}`}
+                                    >
+                                       <X className="w-3 h-3" /> UNAVAILABLE
+                                    </button>
+                                 </div>
+                              </div>
+                              <div className="flex flex-col">
+                                 <label className="text-[10px] font-black text-text-muted uppercase mb-2 tracking-widest px-1">Style</label>
+                                 <button 
+                                    onClick={() => updateFeature(f.id, { highlighted: !f.highlighted })}
+                                    className={`h-[46px] rounded-xl font-black text-[10px] tracking-widest transition-all border ${f.highlighted ? 'bg-primary/10 text-primary border-primary/20' : 'bg-white/5 text-text-muted border-white/10'}`}
+                                 >
+                                    {f.highlighted ? 'HIGHLIGHTED' : 'STANDARD'}
+                                 </button>
+                              </div>
+                           </div>
+
+                           <div className="md:col-span-3 flex items-center justify-end gap-3">
+                              <button onClick={() => updateFeature(f.id, { visible: !f.visible })} className={`p-3.5 rounded-xl transition-all ${f.visible ? 'bg-primary/10 text-primary' : 'bg-white/5 text-text-muted'}`}>
+                                 {f.visible ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                              </button>
+                              <button onClick={() => removeFeature(f.id)} className="p-3.5 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 transition-all">
+                                 <Trash2 className="w-5 h-5" />
+                              </button>
+                           </div>
+                        </div>
+                     </SortableItem>
+                  ))}
                </div>
-            ))}
-         </div>
+            </SortableContext>
+         </DndContext>
       </div>
    );
 };
 
-const PaymentTab = ({ paymentSettings, updatePaymentSettings }: any) => {
+const PaymentTab = ({ paymentSettings, updatePaymentSettings, paymentMethods, setPaymentMethods }: any) => {
+   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
+
+   const handleDragEnd = (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (over && active.id !== over.id) {
+         const oldIndex = paymentMethods.findIndex((i: any) => i.id === active.id);
+         const newIndex = paymentMethods.findIndex((i: any) => i.id === over.id);
+         setPaymentMethods(arrayMove(paymentMethods, oldIndex, newIndex).map((m: any, i: number) => ({ ...m, order: i + 1 })));
+      }
+   };
+
+   const addMethod = () => {
+      setPaymentMethods([...paymentMethods, {
+         id: Date.now().toString(),
+         name: 'New Method',
+         type: 'Personal',
+         number: '',
+         accountName: '',
+         qrCode: '',
+         instructions: '',
+         enabled: true,
+         icon: 'wallet',
+         order: paymentMethods.length + 1
+      }]);
+   };
+
+   const updateMethod = (id: string, updates: any) => {
+      setPaymentMethods(paymentMethods.map((m: any) => m.id === id ? { ...m, ...updates } : m));
+   };
+
+   const deleteMethod = (id: string) => {
+      setPaymentMethods(paymentMethods.filter((m: any) => m.id !== id));
+   };
+
    return (
-      <div className="space-y-8">
+      <div className="space-y-12">
+         <div className="flex justify-between items-center">
+            <h3 className="text-xl font-black">Payment Method Manager</h3>
+            <button onClick={addMethod} className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-sm flex items-center gap-2 shadow-xl shadow-primary/20 hover:scale-105 transition-all">
+               <Plus className="w-5 h-5" /> Add Payment Method
+            </button>
+         </div>
+
+         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={paymentMethods.map((m: any) => m.id)} strategy={verticalListSortingStrategy}>
+               <div className="space-y-6">
+                  {paymentMethods.map((m: any) => (
+                     <SortableItem key={m.id} id={m.id}>
+                        <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-10 relative group">
+                           <div className="flex justify-between items-center pb-6 border-b border-white/5">
+                              <div className="flex items-center gap-4">
+                                 <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black uppercase tracking-widest text-lg ml-8">
+                                    {m.name[0]}
+                                 </div>
+                                 <div>
+                                    <h4 className="font-black text-xl">{m.name}</h4>
+                                    <span className="text-[10px] font-black text-text-muted uppercase tracking-[2px]">{m.type}</span>
+                                 </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                 <button onClick={() => updateMethod(m.id, { enabled: !m.enabled })} className={`px-6 py-2.5 rounded-xl font-black text-[10px] tracking-widest transition-all border ${m.enabled ? 'bg-success/10 text-success border-success/20' : 'bg-white/5 text-text-muted border-white/10'}`}>
+                                    {m.enabled ? 'ENABLED' : 'DISABLED'}
+                                 </button>
+                                 <button onClick={() => deleteMethod(m.id)} className="p-3 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 transition-all">
+                                    <Trash2 className="w-5 h-5" />
+                                 </button>
+                              </div>
+                           </div>
+
+                           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                              <Input label="Method Name" value={m.name} onChange={(v) => updateMethod(m.id, { name: v })} />
+                              <Input label="Account Type" value={m.type} onChange={(v) => updateMethod(m.id, { type: v })} />
+                              <Input label="Icon Name" value={m.icon} onChange={(v) => updateMethod(m.id, { icon: v })} />
+                              <Input label="Account Number" value={m.number} onChange={(v) => updateMethod(m.id, { number: v })} />
+                              <Input label="Account Name" value={m.accountName} onChange={(v) => updateMethod(m.id, { accountName: v })} />
+                              <Input label="QR Code URL" value={m.qrCode} onChange={(v) => updateMethod(m.id, { qrCode: v })} />
+                           </div>
+
+                           <div>
+                              <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-3 block">Payment Instructions</label>
+                              <textarea 
+                                 value={m.instructions} 
+                                 onChange={(e) => updateMethod(m.id, { instructions: e.target.value })} 
+                                 className="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-5 text-sm h-32 focus:outline-none" 
+                                 placeholder="Enter step-by-step instructions..."
+                              />
+                           </div>
+                        </div>
+                     </SortableItem>
+                  ))}
+               </div>
+            </SortableContext>
+         </DndContext>
+
          <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-8">
-            <h3 className="text-xl font-black">Payment Details</h3>
+            <h3 className="text-xl font-black text-red-400">Global Payment Settings</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-               <Input label="Payment Method Name" value={paymentSettings.methodName} onChange={(v) => updatePaymentSettings({ ...paymentSettings, methodName: v })} />
-               <Input label="Account Number" value={paymentSettings.number} onChange={(v) => updatePaymentSettings({ ...paymentSettings, number: v })} />
-               <Input label="Account Type (EN)" value={paymentSettings.accountType} onChange={(v) => updatePaymentSettings({ ...paymentSettings, accountType: v })} />
-               <Input label="Account Type (BN)" value={paymentSettings.accountTypeBn} onChange={(v) => updatePaymentSettings({ ...paymentSettings, accountTypeBn: v })} />
-               <Input label="QR Code URL" value={paymentSettings.qrCode} onChange={(v) => updatePaymentSettings({ ...paymentSettings, qrCode: v })} />
-               <Input label="Telegram Contact Link" value={paymentSettings.telegramLink} onChange={(v) => updatePaymentSettings({ ...paymentSettings, telegramLink: v })} />
                <Input label="Currency Symbol" value={paymentSettings.currency} onChange={(v) => updatePaymentSettings({ ...paymentSettings, currency: v })} />
-            </div>
-         </div>
-
-         <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-8">
-            <h3 className="text-xl font-black">Payment Instructions</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-               <Input label="Instruction Title (EN)" value={paymentSettings.instructionTitle} onChange={(v) => updatePaymentSettings({ ...paymentSettings, instructionTitle: v })} />
-               <Input label="Instruction Title (BN)" value={paymentSettings.instructionTitleBn} onChange={(v) => updatePaymentSettings({ ...paymentSettings, instructionTitleBn: v })} />
-               <div>
-                  <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-3 block">Step-by-Step (EN) - One per line</label>
-                  <textarea value={paymentSettings.instructions.join('\n')} onChange={(e) => updatePaymentSettings({ ...paymentSettings, instructions: e.target.value.split('\n').filter(l => l.trim() !== '') })} className="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-5 text-sm h-40 focus:outline-none" />
-               </div>
-               <div>
-                  <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-3 block">Step-by-Step (BN) - One per line</label>
-                  <textarea value={paymentSettings.instructionsBn.join('\n')} onChange={(e) => updatePaymentSettings({ ...paymentSettings, instructionsBn: e.target.value.split('\n').filter(l => l.trim() !== '') })} className="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-5 text-sm h-40 focus:outline-none" />
-               </div>
-            </div>
-         </div>
-
-         <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-8">
-            <h3 className="text-xl font-black text-red-400">Payment Warning</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-               <Input label="Warning (EN)" value={paymentSettings.warningText} onChange={(v) => updatePaymentSettings({ ...paymentSettings, warningText: v })} />
-               <Input label="Warning (BN)" value={paymentSettings.warningTextBn} onChange={(v) => updatePaymentSettings({ ...paymentSettings, warningTextBn: v })} />
+               <Input label="Telegram Contact Link" value={paymentSettings.telegramLink} onChange={(v) => updatePaymentSettings({ ...paymentSettings, telegramLink: v })} />
+               <Input label="Global Warning (EN)" value={paymentSettings.warningText} onChange={(v) => updatePaymentSettings({ ...paymentSettings, warningText: v })} />
+               <Input label="Global Warning (BN)" value={paymentSettings.warningTextBn} onChange={(v) => updatePaymentSettings({ ...paymentSettings, warningTextBn: v })} />
             </div>
          </div>
       </div>

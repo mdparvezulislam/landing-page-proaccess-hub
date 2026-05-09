@@ -63,7 +63,7 @@ export const ReviewsSection = () => {
                 ))}
               </div>
 
-              <p className="text-text-secondary text-lg font-medium leading-relaxed mb-10 flex-grow italic">
+              <p className="text-text-secondary text-lg font-medium leading-relaxed mb-10 flex-grow">
                 "{t(review.review, review.reviewBn)}"
               </p>
 

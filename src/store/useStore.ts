@@ -25,8 +25,22 @@ export interface Feature {
   id: string;
   text: string;
   textBn: string;
+  available: boolean;
   visible: boolean;
   highlighted: boolean;
+  order: number;
+}
+
+export interface PaymentMethod {
+  id: string;
+  name: string;
+  type: string;
+  number: string;
+  accountName: string;
+  qrCode: string;
+  instructions: string;
+  enabled: boolean;
+  icon: string;
   order: number;
 }
 
@@ -225,8 +239,11 @@ interface AppState {
   footer: FooterSettings;
   updateFooter: (footer: FooterSettings) => void;
 
-  pricingFeatures: { id: string; text: string; textBn: string }[];
-  setPricingFeatures: (features: { id: string; text: string; textBn: string }[]) => void;
+  pricingFeatures: Feature[];
+  setPricingFeatures: (features: Feature[]) => void;
+
+  paymentMethods: PaymentMethod[];
+  setPaymentMethods: (methods: PaymentMethod[]) => void;
 
   globalFeatures: GlobalFeature[];
   setGlobalFeatures: (features: GlobalFeature[]) => void;
@@ -307,9 +324,9 @@ const initialProducts: Product[] = [
       { id: 'b5', text: 'ChatGPT Plus & Go (Free)', textBn: 'চ্যাটজিপিটি প্লাস এবং গো (ফ্রি)', visible: true, order: 5 },
     ],
     features: [
-      { id: 'f1', text: 'Gemini Pro + 5TB Drive 12M', textBn: 'জেমিনি প্রো + ৫টিবি ড্রাইভ ১২ মাস', visible: true, highlighted: false, order: 1 },
-      { id: 'f2', text: 'Adobe Photoshop Pro – 1 Year', textBn: 'অ্যাডোব ফটোশপ প্রো - ১ বছর', visible: true, highlighted: false, order: 2 },
-      { id: 'f3', text: 'Canva Pro – 3 Years', textBn: 'ক্যানভা প্রো - ৩ বছর', visible: true, highlighted: false, order: 3 },
+      { id: 'f1', text: 'Gemini Pro + 5TB Drive 12M', textBn: 'জেমিনি প্রো + ৫টিবি ড্রাইভ ১২ মাস', available: true, visible: true, highlighted: false, order: 1 },
+      { id: 'f2', text: 'Adobe Photoshop Pro – 1 Year', textBn: 'অ্যাডোব ফটোশপ প্রো - ১ বছর', available: true, visible: true, highlighted: false, order: 2 },
+      { id: 'f3', text: 'Canva Pro – 3 Years', textBn: 'ক্যানভা প্রো - ৩ বছর', available: true, visible: true, highlighted: false, order: 3 },
     ]
   }
 ];
@@ -386,6 +403,46 @@ export const useStore = create<AppState>()(
       },
       updatePaymentSettings: (paymentSettings) => set({ paymentSettings }),
 
+      paymentMethods: [
+        {
+          id: 'bkash',
+          name: "bKash",
+          type: "Personal",
+          number: "",
+          accountName: "Pro Access",
+          qrCode: "",
+          instructions: "Send Money to our bKash personal number and message us on Telegram with the transaction ID.",
+          enabled: true,
+          icon: "bkash",
+          order: 1
+        },
+        {
+          id: 'nagad',
+          name: "Nagad",
+          type: "Personal",
+          number: "",
+          accountName: "Pro Access",
+          qrCode: "",
+          instructions: "Send Money to our Nagad personal number and message us on Telegram with the transaction ID.",
+          enabled: true,
+          icon: "nagad",
+          order: 2
+        },
+        {
+          id: 'binance',
+          name: "Binance",
+          type: "Crypto",
+          number: "",
+          accountName: "Pro Access",
+          qrCode: "",
+          instructions: "Transfer USDT to our Binance Pay ID or BEP20 address and share the confirmation screenshot.",
+          enabled: true,
+          icon: "binance",
+          order: 3
+        }
+      ],
+      setPaymentMethods: (paymentMethods) => set({ paymentMethods }),
+
       settings: {
         siteName: "Pro Access VIP",
         siteNameBn: "প্রো অ্যাক্সেস ভিআইপি",
@@ -408,10 +465,12 @@ export const useStore = create<AppState>()(
       updateFooter: (footer) => set({ footer }),
 
       pricingFeatures: [
-        { id: '1', text: 'Premium Methods Access', textBn: 'প্রিমিয়াম মেথড এক্সেস' },
-        { id: '2', text: 'Private Resource Database', textBn: 'প্রাইভেট রিসোর্স ডাটাবেস' },
-        { id: '3', text: 'Lifetime Free Updates', textBn: 'লাইফটাইম ফ্রি আপডেট' },
-        { id: '4', text: 'Priority Telegram Support', textBn: 'প্রায়োরিটি টেলিগ্রাম সাপোর্ট' },
+        { id: '1', text: 'Premium Methods Access', textBn: 'প্রিমিয়াম মেথড এক্সেস', available: true, visible: true, order: 1, highlighted: true },
+        { id: '2', text: 'Private Resource Database', textBn: 'প্রাইভেট রিসোর্স ডাটাবেস', available: true, visible: true, order: 2, highlighted: false },
+        { id: '3', text: 'Lifetime Free Updates', textBn: 'লাইফটাইম ফ্রি আপডেট', available: true, visible: true, order: 3, highlighted: false },
+        { id: '4', text: 'Priority Telegram Support', textBn: 'প্রায়োরিটি টেলিগ্রাম সাপোর্ট', available: true, visible: true, order: 4, highlighted: false },
+        { id: '5', text: '24/7 Server Uptime', textBn: '২৪/৭ সার্ভার আপটাইম', available: true, visible: true, order: 5, highlighted: false },
+        { id: '6', text: 'No Hidden Charges', textBn: 'কোন হিডেন চার্জ নেই', available: false, visible: true, order: 6, highlighted: false },
       ],
       setPricingFeatures: (pricingFeatures) => set({ pricingFeatures }),
 
