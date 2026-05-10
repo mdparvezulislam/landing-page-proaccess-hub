@@ -6,6 +6,8 @@ import { Menu, X, Globe, ArrowRight, Zap, ChevronRight, ShieldCheck } from 'luci
 import NextLink from 'next/link';
 import Link from 'next/link';
 
+import { CurrencyToggle } from './CurrencyToggle';
+
 export const Header = ({ data }: { data: any }) => {
   const { language, setLanguage } = useStore();
   const settings = data?.site || {};
@@ -58,7 +60,12 @@ export const Header = ({ data }: { data: any }) => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-3 lg:gap-5">
+        <div className="flex items-center gap-2 lg:gap-5">
+          {/* Currency Toggle */}
+          <div className="flex">
+            <CurrencyToggle />
+          </div>
+
           {/* Language Switcher */}
           <div className="hidden sm:flex bg-white/[0.03] p-1 rounded-xl border border-white/5 relative overflow-hidden group shadow-lg">
             <button
@@ -144,6 +151,10 @@ export const Header = ({ data }: { data: any }) => {
               </div>
 
               <div className="mt-8 space-y-4 pt-8 border-t border-white/5">
+                <div className="flex items-center justify-between gap-4">
+                  <CurrencyToggle />
+                </div>
+
                 <div className="flex bg-white/[0.03] p-1 rounded-xl border border-white/5 relative overflow-hidden">
                   <button onClick={() => setLanguage('bn')} className={`relative z-10 flex-1 py-3 text-[10px] font-black transition-all ${language === 'bn' ? 'text-black' : 'text-text-muted'}`}>বাংলা</button>
                   <button onClick={() => setLanguage('en')} className={`relative z-10 flex-1 py-3 text-[10px] font-black transition-all ${language === 'en' ? 'text-black' : 'text-text-muted'}`}>ENGLISH</button>

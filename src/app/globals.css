@@ -38,17 +38,20 @@
     @apply relative overflow-hidden transition-all duration-500 hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] active:scale-95;
   }
 
-  .premium-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  .premium-scrollbar::-webkit-scrollbar,
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
   }
 
-  .premium-scrollbar::-webkit-scrollbar-track {
+  .premium-scrollbar::-webkit-scrollbar-track,
+  .custom-scrollbar::-webkit-scrollbar-track {
     @apply bg-white/5 rounded-full;
   }
 
-  .premium-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-primary/40 rounded-full hover:bg-primary transition-colors;
+  .premium-scrollbar::-webkit-scrollbar-thumb,
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-primary/20 rounded-full hover:bg-primary/50 transition-colors;
   }
 
   .admin-input {

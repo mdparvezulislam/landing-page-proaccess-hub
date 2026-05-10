@@ -26,8 +26,11 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
+import { useCurrencyStore } from '@/store/useCurrencyStore';
+
 export default function CheckoutPage() {
   const { language, selectedOrderContext } = useStore();
+  const { convertPrice, currentCurrency } = useCurrencyStore();
   const { data: siteData, isLoading: settingsLoading } = useSettings();
   const router = useRouter();
 
@@ -98,6 +101,7 @@ export default function CheckoutPage() {
   }
 
   const { product, plan } = selectedOrderContext;
+  const { amount, currency } = isHydrated ? convertPrice(plan.priceTk) : { amount: plan.priceTk, currency: 'BDT' };
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -191,10 +195,15 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right flex flex-col items-end">
                   <span className="text-xl lg:text-5xl font-black text-text-primary tracking-tighter flex items-baseline gap-0.5">
-                    {plan.priceTk} <span className="text-[10px] lg:text-lg opacity-40 uppercase">TK</span>
+                    {amount} <span className="text-[10px] lg:text-lg opacity-40 uppercase">{currency}</span>
                   </span>
+                  {currentCurrency === 'USDT' && (
+                    <span className="text-[8px] lg:text-sm font-black text-white/20 uppercase tracking-tighter">
+                      ({plan.priceTk} BDT)
+                    </span>
+                  )}
                 </div>
               </div>
             </motion.div>

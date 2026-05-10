@@ -5,11 +5,18 @@ import { useStore } from '../store/useStore';
 import { Check, Zap, Shield, Crown, Sparkles, ArrowRight, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { trackAddToCart } from '../utils/facebookPixel';
+import { useCurrencyStore } from '../store/useCurrencyStore';
 
 export const Pricing = ({ data }: { data: any }) => {
   const { language, setSelectedOrderContext } = useStore();
+  const { convertPrice, currentCurrency } = useCurrencyStore();
+  const [mounted, setMounted] = React.useState(false);
   const products = data || [];
   const router = useRouter();
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const t = (en: string, bn: string) => language === 'en' ? en : bn;
 
@@ -82,6 +89,7 @@ export const Pricing = ({ data }: { data: any }) => {
                 }`}>
                 {product.plans.map((plan: any, i: number) => {
                   const isPopular = plan.isPopular || (product.plans.length === 3 && i === 1) || (product.plans.length === 1);
+                  const { amount, currency } = mounted ? convertPrice(plan.priceTk) : { amount: plan.priceTk, currency: 'BDT' };
 
                   return (
                     <motion.div
@@ -111,9 +119,14 @@ export const Pricing = ({ data }: { data: any }) => {
                         <h3 className="text-2xl lg:text-4xl font-black tracking-tighter mb-2">
                           {t(plan.nameEn, plan.nameBn)}
                         </h3>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-4xl lg:text-5xl font-black tracking-tighter leading-none">{plan.priceTk}</span>
-                          <span className="text-sm lg:text-lg font-black text-text-muted">TK</span>
+                        <div className="flex flex-col">
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-4xl lg:text-5xl font-black tracking-tighter leading-none">{amount}</span>
+                            <span className="text-sm lg:text-lg font-black text-text-muted">{currency}</span>
+                          </div>
+                          {mounted && currentCurrency === 'USDT' && (
+                            <span className="text-[10px] font-bold text-white/20 uppercase tracking-tighter mt-1">≈ {plan.priceTk} BDT</span>
+                          )}
                         </div>
                       </div>
 

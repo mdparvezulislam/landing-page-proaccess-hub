@@ -40,6 +40,7 @@ export interface IProduct extends Document {
   buttonTextEn: string;
   buttonTextBn: string;
   telegramLink: string;
+  tgPostLink?: string;
   image: string;
   visible: boolean;
   order: number;
@@ -65,6 +66,7 @@ const BulletPointSchema = new Schema({
   visible: { type: Boolean, default: true },
   order: { type: Number, default: 0 },
   icon: { type: String },
+  highlighted: { type: Boolean, default: false },
 });
 
 const FeatureSchema = new Schema({
@@ -89,6 +91,7 @@ const ProductSchema = new Schema<IProduct>({
   buttonTextEn: { type: String },
   buttonTextBn: { type: String },
   telegramLink: { type: String },
+  tgPostLink: { type: String },
   image: { type: String },
   visible: { type: Boolean, default: true },
   order: { type: Number, default: 0 },

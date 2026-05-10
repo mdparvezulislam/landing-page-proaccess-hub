@@ -513,6 +513,7 @@ function GeneralEditor({ product, onChange }: any) {
           </div>
           <InputField label="Image URL" value={product.image} onChange={(v: any) => onChange("image", v)} />
           <InputField label="Telegram Link" value={product.telegramLink} onChange={(v: any) => onChange("telegramLink", v)} />
+          <InputField label="Telegram Post Link" value={product.tgPostLink} onChange={(v: any) => onChange("tgPostLink", v)} placeholder="https://t.me/proaccess/123" />
         </div>
       </div>
     </div>
@@ -945,6 +946,16 @@ function SortableBulletItem({ item, updateItem, removeItem }: any) {
           }`}
         >
           {item.visible ? "Visible" : "Hidden"}
+        </button>
+        <button
+          onClick={() => updateItem(item.id, "highlighted", !item.highlighted)}
+          className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${
+            item.highlighted
+              ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
+              : "bg-white/5 text-white/20 border-white/10"
+          }`}
+        >
+          {item.highlighted ? "★ Highlight" : "Regular"}
         </button>
         <button
           onClick={() => removeItem(item.id)}

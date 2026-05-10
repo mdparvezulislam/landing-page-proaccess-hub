@@ -84,29 +84,7 @@ export const LegalSection: React.FC<{
   );
 };
 
-export const LegalTableOfContents: React.FC<{
-  items: { id: string; labelEn: string; labelBn: string; }[]
-}> = ({ items }) => {
-  const { language } = useStore();
-  const t = (en: string, bn: string) => language === 'en' ? en : bn;
 
-  return (
-    <div className="sticky top-32 hidden lg:block">
-      <h4 className="text-[10px] font-black uppercase tracking-[3px] text-text-muted mb-6">ON THIS PAGE</h4>
-      <nav className="space-y-4">
-        {items.map((item) => (
-          <a
-            key={item.id}
-            href={`#${item.id}`}
-            className="block text-sm font-bold text-text-secondary hover:text-primary transition-all hover:translate-x-1"
-          >
-            {t(item.labelEn, item.labelBn)}
-          </a>
-        ))}
-      </nav>
-    </div>
-  );
-};
 
 export const LegalPageLayout: React.FC<{
   children: React.ReactNode;
@@ -117,10 +95,7 @@ export const LegalPageLayout: React.FC<{
       {children}
       <div className="container mx-auto px-4 lg:px-6 py-12 lg:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-          <div className="lg:col-span-3">
-            <LegalTableOfContents items={tocItems} />
-          </div>
-          <div className="lg:col-span-9 max-w-3xl">
+          <div className="lg:col-span-12 max-w-3xl">
             {children}
           </div>
         </div>

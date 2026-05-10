@@ -25,7 +25,9 @@ import ProductsTab from "./tabs/ProductsTab";
 import SettingsTab from "./tabs/SettingsTab";
 import ReviewsTab from "./tabs/ReviewsTab";
 import FAQTab from "./tabs/FAQTab";
+import CurrencyTab from "./tabs/CurrencyTab";
 import { Toaster } from "sonner";
+import { Coins } from "lucide-react";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("orders");
@@ -40,6 +42,12 @@ export default function AdminDashboard() {
       label: "Products",
       icon: Package,
       color: "text-secondary",
+    },
+    {
+      id: "currency",
+      label: "Currency",
+      icon: Coins,
+      color: "text-amber-500",
     },
     {
       id: "reviews",
@@ -193,6 +201,7 @@ export default function AdminDashboard() {
             >
               {activeTab === "orders" && <OrdersTab />}
               {activeTab === "products" && <ProductsTab />}
+              {activeTab === "currency" && <CurrencyTab />}
               {activeTab === "reviews" && <ReviewsTab />}
               {activeTab === "faq" && <FAQTab />}
               {activeTab === "settings" && <SettingsTab />}

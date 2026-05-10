@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import { Shield } from 'lucide-react';
-import { LegalHero, LegalSection, LegalTableOfContents } from '@/components/LegalComponents';
+import { LegalHero, LegalSection } from '@/components/LegalComponents';
 import { useStore } from '@/store/useStore';
 
 export default function PrivacyPage() {
@@ -30,9 +30,7 @@ export default function PrivacyPage() {
 
       <div className="container mx-auto px-1 lg:px-2 py-6 lg:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-          <div className="lg:col-span-3">
-            <LegalTableOfContents items={tocItems} />
-          </div>
+          
           <div className="lg:col-span-9 max-w-4xl">
             <LegalSection id="introduction" titleEn="Introduction" titleBn="ভূমিকা">
               <p>
