@@ -844,7 +844,7 @@ const SettingsTab = ({ settings, updateSettings, pixelSettings, updatePixelSetti
                   <Input label="Site Name (EN)" value={settings.siteName} onChange={(v) => updateSettings({ ...settings, siteName: v })} />
                   <Input label="Site Name (BN)" value={settings.siteNameBn} onChange={(v) => updateSettings({ ...settings, siteNameBn: v })} />
                   <Input label="Logo Text" value={settings.logo} onChange={(v) => updateSettings({ ...settings, logo: v })} />
-                  <Input label="Admin Password" value={settings.adminPassword || 'admin123'} type="password" onChange={(v) => updateSettings({ ...settings, adminPassword: v })} />
+                  <Input label="Admin Password" value={settings.adminPassword || 'pro_access_23'} type="password" onChange={(v) => updateSettings({ ...settings, adminPassword: v })} />
                </div>
             </div>
 
@@ -925,7 +925,7 @@ export const AdminDashboard = ({ defaultTab = 'analytics' }: { defaultTab?: stri
                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-center font-black tracking-[10px] text-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary/50 transition-all placeholder:tracking-normal placeholder:font-bold placeholder:text-sm"
                   />
                   <button
-                     onClick={() => password === (settings.adminPassword || 'admin123') ? setAdminStatus(true) : toast.error('Access Denied')}
+                     onClick={() => password === (settings.adminPassword || 'pro_access_23') ? setAdminStatus(true) : toast.error('Access Denied')}
                      className="w-full bg-primary text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[3px] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
                   >
                      Unlock Console

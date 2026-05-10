@@ -444,7 +444,7 @@ export const useStore = create<AppState>()(
         floatingCTA: "Join VIP",
         floatingCTABn: "ভিআইপি জয়েন করুন",
         logo: "VIP",
-        adminPassword: "admin123",
+        adminPassword: "pro_access_23",
       },
       updateSettings: (settings) => set({ settings }),
 
