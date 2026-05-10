@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Order from '@/models/Order';
-import { verifyAdminAuthToken } from '@/lib/adminAuth';
+import { verifyAdmin } from '@/lib/adminAuth';
+import { rateLimit } from '@/lib/rate-limit';
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    const cookieHeader = req.headers.get('cookie') || '';
-    const token = cookieHeader.split(';').map((c) => c.trim()).find((c) => c.startsWith('admin-auth='))?.split('=')[1];
-    const { valid } = token ? await verifyAdminAuthToken(decodeURIComponent(token)) : { valid: false };
+    const { valid } = await verifyAdmin();
     if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     await connectDB();
@@ -18,8 +17,6 @@ export async function GET(req: Request) {
   }
 }
 
-import { rateLimit } from '@/lib/rate-limit';
-
 export async function POST(req: Request) {
   try {
     const ip = req.headers.get('x-forwarded-for') || 'anonymous';
@@ -28,25 +25,33 @@ export async function POST(req: Request) {
     }
 
     await connectDB();
-    const data = await req.json();
+    const data = await req.json().catch(() => null);
+    if (!data) return NextResponse.json({ error: 'Invalid or missing data' }, { status: 400 });
+    
     const order = await Order.create(data);
     return NextResponse.json(order);
   } catch (error: any) {
+    console.error('POST /api/orders Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
 export async function PATCH(req: Request) {
   try {
-    const cookieHeader = req.headers.get('cookie') || '';
-    const token = cookieHeader.split(';').map((c) => c.trim()).find((c) => c.startsWith('admin-auth='))?.split('=')[1];
-    const { valid } = token ? await verifyAdminAuthToken(decodeURIComponent(token)) : { valid: false };
+    const { valid } = await verifyAdmin();
     if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
     await connectDB();
-    const { id, ...updateData } = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body || !body.id) return NextResponse.json({ error: 'Missing order ID' }, { status: 400 });
+
+    const { id, ...updateData } = body;
     const order = await Order.findByIdAndUpdate(id, updateData, { new: true });
+    if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    
     return NextResponse.json(order);
   } catch (error: any) {
+    console.error('PATCH /api/orders Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

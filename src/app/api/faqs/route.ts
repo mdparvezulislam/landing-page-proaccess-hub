@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import Review from '@/models/Review';
+import FAQ from '@/models/FAQ';
 import { verifyAdmin } from '@/lib/adminAuth';
 
 export async function GET() {
   try {
     await connectDB();
-    const reviews = await Review.find({ visible: true }).sort({ order: 1 });
-    return NextResponse.json(reviews);
+    const faqs = await FAQ.find({ visible: true }).sort({ order: 1 });
+    return NextResponse.json(faqs);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -25,15 +25,15 @@ export async function POST(req: Request) {
     const { _id, ...updateData } = data;
 
     if (_id) {
-      const review = await Review.findByIdAndUpdate(_id, updateData, { new: true });
-      if (!review) return NextResponse.json({ error: 'Review not found' }, { status: 404 });
-      return NextResponse.json(review);
+      const faq = await FAQ.findByIdAndUpdate(_id, updateData, { new: true });
+      if (!faq) return NextResponse.json({ error: 'FAQ not found' }, { status: 404 });
+      return NextResponse.json(faq);
     }
 
-    const review = await Review.create(updateData);
-    return NextResponse.json(review);
+    const faq = await FAQ.create(updateData);
+    return NextResponse.json(faq);
   } catch (error: any) {
-    console.error('POST /api/reviews Error:', error);
+    console.error('POST /api/faqs Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

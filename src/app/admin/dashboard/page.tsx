@@ -25,6 +25,7 @@ import ProductsTab from "./tabs/ProductsTab";
 import SettingsTab from "./tabs/SettingsTab";
 import ReviewsTab from "./tabs/ReviewsTab";
 import FAQTab from "./tabs/FAQTab";
+import { Toaster } from "sonner";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("orders");
@@ -95,18 +96,16 @@ export default function AdminDashboard() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all group ${
-                  isActive
+                className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all group ${isActive
                     ? "bg-white/5 text-white shadow-xl border border-white/10"
                     : "text-text-muted hover:bg-white/[0.02] hover:text-text-primary"
-                }`}
+                  }`}
               >
                 <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
-                    isActive
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${isActive
                       ? "bg-primary text-white"
                       : "bg-white/5 text-text-muted group-hover:text-text-primary"
-                  }`}
+                    }`}
                 >
                   <Icon className="w-5 h-5" />
                 </div>
@@ -201,6 +200,16 @@ export default function AdminDashboard() {
           </AnimatePresence>
         </div>
       </main>
+      <Toaster position="bottom-right" toastOptions={{
+        style: {
+          background: '#0f172a',
+          color: '#fff',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: '16px',
+          fontSize: '14px',
+          fontWeight: 'bold'
+        }
+      }} />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Settings from '@/models/Settings';
-import { verifyAdminAuthToken } from '@/lib/adminAuth';
+import { verifyAdmin } from '@/lib/adminAuth';
 
 export function createSettingsSectionRoute(sectionName: string) {
   return {
@@ -17,13 +17,13 @@ export function createSettingsSectionRoute(sectionName: string) {
 
     async POST(req: Request) {
       try {
-        const cookieHeader = req.headers.get('cookie') || '';
-        const token = cookieHeader.split(';').map((c) => c.trim()).find((c) => c.startsWith('admin-auth='))?.split('=')[1];
-        const { valid } = token ? await verifyAdminAuthToken(decodeURIComponent(token)) : { valid: false };
+        const { valid } = await verifyAdmin();
         if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         await connectDB();
-        const data = await req.json();
+        const data = await req.json().catch(() => null);
+        if (!data) return NextResponse.json({ error: 'Invalid or missing data' }, { status: 400 });
+
         let settings = await Settings.findOne();
 
         if (settings) {
@@ -35,6 +35,7 @@ export function createSettingsSectionRoute(sectionName: string) {
 
         return NextResponse.json(settings[sectionName]);
       } catch (error: any) {
+        console.error(`POST Settings Section ${sectionName} Error:`, error);
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
     }

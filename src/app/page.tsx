@@ -1,5 +1,5 @@
 import { Hero } from '@/sections/Hero';
-import { Stats } from '@/sections/Stats';
+
 import { ProductShowcase } from '@/sections/ProductShowcase';
 import { Features } from '@/sections/Features';
 import { TrustBadges } from '@/sections/TrustBadges';
@@ -17,7 +17,7 @@ import { seedDatabase } from '@/lib/seedDatabase';
 
 async function getData() {
   await connectDB();
-  
+
   // Auto-seed if empty
   const settingsCount = await Settings.countDocuments();
   if (settingsCount === 0) {
@@ -41,11 +41,11 @@ async function getData() {
 
 export default async function Home() {
   const data = await getData();
-  
+
   return (
     <div className="flex flex-col">
       <Hero data={data.settings?.hero} />
-      <Stats data={data.settings?.hero?.stats} />
+
       <ProductShowcase data={data.products} />
       <Features data={data.settings?.globalFeatures} section={data.settings?.featuresSection} />
       <TrustBadges data={data.settings?.trustBadges} />

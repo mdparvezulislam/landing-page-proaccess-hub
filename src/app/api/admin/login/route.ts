@@ -4,23 +4,24 @@ import { createAdminAuthToken } from '@/lib/adminAuth';
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
     const { email, password } = body as { email?: string; password?: string };
 
     const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
     const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
     if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+      console.error('Admin credentials not configured in environment variables');
       return NextResponse.json({ error: 'Admin credentials not configured' }, { status: 500 });
     }
 
-    if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
+    if (!email || !password || email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
     const token = await createAdminAuthToken(email);
-
     const cookieStore = await cookies();
+    
     cookieStore.set({
       name: 'admin-auth',
       value: token,
@@ -28,11 +29,12 @@ export async function POST(req: Request) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7,
+      maxAge: 60 * 60 * 24 * 30, // 30 days
     });
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, message: 'Login successful' });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Login API Error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

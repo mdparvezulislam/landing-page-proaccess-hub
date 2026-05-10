@@ -9,9 +9,13 @@ export const Footer = ({ data }: { data: any }) => {
   const { language } = useStore();
   const settings = data?.site || {};
   const footer = data?.footer || {
-    links: [],
-    copyrightEn: "© 2024 Pro Access VIP",
-    copyrightBn: "© ২০২৪ প্রো অ্যাক্সেস ভিআইপি",
+    links: [
+      { labelEn: "Privacy Policy", labelBn: "গোপনীয়তা নীতি", url: "/privacy" },
+      { labelEn: "Terms & Conditions", labelBn: "শর্তাবলী", url: "/terms" },
+      { labelEn: "Refund Policy", labelBn: "রিফান্ড নীতি", url: "/refund" },
+    ],
+    copyrightEn: "© 2024 Pro Access VIP Hub",
+    copyrightBn: "© ২০২৪ প্রো অ্যাক্সেস ভিআইপি হাব",
   };
   const t = (en: string, bn: string) => (language === "en" ? en : bn);
 
@@ -126,12 +130,12 @@ export const Footer = ({ data }: { data: any }) => {
             <ul className="space-y-4 lg:space-y-5">
               {footer.links.map((link: any) => (
                 <li key={link.url || link.labelEn}>
-                  <a
+                  <Link
                     href={link.url}
                     className="text-text-secondary text-sm lg:text-base font-bold hover:text-primary transition-colors flex items-center gap-2 group"
                   >
                     {t(link.labelEn, link.labelBn)}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

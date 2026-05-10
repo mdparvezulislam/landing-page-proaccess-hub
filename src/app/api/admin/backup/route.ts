@@ -4,13 +4,11 @@ import Settings from '@/models/Settings';
 import Product from '@/models/Product';
 import FAQ from '@/models/FAQ';
 import Review from '@/models/Review';
-import { verifyAdminAuthToken } from '@/lib/adminAuth';
+import { verifyAdmin } from '@/lib/adminAuth';
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    const cookieHeader = req.headers.get('cookie') || '';
-    const token = cookieHeader.split(';').map((c: string) => c.trim()).find((c: string) => c.startsWith('admin-auth='))?.split('=')[1];
-    const { valid } = token ? await verifyAdminAuthToken(decodeURIComponent(token)) : { valid: true };
+    const { valid } = await verifyAdmin();
     if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     await connectDB();
@@ -37,18 +35,19 @@ export async function GET(req: Request) {
       },
     });
   } catch (error: any) {
+    console.error('Backup GET Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
-    try {
-    const cookieHeader = req.headers.get('cookie') || '';
-    const token = cookieHeader.split(';').map((c: string) => c.trim()).find((c: string) => c.startsWith('admin-auth='))?.split('=')[1];
-    const { valid } = token ? await verifyAdminAuthToken(decodeURIComponent(token)) : { valid: false };
+  try {
+    const { valid } = await verifyAdmin();
     if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const backupData = await req.json();
+    const backupData = await req.json().catch(() => null);
+    if (!backupData) return NextResponse.json({ error: 'Invalid or missing backup data' }, { status: 400 });
+
     await connectDB();
 
     // WARNING: This replaces current data
@@ -71,6 +70,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ message: 'Restore completed successfully' });
   } catch (error: any) {
+    console.error('Backup POST Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

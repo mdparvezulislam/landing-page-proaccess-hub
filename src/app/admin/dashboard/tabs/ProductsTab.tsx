@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   useProducts,
   useUpdateProduct,
@@ -13,25 +13,24 @@ import {
   Trash2,
   Eye,
   EyeOff,
-  MoveUp,
-  MoveDown,
   Sparkles,
   Layers,
   Zap,
-  MoreVertical,
-  XCircle,
-  GripVertical,
   Check,
   X,
-  Layout,
   Type,
   Info,
   Link as LinkIcon,
   Image as ImageIcon,
+  ChevronRight,
+  GripVertical,
+  Monitor,
+  Layout,
+  ExternalLink,
+  ChevronDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { SortableList } from "../components/SortableList";
 
 export default function ProductsTab() {
   const { data: products, isLoading } = useProducts();
@@ -41,13 +40,32 @@ export default function ProductsTab() {
   const [activeEditorTab, setActiveEditorTab] = useState("general");
 
   const handleToggleVisibility = (product: any) => {
-    updateProduct({ ...product, visible: !product.visible });
+    updateProduct({ ...product, visible: !product.visible }, {
+      onSuccess: () => toast.success("Visibility updated"),
+      onError: () => toast.error("Update failed")
+    });
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this product?")) {
-      deleteProduct(id);
+    if (confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
+      deleteProduct(id, {
+        onSuccess: () => toast.success("Product deleted"),
+        onError: () => toast.error("Delete failed")
+      });
     }
+  };
+
+  const handleSave = () => {
+    updateProduct(editingProduct, {
+      onSuccess: () => {
+        toast.success("Product saved successfully!");
+        setEditingProduct(null);
+      },
+      onError: (err: any) => {
+        console.error("Save error:", err);
+        toast.error("Failed to save product. Check all fields.");
+      }
+    });
   };
 
   if (isLoading) {
@@ -58,22 +76,15 @@ export default function ProductsTab() {
     );
   }
 
-  const editorTabs = [
-    { id: "general", label: "General Info", icon: Info },
-    { id: "plans", label: "Pricing Plans", icon: Layers },
-    { id: "bullets", label: "Bullet Points", icon: Type },
-    { id: "features", label: "Comparison Features", icon: Sparkles },
-  ];
+  const sortedProducts = [...(products || [])].sort((a, b) => a.order - b.order);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-12 pb-20">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div>
-          <h2 className="text-4xl font-black tracking-tighter mb-2">
-            Product Vault
-          </h2>
-          <p className="text-text-muted font-black uppercase text-[10px] tracking-[3px]">
+          <h2 className="text-5xl font-black tracking-tighter mb-2">Product Vault</h2>
+          <p className="text-text-muted font-black uppercase text-[10px] tracking-[4px]">
             Manage premium packages and feature plans
           </p>
         </div>
@@ -102,703 +113,443 @@ export default function ProductsTab() {
             });
             setActiveEditorTab("general");
           }}
-          className="bg-primary hover:bg-primary-light text-white px-8 py-5 rounded-[28px] font-black uppercase text-xs tracking-widest transition-all glow-btn shadow-xl shadow-primary/20 flex items-center gap-3"
+          className="bg-primary hover:bg-primary-light text-white px-10 py-6 rounded-[32px] font-black uppercase text-xs tracking-widest transition-all glow-btn shadow-xl shadow-primary/20 flex items-center gap-3 group"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
           Create New Product
         </button>
       </div>
 
-      {/* Product Grid */}
-      <div className="grid grid-cols-1 gap-8">
-        {products?.map((product: any, idx: number) => (
-          <motion.div
+      {/* Product List */}
+      <div className="grid grid-cols-1 gap-6">
+        {sortedProducts.map((product, idx) => (
+          <ProductCard
             key={product._id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.1 }}
-            className={`glass-card rounded-[40px] p-8 lg:p-12 border-white/5 relative overflow-hidden group ${!product.visible ? "opacity-60 grayscale" : ""}`}
-          >
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -mr-32 -mt-32 transition-all group-hover:bg-primary/10" />
-
-            <div className="relative z-10 flex flex-col lg:flex-row gap-10">
-              <div className="w-full lg:w-72 flex-shrink-0">
-                <div className="aspect-square rounded-[32px] bg-white/5 border border-white/10 overflow-hidden mb-6 relative group/img">
-                  <img
-                    src={product.image || "https://via.placeholder.com/400"}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-110"
-                    alt={product.titleEn}
-                  />
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black text-text-muted uppercase tracking-[3px]">
-                      Status
-                    </span>
-                    <button
-                      onClick={() => handleToggleVisibility(product)}
-                      className={`flex items-center gap-2 px-3 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest transition-all ${product.visible ? "bg-success/10 text-success border-success/20" : "bg-red-500/10 text-red-500 border-red-500/20"}`}
-                    >
-                      {product.visible ? (
-                        <Eye className="w-3 h-3" />
-                      ) : (
-                        <EyeOff className="w-3 h-3" />
-                      )}
-                      {product.visible ? "Active" : "Hidden"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex-1 space-y-8">
-                <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
-                  <div>
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary-light text-[9px] font-black uppercase tracking-[3px] mb-3">
-                      <Zap className="w-3 h-3 fill-primary" />
-                      {product.badgeEn}
-                    </div>
-                    <h3 className="text-4xl lg:text-5xl font-black tracking-tighter mb-4">
-                      {product.titleEn}
-                    </h3>
-                    <p className="text-text-secondary text-lg font-medium max-w-2xl leading-relaxed opacity-80">
-                      {product.shortDescriptionEn}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => {
-                        setEditingProduct(JSON.parse(JSON.stringify(product)));
-                        setActiveEditorTab("general");
-                      }}
-                      className="w-14 h-14 rounded-2xl bg-white/5 text-text-muted hover:bg-primary hover:text-white transition-all flex items-center justify-center border border-white/10"
-                    >
-                      <Edit3 className="w-6 h-6" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(product._id)}
-                      className="w-14 h-14 rounded-2xl bg-white/5 text-text-muted hover:bg-red-500 hover:text-white transition-all flex items-center justify-center border border-white/10"
-                    >
-                      <Trash2 className="w-6 h-6" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-white/[0.02] p-6 rounded-3xl border border-white/5">
-                    <div className="flex items-center gap-3 mb-4 text-secondary">
-                      <Layers className="w-5 h-5" />
-                      <span className="text-[10px] font-black uppercase tracking-[3px]">
-                        Plans
-                      </span>
-                    </div>
-                    <p className="text-3xl font-black">
-                      {product.plans?.length || 0}
-                    </p>
-                  </div>
-                  <div className="bg-white/[0.02] p-6 rounded-3xl border border-white/5">
-                    <div className="flex items-center gap-3 mb-4 text-success">
-                      <Sparkles className="w-5 h-5" />
-                      <span className="text-[10px] font-black uppercase tracking-[3px]">
-                        Features
-                      </span>
-                    </div>
-                    <p className="text-3xl font-black">
-                      {product.features?.length || 0}
-                    </p>
-                  </div>
-                  <div className="bg-white/[0.02] p-6 rounded-3xl border border-white/5">
-                    <div className="flex items-center gap-3 mb-4 text-info">
-                      <Zap className="w-5 h-5" />
-                      <span className="text-[10px] font-black uppercase tracking-[3px]">
-                        Points
-                      </span>
-                    </div>
-                    <p className="text-3xl font-black">
-                      {product.bulletPoints?.length || 0}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+            product={product}
+            idx={idx}
+            onEdit={() => setEditingProduct(JSON.parse(JSON.stringify(product)))}
+            onToggleVisibility={() => handleToggleVisibility(product)}
+            onDelete={() => handleDelete(product._id)}
+          />
         ))}
       </div>
 
-      {/* Advanced Product Editor Modal */}
+      {/* Editor Modal */}
       <AnimatePresence>
         {editingProduct && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 lg:p-10 bg-black/80 backdrop-blur-2xl">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="w-full max-w-7xl bg-[#020617] rounded-[40px] lg:rounded-[60px] border border-white/10 overflow-hidden h-[95vh] flex flex-col shadow-2xl"
-            >
-              {/* Modal Header */}
-              <div className="px-8 lg:px-12 py-8 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
-                <div>
-                  <h3 className="text-2xl lg:text-3xl font-black tracking-tighter">
-                    {editingProduct._id ? "Edit" : "Create"} Product
-                  </h3>
-                  <p className="text-text-muted text-[10px] font-black uppercase tracking-widest mt-1">
-                    {editingProduct.titleEn || "New Package"} —{" "}
-                    <span className="text-primary">{activeEditorTab}</span>
-                  </p>
-                </div>
-                <button
-                  onClick={() => setEditingProduct(null)}
-                  className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-white/10 transition-all border border-white/10"
-                >
-                  <XCircle className="w-6 h-6" />
-                </button>
-              </div>
-
-              <div className="flex-1 flex overflow-hidden">
-                {/* Editor Sidebar */}
-                <aside className="w-20 lg:w-72 border-r border-white/5 bg-white/[0.01] p-4 lg:p-6 space-y-3">
-                  {editorTabs.map((tab) => {
-                    const Icon = tab.icon;
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveEditorTab(tab.id)}
-                        className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all ${
-                          activeEditorTab === tab.id
-                            ? "bg-primary text-white shadow-lg shadow-primary/20"
-                            : "text-text-muted hover:bg-white/5"
-                        }`}
-                      >
-                        <Icon className="w-5 h-5 flex-shrink-0" />
-                        <span className="hidden lg:block text-[10px] font-black uppercase tracking-widest">
-                          {tab.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </aside>
-
-                {/* Editor Content */}
-                <div className="flex-1 overflow-y-auto p-8 lg:p-12">
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={activeEditorTab}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -20 }}
-                      className="space-y-10"
-                    >
-                      {activeEditorTab === "general" && (
-                        <div className="space-y-10">
-                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div className="space-y-4">
-                              <label className="text-[10px] font-black text-text-muted uppercase tracking-[3px] ml-1">
-                                Title (EN)
-                              </label>
-                              <input
-                                className="admin-input w-full"
-                                value={editingProduct.titleEn}
-                                onChange={(e) =>
-                                  setEditingProduct({
-                                    ...editingProduct,
-                                    titleEn: e.target.value,
-                                  })
-                                }
-                              />
-                            </div>
-                            <div className="space-y-4">
-                              <label className="text-[10px] font-black text-text-muted uppercase tracking-[3px] ml-1">
-                                Title (BN)
-                              </label>
-                              <input
-                                className="admin-input w-full"
-                                value={editingProduct.titleBn}
-                                onChange={(e) =>
-                                  setEditingProduct({
-                                    ...editingProduct,
-                                    titleBn: e.target.value,
-                                  })
-                                }
-                              />
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div className="space-y-4">
-                              <label className="text-[10px] font-black text-text-muted uppercase tracking-[3px] ml-1">
-                                Subtitle (EN)
-                              </label>
-                              <input
-                                className="admin-input w-full"
-                                value={editingProduct.subtitleEn}
-                                onChange={(e) =>
-                                  setEditingProduct({
-                                    ...editingProduct,
-                                    subtitleEn: e.target.value,
-                                  })
-                                }
-                              />
-                            </div>
-                            <div className="space-y-4">
-                              <label className="text-[10px] font-black text-text-muted uppercase tracking-[3px] ml-1">
-                                Subtitle (BN)
-                              </label>
-                              <input
-                                className="admin-input w-full"
-                                value={editingProduct.subtitleBn}
-                                onChange={(e) =>
-                                  setEditingProduct({
-                                    ...editingProduct,
-                                    subtitleBn: e.target.value,
-                                  })
-                                }
-                              />
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <div className="space-y-4">
-                              <label className="text-[10px] font-black text-text-muted uppercase tracking-[3px] ml-1 flex items-center gap-2">
-                                <LinkIcon className="w-3 h-3" /> Slug
-                              </label>
-                              <input
-                                className="admin-input w-full font-mono"
-                                value={editingProduct.slug}
-                                onChange={(e) =>
-                                  setEditingProduct({
-                                    ...editingProduct,
-                                    slug: e.target.value,
-                                  })
-                                }
-                              />
-                            </div>
-                            <div className="space-y-4">
-                              <label className="text-[10px] font-black text-text-muted uppercase tracking-[3px] ml-1 flex items-center gap-2">
-                                <ImageIcon className="w-3 h-3" /> Image URL
-                              </label>
-                              <input
-                                className="admin-input w-full"
-                                value={editingProduct.image}
-                                onChange={(e) =>
-                                  setEditingProduct({
-                                    ...editingProduct,
-                                    image: e.target.value,
-                                  })
-                                }
-                              />
-                            </div>
-                            <div className="space-y-4">
-                              <label className="text-[10px] font-black text-text-muted uppercase tracking-[3px] ml-1 flex items-center gap-2">
-                                <Zap className="w-3 h-3" /> Telegram
-                              </label>
-                              <input
-                                className="admin-input w-full"
-                                value={editingProduct.telegramLink}
-                                onChange={(e) =>
-                                  setEditingProduct({
-                                    ...editingProduct,
-                                    telegramLink: e.target.value,
-                                  })
-                                }
-                              />
-                            </div>
-                          </div>
-
-                          <div className="space-y-4">
-                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[3px] ml-1">
-                              Short Description (EN)
-                            </label>
-                            <textarea
-                              className="admin-input w-full min-h-[100px]"
-                              value={editingProduct.shortDescriptionEn}
-                              onChange={(e) =>
-                                setEditingProduct({
-                                  ...editingProduct,
-                                  shortDescriptionEn: e.target.value,
-                                })
-                              }
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {activeEditorTab === "plans" && (
-                        <div className="space-y-8">
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-xl font-black uppercase tracking-widest text-primary">
-                              Pricing Plans
-                            </h4>
-                            <button
-                              onClick={() => {
-                                const newPlan = {
-                                  id: `plan-${Date.now()}`,
-                                  nameEn: "New Plan",
-                                  nameBn: "নতুন প্ল্যান",
-                                  priceTk: 0,
-                                  priceUsd: 0,
-                                  duration: "Monthly",
-                                };
-                                setEditingProduct({
-                                  ...editingProduct,
-                                  plans: [
-                                    ...(editingProduct.plans || []),
-                                    newPlan,
-                                  ],
-                                });
-                              }}
-                              className="bg-white/5 hover:bg-white/10 text-text-primary px-5 py-3 rounded-xl border border-white/10 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all"
-                            >
-                              <Plus className="w-4 h-4" /> Add Plan
-                            </button>
-                          </div>
-
-                          <SortableList
-                            items={editingProduct.plans || []}
-                            idField="id"
-                            onReorder={(newPlans) =>
-                              setEditingProduct({
-                                ...editingProduct,
-                                plans: newPlans,
-                              })
-                            }
-                            renderItem={(plan) => (
-                              <div className="bg-white/[0.03] p-6 rounded-2xl border border-white/5 flex flex-col lg:flex-row gap-6 items-center">
-                                <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
-                                  <input
-                                    className="admin-input-sm"
-                                    placeholder="Name (EN)"
-                                    value={plan.nameEn}
-                                    onChange={(e) => {
-                                      const newPlans = editingProduct.plans.map(
-                                        (p: any) =>
-                                          p.id === plan.id
-                                            ? { ...p, nameEn: e.target.value }
-                                            : p,
-                                      );
-                                      setEditingProduct({
-                                        ...editingProduct,
-                                        plans: newPlans,
-                                      });
-                                    }}
-                                  />
-                                  <input
-                                    className="admin-input-sm"
-                                    placeholder="Price (TK)"
-                                    type="number"
-                                    value={plan.priceTk}
-                                    onChange={(e) => {
-                                      const newPlans = editingProduct.plans.map(
-                                        (p: any) =>
-                                          p.id === plan.id
-                                            ? {
-                                                ...p,
-                                                priceTk: Number(e.target.value),
-                                              }
-                                            : p,
-                                      );
-                                      setEditingProduct({
-                                        ...editingProduct,
-                                        plans: newPlans,
-                                      });
-                                    }}
-                                  />
-                                  <select
-                                    className="admin-input-sm"
-                                    value={plan.duration}
-                                    onChange={(e) => {
-                                      const newPlans = editingProduct.plans.map(
-                                        (p: any) =>
-                                          p.id === plan.id
-                                            ? { ...p, duration: e.target.value }
-                                            : p,
-                                      );
-                                      setEditingProduct({
-                                        ...editingProduct,
-                                        plans: newPlans,
-                                      });
-                                    }}
-                                  >
-                                    <option>Monthly</option>
-                                    <option>Yearly</option>
-                                    <option>Lifetime</option>
-                                  </select>
-                                  <div className="flex items-center gap-2">
-                                    <button
-                                      onClick={() => {
-                                        const newPlans =
-                                          editingProduct.plans.filter(
-                                            (p: any) => p.id !== plan.id,
-                                          );
-                                        setEditingProduct({
-                                          ...editingProduct,
-                                          plans: newPlans,
-                                        });
-                                      }}
-                                      className="w-10 h-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all border border-red-500/20"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          />
-                        </div>
-                      )}
-
-                      {activeEditorTab === "bullets" && (
-                        <div className="space-y-8">
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-xl font-black uppercase tracking-widest text-primary">
-                              Bullet Points
-                            </h4>
-                            <button
-                              onClick={() => {
-                                const newPoint = {
-                                  textEn: "New Point",
-                                  textBn: "নতুন পয়েন্ট",
-                                  visible: true,
-                                  icon: "Check",
-                                  order:
-                                    (editingProduct.bulletPoints?.length || 0) +
-                                    1,
-                                };
-                                setEditingProduct({
-                                  ...editingProduct,
-                                  bulletPoints: [
-                                    ...(editingProduct.bulletPoints || []),
-                                    newPoint,
-                                  ],
-                                });
-                              }}
-                              className="bg-white/5 hover:bg-white/10 text-text-primary px-5 py-3 rounded-xl border border-white/10 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all"
-                            >
-                              <Plus className="w-4 h-4" /> Add Point
-                            </button>
-                          </div>
-
-                          <SortableList
-                            items={(editingProduct.bulletPoints || []).map(
-                              (p: any, i: number) => ({
-                                ...p,
-                                id: `point-${i}`,
-                              }),
-                            )}
-                            idField="id"
-                            onReorder={(newPoints) =>
-                              setEditingProduct({
-                                ...editingProduct,
-                                bulletPoints: newPoints,
-                              })
-                            }
-                            renderItem={(point) => (
-                              <div className="bg-white/[0.03] p-4 rounded-xl border border-white/5 flex items-center gap-4">
-                                <input
-                                  className="admin-input-sm flex-1"
-                                  value={point.textEn}
-                                  onChange={(e) => {
-                                    const newPoints =
-                                      editingProduct.bulletPoints.map(
-                                        (p: any, idx: number) =>
-                                          `point-${idx}` === point.id
-                                            ? { ...p, textEn: e.target.value }
-                                            : p,
-                                      );
-                                    setEditingProduct({
-                                      ...editingProduct,
-                                      bulletPoints: newPoints,
-                                    });
-                                  }}
-                                />
-                                <button
-                                  onClick={() => {
-                                    const newPoints =
-                                      editingProduct.bulletPoints.filter(
-                                        (p: any, idx: number) =>
-                                          `point-${idx}` !== point.id,
-                                      );
-                                    setEditingProduct({
-                                      ...editingProduct,
-                                      bulletPoints: newPoints,
-                                    });
-                                  }}
-                                  className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
-                            )}
-                          />
-                        </div>
-                      )}
-
-                      {activeEditorTab === "features" && (
-                        <div className="space-y-8">
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-xl font-black uppercase tracking-widest text-primary">
-                              Comparison Features
-                            </h4>
-                            <button
-                              onClick={() => {
-                                const newFeature = {
-                                  textEn: "New Feature",
-                                  textBn: "নতুন ফিচার",
-                                  visible: true,
-                                  highlighted: false,
-                                  order:
-                                    (editingProduct.features?.length || 0) + 1,
-                                  includedInPlanIds: [],
-                                };
-                                setEditingProduct({
-                                  ...editingProduct,
-                                  features: [
-                                    ...(editingProduct.features || []),
-                                    newFeature,
-                                  ],
-                                });
-                              }}
-                              className="bg-white/5 hover:bg-white/10 text-text-primary px-5 py-3 rounded-xl border border-white/10 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all"
-                            >
-                              <Plus className="w-4 h-4" /> Add Feature
-                            </button>
-                          </div>
-
-                          <div className="space-y-4">
-                            {(editingProduct.features || []).map(
-                              (feature: any, fIdx: number) => (
-                                <div
-                                  key={fIdx}
-                                  className="bg-white/[0.02] p-6 rounded-3xl border border-white/5 space-y-6"
-                                >
-                                  <div className="flex items-center gap-4">
-                                    <input
-                                      className="admin-input flex-1"
-                                      value={feature.textEn}
-                                      onChange={(e) => {
-                                        const newFeatures = [
-                                          ...editingProduct.features,
-                                        ];
-                                        newFeatures[fIdx].textEn =
-                                          e.target.value;
-                                        setEditingProduct({
-                                          ...editingProduct,
-                                          features: newFeatures,
-                                        });
-                                      }}
-                                    />
-                                    <button
-                                      onClick={() => {
-                                        const newFeatures =
-                                          editingProduct.features.filter(
-                                            (_: any, i: number) => i !== fIdx,
-                                          );
-                                        setEditingProduct({
-                                          ...editingProduct,
-                                          features: newFeatures,
-                                        });
-                                      }}
-                                      className="w-12 h-12 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center border border-red-500/20"
-                                    >
-                                      <Trash2 className="w-5 h-5" />
-                                    </button>
-                                  </div>
-
-                                  <div className="flex flex-wrap gap-4">
-                                    {editingProduct.plans?.map((plan: any) => {
-                                      const isIncluded =
-                                        feature.includedInPlanIds?.includes(
-                                          plan.id,
-                                        );
-                                      return (
-                                        <button
-                                          key={plan.id}
-                                          onClick={() => {
-                                            const newFeatures = [
-                                              ...editingProduct.features,
-                                            ];
-                                            const planIds =
-                                              newFeatures[fIdx]
-                                                .includedInPlanIds || [];
-                                            if (isIncluded) {
-                                              newFeatures[
-                                                fIdx
-                                              ].includedInPlanIds =
-                                                planIds.filter(
-                                                  (id: string) =>
-                                                    id !== plan.id,
-                                                );
-                                            } else {
-                                              newFeatures[
-                                                fIdx
-                                              ].includedInPlanIds = [
-                                                ...planIds,
-                                                plan.id,
-                                              ];
-                                            }
-                                            setEditingProduct({
-                                              ...editingProduct,
-                                              features: newFeatures,
-                                            });
-                                          }}
-                                          className={`px-4 py-2 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
-                                            isIncluded
-                                              ? "bg-success/10 text-success border-success/20"
-                                              : "bg-white/5 text-text-muted border-white/10"
-                                          }`}
-                                        >
-                                          {isIncluded ? (
-                                            <Check className="w-3 h-3" />
-                                          ) : (
-                                            <X className="w-3 h-3" />
-                                          )}
-                                          {plan.nameEn}
-                                        </button>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-                              ),
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
-              </div>
-
-              {/* Modal Footer */}
-              <div className="p-8 lg:p-12 border-t border-white/5 bg-white/[0.01] flex items-center justify-end gap-6">
-                <button
-                  onClick={() => setEditingProduct(null)}
-                  className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted hover:text-text-primary transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    updateProduct(editingProduct);
-                    setEditingProduct(null);
-                  }}
-                  className="bg-primary text-white px-12 py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-primary/20 hover:bg-primary-light transition-all"
-                >
-                  Save Full Product
-                </button>
-              </div>
-            </motion.div>
-          </div>
+          <ProductEditor
+            product={editingProduct}
+            activeTab={activeEditorTab}
+            setActiveTab={setActiveEditorTab}
+            setProduct={setEditingProduct}
+            onClose={() => setEditingProduct(null)}
+            onSave={handleSave}
+          />
         )}
       </AnimatePresence>
+    </div>
+  );
+}
 
-      <style jsx global>{`
-        .admin-input {
-          @apply bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all;
-        }
-        .admin-input-sm {
-          @apply bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all;
-        }
-      `}</style>
+// --- Subcomponents ---
+
+function ProductCard({ product, idx, onEdit, onToggleVisibility, onDelete }: any) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: idx * 0.1 }}
+      className={`glass-card rounded-[40px] p-6 lg:p-8 border-white/5 relative overflow-hidden group ${!product.visible ? "opacity-60" : ""}`}
+    >
+      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 blur-[120px] rounded-full -mr-48 -mt-48 transition-all group-hover:bg-primary/10" />
+
+      <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center">
+        {/* Product Image */}
+        <div className="w-24 h-24 md:w-32 md:h-32 rounded-3xl bg-white/5 border border-white/10 overflow-hidden flex-shrink-0">
+          <img src={product.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={product.titleEn} />
+        </div>
+
+        {/* Product Info */}
+        <div className="flex-1 text-center md:text-left space-y-2">
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2">
+            <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-widest">
+              {product.badgeEn}
+            </span>
+            <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/40 text-[9px] font-black uppercase tracking-widest">
+              {product.slug}
+            </span>
+          </div>
+          <h3 className="text-2xl font-black tracking-tight text-white">{product.titleEn}</h3>
+          <p className="text-text-muted text-sm font-medium line-clamp-2 max-w-2xl">{product.shortDescriptionEn}</p>
+        </div>
+
+        {/* Action Controls */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onToggleVisibility}
+            className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all border ${product.visible ? "bg-success/10 text-success border-success/20" : "bg-red-500/10 text-red-500 border-red-500/20"
+              }`}
+          >
+            {product.visible ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+          </button>
+          <button
+            onClick={onEdit}
+            className="w-12 h-12 rounded-2xl bg-white/5 text-text-primary hover:bg-primary hover:text-white transition-all flex items-center justify-center border border-white/10"
+          >
+            <Edit3 className="w-5 h-5" />
+          </button>
+          <button
+            onClick={onDelete}
+            className="w-12 h-12 rounded-2xl bg-white/5 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center border border-white/10"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function ProductEditor({ product, activeTab, setActiveTab, setProduct, onClose, onSave }: any) {
+  const tabs = [
+    { id: "general", label: "General", icon: Info },
+    { id: "plans", label: "Plans", icon: Layers },
+    { id: "bullets", label: "Highlights", icon: Type },
+    { id: "features", label: "Features", icon: Sparkles },
+  ];
+
+  const updateProduct = (field: string, val: any) => {
+    setProduct({ ...product, [field]: val });
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 lg:p-10 bg-black/80 backdrop-blur-xl">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="w-full max-w-7xl h-[90vh] bg-[#020617] rounded-[48px] border border-white/10 flex flex-col overflow-hidden shadow-2xl"
+      >
+        {/* Modal Header */}
+        <div className="px-10 py-8 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+              <Package className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-2xl font-black tracking-tight text-white">{product._id ? "Edit Product" : "New Product"}</h3>
+              <p className="text-text-muted text-xs font-bold uppercase tracking-widest">{product.titleEn || "Draft"}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button
+              onClick={onClose}
+              className="text-text-muted hover:text-white font-bold text-sm tracking-widest uppercase px-6"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onSave}
+              className="bg-primary text-white px-10 py-5 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-primary-light transition-all shadow-xl shadow-primary/20 flex items-center gap-2"
+            >
+              <Check className="w-4 h-4" /> Save Product
+            </button>
+          </div>
+        </div>
+
+        {/* Modal Body */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Sidebar Tabs */}
+          <div className="w-72 border-r border-white/5 p-6 bg-white/[0.01] flex flex-col gap-2">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-3 p-4 rounded-2xl transition-all group ${isActive ? "bg-primary text-white" : "text-text-muted hover:bg-white/5 hover:text-white"
+                    }`}
+                >
+                  <Icon className={`w-5 h-5 ${isActive ? "text-white" : "group-hover:text-primary"}`} />
+                  <span className="font-bold text-sm">{tab.label}</span>
+                  {isActive && <ChevronRight className="w-4 h-4 ml-auto" />}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-10 custom-scrollbar bg-[#020617]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                {activeTab === "general" && <GeneralEditor product={product} onChange={updateProduct} />}
+                {activeTab === "plans" && <PlansEditor product={product} onChange={updateProduct} />}
+                {activeTab === "bullets" && <BulletsEditor product={product} onChange={updateProduct} />}
+                {activeTab === "features" && <FeaturesEditor product={product} onChange={updateProduct} />}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+// --- Editor Tabs Components ---
+
+function InputField({ label, value, onChange, placeholder, type = "text", multiline = false }: any) {
+  return (
+    <div className="space-y-2">
+      <label className="text-[10px] font-black uppercase tracking-[2px] text-text-muted ml-1">{label}</label>
+      {multiline ? (
+        <textarea
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          rows={3}
+          className="admin-input min-h-[120px] w-full text-white placeholder:text-white/10"
+        />
+      ) : (
+        <input
+          type={type}
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="admin-input w-full text-white placeholder:text-white/10"
+        />
+      )}
+    </div>
+  );
+}
+
+function GeneralEditor({ product, onChange }: any) {
+  return (
+    <div className="space-y-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <div className="space-y-8">
+          <h4 className="text-primary font-black text-xs uppercase tracking-[3px] border-l-4 border-primary pl-4">English Core</h4>
+          <InputField label="Product Title" value={product.titleEn} onChange={(v: any) => onChange("titleEn", v)} />
+          <InputField label="Hero Badge" value={product.badgeEn} onChange={(v: any) => onChange("badgeEn", v)} />
+          <InputField label="Short Description" value={product.shortDescriptionEn} onChange={(v: any) => onChange("shortDescriptionEn", v)} multiline />
+          <InputField label="Button Text" value={product.buttonTextEn} onChange={(v: any) => onChange("buttonTextEn", v)} />
+        </div>
+        <div className="space-y-8">
+          <h4 className="text-secondary font-black text-xs uppercase tracking-[3px] border-l-4 border-secondary pl-4">Bangla Core</h4>
+          <InputField label="পণ্য টাইটেল" value={product.titleBn} onChange={(v: any) => onChange("titleBn", v)} />
+          <InputField label="হিরো ব্যাজ" value={product.badgeBn} onChange={(v: any) => onChange("badgeBn", v)} />
+          <InputField label="সংক্ষিপ্ত বর্ণনা" value={product.shortDescriptionBn} onChange={(v: any) => onChange("shortDescriptionBn", v)} multiline />
+          <InputField label="বাটন টেক্সট" value={product.buttonTextBn} onChange={(v: any) => onChange("buttonTextBn", v)} />
+        </div>
+      </div>
+
+      <div className="pt-10 border-t border-white/5 space-y-8">
+        <h4 className="text-info font-black text-xs uppercase tracking-[3px] border-l-4 border-info pl-4">Links & Media</h4>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <InputField label="Unique Slug" value={product.slug} onChange={(v: any) => onChange("slug", v)} placeholder="e.g. canva-pro" />
+          <InputField label="Image URL" value={product.image} onChange={(v: any) => onChange("image", v)} />
+          <InputField label="Telegram Link" value={product.telegramLink} onChange={(v: any) => onChange("telegramLink", v)} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PlansEditor({ product, onChange }: any) {
+  const addPlan = () => {
+    const newPlan = { id: Date.now().toString(), nameEn: "New Plan", nameBn: "নতুন প্ল্যান", priceTk: "0", originalPriceTk: "0", durationEn: "Monthly", durationBn: "মাসিক", isPopular: false };
+    onChange("plans", [...product.plans, newPlan]);
+  };
+
+  const updatePlan = (id: string, field: string, val: any) => {
+    onChange("plans", product.plans.map((p: any) => p.id === id ? { ...p, [field]: val } : p));
+  };
+
+  const removePlan = (id: string) => {
+    onChange("plans", product.plans.filter((p: any) => p.id !== id));
+  };
+
+  return (
+    <div className="space-y-10">
+      <div className="flex items-center justify-between">
+        <h4 className="text-primary font-black text-xs uppercase tracking-[3px] border-l-4 border-primary pl-4">Pricing Strategies</h4>
+        <button onClick={addPlan} className="bg-white/5 text-white px-6 py-3 rounded-2xl text-xs font-bold flex items-center gap-2 hover:bg-primary transition-all">
+          <Plus className="w-4 h-4" /> Add Pricing Plan
+        </button>
+      </div>
+
+      <div className="space-y-8">
+        {product.plans.map((plan: any, idx: number) => (
+          <div key={plan.id} className="p-8 rounded-[32px] bg-white/[0.02] border border-white/5 relative group">
+            <div className="absolute top-4 right-4 flex items-center gap-3">
+              <button
+                onClick={() => updatePlan(plan.id, "isPopular", !plan.isPopular)}
+                className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all ${plan.isPopular ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : "bg-white/5 text-white/20 border-white/10"
+                  }`}
+              >
+                {plan.isPopular ? "Popular Choice" : "Mark Popular"}
+              </button>
+              <button onClick={() => removePlan(plan.id)} className="w-10 h-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              <div className="space-y-6">
+                <InputField label="Plan Name (EN)" value={plan.nameEn} onChange={(v: any) => updatePlan(plan.id, "nameEn", v)} />
+                <InputField label="Duration (EN)" value={plan.durationEn} onChange={(v: any) => updatePlan(plan.id, "durationEn", v)} />
+              </div>
+              <div className="space-y-6">
+                <InputField label="প্ল্যান নাম (BN)" value={plan.nameBn} onChange={(v: any) => updatePlan(plan.id, "nameBn", v)} />
+                <InputField label="মেয়াদ (BN)" value={plan.durationBn} onChange={(v: any) => updatePlan(plan.id, "durationBn", v)} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <InputField label="Sale Price (TK)" value={plan.priceTk} onChange={(v: any) => updatePlan(plan.id, "priceTk", v)} />
+              <InputField label="Regular Price (TK)" value={plan.originalPriceTk} onChange={(v: any) => updatePlan(plan.id, "originalPriceTk", v)} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BulletsEditor({ product, onChange }: any) {
+  const addItem = () => {
+    const newItem = { id: Date.now().toString(), textEn: "Feature Point", textBn: "ফিচার পয়েন্ট", icon: "Check", order: product.bulletPoints.length };
+    onChange("bulletPoints", [...product.bulletPoints, newItem]);
+  };
+
+  const updateItem = (id: string, field: string, val: any) => {
+    onChange("bulletPoints", product.bulletPoints.map((b: any) => b.id === id ? { ...b, [field]: val } : b));
+  };
+
+  const removeItem = (id: string) => {
+    onChange("bulletPoints", product.bulletPoints.filter((b: any) => b.id !== id));
+  };
+
+  return (
+    <div className="space-y-10">
+      <div className="flex items-center justify-between">
+        <h4 className="text-secondary font-black text-xs uppercase tracking-[3px] border-l-4 border-secondary pl-4">Key Highlights</h4>
+        <button onClick={addItem} className="bg-white/5 text-white px-6 py-3 rounded-2xl text-xs font-bold flex items-center gap-2 hover:bg-secondary transition-all">
+          <Plus className="w-4 h-4" /> Add Highlight
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        {product.bulletPoints.map((item: any) => (
+          <div key={item.id} className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col md:flex-row gap-6 relative group">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <InputField label="Point (EN)" value={item.textEn} onChange={(v: any) => updateItem(item.id, "textEn", v)} />
+              <InputField label="পয়েন্ট (BN)" value={item.textBn} onChange={(v: any) => updateItem(item.id, "textBn", v)} />
+            </div>
+            <div className="w-full md:w-48">
+              <InputField label="Icon Name" value={item.icon} onChange={(v: any) => updateItem(item.id, "icon", v)} />
+            </div>
+            <button onClick={() => removeItem(item.id)} className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all border border-red-500/20 hover:bg-red-500 hover:text-white">
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FeaturesEditor({ product, onChange }: any) {
+  const addItem = () => {
+    const newItem = { id: Date.now().toString(), textEn: "Main Feature", textBn: "মূল ফিচার", visible: true, highlighted: false, order: product.features.length, includedInPlanIds: [] };
+    onChange("features", [...product.features, newItem]);
+  };
+
+  const updateItem = (id: string, field: string, val: any) => {
+    onChange("features", product.features.map((f: any) => f.id === id ? { ...f, [field]: val } : f));
+  };
+
+  const removeItem = (id: string) => {
+    onChange("features", product.features.filter((f: any) => f.id !== id));
+  };
+
+  const togglePlanInFeature = (featureId: string, planId: string) => {
+    const feature = product.features.find((f: any) => f.id === featureId);
+    const included = feature.includedInPlanIds || [];
+    const newIncluded = included.includes(planId)
+      ? included.filter((id: string) => id !== planId)
+      : [...included, planId];
+    updateItem(featureId, "includedInPlanIds", newIncluded);
+  };
+
+  return (
+    <div className="space-y-10">
+      <div className="flex items-center justify-between">
+        <h4 className="text-info font-black text-xs uppercase tracking-[3px] border-l-4 border-info pl-4">Comparison Matrix</h4>
+        <button onClick={addItem} className="bg-white/5 text-white px-6 py-3 rounded-2xl text-xs font-bold flex items-center gap-2 hover:bg-info transition-all">
+          <Plus className="w-4 h-4" /> Add Feature Line
+        </button>
+      </div>
+
+      <div className="space-y-6">
+        {product.features.map((item: any) => (
+          <div key={item.id} className="p-8 rounded-[32px] bg-white/[0.02] border border-white/5 relative group">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              <InputField label="Feature Title (EN)" value={item.textEn} onChange={(v: any) => updateItem(item.id, "textEn", v)} />
+              <InputField label="ফিচার টাইটেল (BN)" value={item.textBn} onChange={(v: any) => updateItem(item.id, "textBn", v)} />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-6 pt-6 border-t border-white/5">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase text-text-muted tracking-widest mr-2">Status:</span>
+                <button
+                  onClick={() => updateItem(item.id, "visible", !item.visible)}
+                  className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${item.visible ? "bg-success/10 text-success border-success/20" : "bg-white/5 text-white/20 border-white/10"
+                    }`}
+                >
+                  {item.visible ? "Visible" : "Hidden"}
+                </button>
+                <button
+                  onClick={() => updateItem(item.id, "highlighted", !item.highlighted)}
+                  className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${item.highlighted ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : "bg-white/5 text-white/20 border-white/10"
+                    }`}
+                >
+                  {item.highlighted ? "★ Highlighted" : "Regular"}
+                </button>
+              </div>
+
+              <div className="h-4 w-px bg-white/5 mx-2" />
+
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[10px] font-black uppercase text-text-muted tracking-widest mr-2">Included in:</span>
+                {product.plans.map((plan: any) => {
+                  const isIncluded = (item.includedInPlanIds || []).includes(plan.id);
+                  return (
+                    <button
+                      key={plan.id}
+                      onClick={() => togglePlanInFeature(item.id, plan.id)}
+                      className={`px-4 py-1.5 rounded-xl text-[9px] font-bold transition-all border ${isIncluded ? "bg-primary text-white border-primary" : "bg-white/5 text-text-muted border-white/10"
+                        }`}
+                    >
+                      {plan.nameEn}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <button onClick={() => removeItem(item.id)} className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+              <Trash2 className="w-5 h-5" />
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
