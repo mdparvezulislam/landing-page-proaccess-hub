@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import connectDB from '@/lib/mongodb';
 import FAQ from '@/models/FAQ';
 import { verifyAdmin } from '@/lib/adminAuth';
@@ -27,10 +28,12 @@ export async function POST(req: Request) {
     if (_id) {
       const faq = await FAQ.findByIdAndUpdate(_id, updateData, { new: true });
       if (!faq) return NextResponse.json({ error: 'FAQ not found' }, { status: 404 });
+      revalidatePath('/');
       return NextResponse.json(faq);
     }
 
     const faq = await FAQ.create(updateData);
+    revalidatePath('/');
     return NextResponse.json(faq);
   } catch (error: any) {
     console.error('POST /api/faqs Error:', error);

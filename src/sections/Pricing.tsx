@@ -120,6 +120,17 @@ export const Pricing = ({ data }: { data: any }) => {
                           {t(plan.nameEn, plan.nameBn)}
                         </h3>
                         <div className="flex flex-col">
+                          {plan.originalPriceTk && (
+                            <div className="flex items-center gap-1 opacity-40 line-through mb-1">
+                              <span className="text-lg lg:text-xl font-bold">
+                                {mounted ? convertPrice(plan.originalPriceTk).amount : plan.originalPriceTk}
+                              </span>
+                              <span className="text-xs lg:text-sm font-black">{currency}</span>
+                              <span className="ml-2 px-2 py-0.5 rounded-md bg-red-500/20 text-red-500 text-[10px] font-black uppercase">
+                                {Math.round(((plan.originalPriceTk - plan.priceTk) / plan.originalPriceTk) * 100)}% OFF
+                              </span>
+                            </div>
+                          )}
                           <div className="flex items-baseline gap-2">
                             <span className="text-4xl lg:text-5xl font-black tracking-tighter leading-none">{amount}</span>
                             <span className="text-sm lg:text-lg font-black text-text-muted">{currency}</span>

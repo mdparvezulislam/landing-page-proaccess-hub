@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import connectDB from '@/lib/mongodb';
 import { verifyAdmin } from '@/lib/adminAuth';
 
@@ -28,6 +29,7 @@ export function createCollectionItemRoute(Model: any) {
 
         const item = await Model.findByIdAndUpdate(id, data, { new: true });
         if (!item) return NextResponse.json({ error: 'Item not found' }, { status: 404 });
+        revalidatePath('/');
         return NextResponse.json(item);
       } catch (error: any) {
         console.error(`PATCH Collection Item Error:`, error);
@@ -44,6 +46,7 @@ export function createCollectionItemRoute(Model: any) {
         await connectDB();
         const item = await Model.findByIdAndDelete(id);
         if (!item) return NextResponse.json({ error: 'Item not found' }, { status: 404 });
+        revalidatePath('/');
         return NextResponse.json({ message: 'Deleted' });
       } catch (error: any) {
         console.error(`DELETE Collection Item Error:`, error);

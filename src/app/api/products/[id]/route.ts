@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import connectDB from '@/lib/mongodb';
 import Product from '@/models/Product';
 import { verifyAdmin } from '@/lib/adminAuth';
@@ -27,6 +28,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     const product = await Product.findByIdAndUpdate(id, data, { new: true });
     if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+    revalidatePath('/');
     return NextResponse.json(product);
   } catch (error: any) {
     console.error(`PATCH /api/products/${(await params).id} Error:`, error);
@@ -43,6 +45,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     await connectDB();
     const product = await Product.findByIdAndDelete(id);
     if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+    revalidatePath('/');
     return NextResponse.json({ message: 'Product deleted' });
   } catch (error: any) {
     console.error(`DELETE /api/products/${(await params).id} Error:`, error);

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import connectDB from '@/lib/mongodb';
 import Review from '@/models/Review';
 import { verifyAdmin } from '@/lib/adminAuth';
@@ -27,10 +28,12 @@ export async function POST(req: Request) {
     if (_id) {
       const review = await Review.findByIdAndUpdate(_id, updateData, { new: true });
       if (!review) return NextResponse.json({ error: 'Review not found' }, { status: 404 });
+      revalidatePath('/');
       return NextResponse.json(review);
     }
 
     const review = await Review.create(updateData);
+    revalidatePath('/');
     return NextResponse.json(review);
   } catch (error: any) {
     console.error('POST /api/reviews Error:', error);

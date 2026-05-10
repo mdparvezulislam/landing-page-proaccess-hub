@@ -196,14 +196,29 @@ export default function CheckoutPage() {
                   </div>
                 </div>
                 <div className="text-right flex flex-col items-end">
+                  {plan.originalPriceTk && plan.originalPriceTk > plan.priceTk && (
+                    <div className="flex items-center gap-1.5 opacity-40 line-through mb-1">
+                      <span className="text-xs lg:text-lg font-bold">
+                        {isHydrated ? convertPrice(plan.originalPriceTk).amount : plan.originalPriceTk}
+                      </span>
+                      <span className="text-[8px] lg:text-xs font-black uppercase">{currency}</span>
+                    </div>
+                  )}
                   <span className="text-xl lg:text-5xl font-black text-text-primary tracking-tighter flex items-baseline gap-0.5">
                     {amount} <span className="text-[10px] lg:text-lg opacity-40 uppercase">{currency}</span>
                   </span>
-                  {currentCurrency === 'USDT' && (
-                    <span className="text-[8px] lg:text-sm font-black text-white/20 uppercase tracking-tighter">
-                      ({plan.priceTk} BDT)
-                    </span>
-                  )}
+                  <div className="flex flex-col items-end gap-1 mt-1">
+                    {currentCurrency === 'USDT' && (
+                      <span className="text-[8px] lg:text-sm font-black text-white/20 uppercase tracking-tighter">
+                        ({plan.priceTk} BDT)
+                      </span>
+                    )}
+                    {plan.originalPriceTk && plan.originalPriceTk > plan.priceTk && (
+                      <span className="px-2 py-0.5 rounded-md bg-success/10 text-success text-[7px] lg:text-[9px] font-black uppercase tracking-widest border border-success/20">
+                        {t('SAVE', 'সঞ্চয়')} {isHydrated ? convertPrice(plan.originalPriceTk - plan.priceTk).amount : (plan.originalPriceTk - plan.priceTk)} {currency}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import connectDB from '@/lib/mongodb';
 import Settings from '@/models/Settings';
 import { verifyAdmin } from '@/lib/adminAuth';
@@ -33,6 +34,7 @@ export async function POST(req: Request) {
       settings = await Settings.create(data);
     }
     
+    revalidatePath('/');
     return NextResponse.json(settings);
   } catch (error: any) {
     console.error('POST /api/settings Error:', error);

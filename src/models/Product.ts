@@ -5,6 +5,7 @@ export interface IProductPlan {
   nameEn: string;
   nameBn: string;
   priceTk: number;
+  originalPriceTk?: number;
   priceUsd?: number;
   duration: 'Monthly' | 'Yearly' | 'Lifetime';
 }
@@ -55,6 +56,7 @@ const PlanSchema = new Schema({
   nameEn: { type: String, required: true },
   nameBn: { type: String, required: true },
   priceTk: { type: Number, required: true },
+  originalPriceTk: { type: Number },
   priceUsd: { type: Number },
   duration: { type: String, enum: ['Monthly', 'Yearly', 'Lifetime'], required: true },
 });

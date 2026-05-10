@@ -62,16 +62,16 @@ export const FAQSection = ({ data, settings: rawSettings }: { data: any, setting
               className="group"
             >
               <button
-                onClick={() => setActiveIndex(activeIndex === faq.id ? null : faq.id)}
+                onClick={() => setActiveIndex(activeIndex === faq._id ? null : faq._id)}
                 className={`w-full text-left p-6 lg:p-8 rounded-2xl lg:rounded-3xl border-2 transition-all duration-500 flex items-center justify-between gap-6 ${
-                  activeIndex === faq.id
+                  activeIndex === faq._id
                     ? 'bg-white/[0.04] border-primary/40 shadow-2xl shadow-primary/10'
                     : 'bg-white/[0.02] border-white/5 hover:border-white/20'
                 }`}
               >
                 <div className="flex items-center gap-4 lg:gap-6">
                   <div className={`w-10 lg:w-14 h-10 lg:h-14 rounded-xl lg:rounded-2xl flex items-center justify-center flex-shrink-0 transition-all duration-500 ${
-                    activeIndex === faq.id ? 'bg-primary text-white' : 'bg-white/5 text-text-muted group-hover:text-primary'
+                    activeIndex === faq._id ? 'bg-primary text-white' : 'bg-white/5 text-text-muted group-hover:text-primary'
                   }`}>
                     <MessageSquare className="w-5 lg:w-7 h-5 lg:h-7" />
                   </div>
@@ -80,14 +80,14 @@ export const FAQSection = ({ data, settings: rawSettings }: { data: any, setting
                   </span>
                 </div>
                 <div className={`w-10 lg:w-12 h-10 lg:h-12 rounded-full border border-white/10 flex items-center justify-center transition-all duration-500 ${
-                  activeIndex === faq.id ? 'rotate-180 bg-primary/20 border-primary/40 text-primary-light' : 'text-text-muted group-hover:text-text-primary'
+                  activeIndex === faq._id ? 'rotate-180 bg-primary/20 border-primary/40 text-primary-light' : 'text-text-muted group-hover:text-text-primary'
                 }`}>
                   <ChevronDown className="w-5 lg:w-6 h-5 lg:h-6" />
                 </div>
               </button>
 
               <AnimatePresence>
-                {activeIndex === faq.id && (
+                {activeIndex === faq._id && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}

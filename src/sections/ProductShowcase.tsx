@@ -171,11 +171,26 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, idx, language, handl
                 >
                   <div className={`absolute inset-0 opacity-0 group-hover/btn:opacity-10 bg-gradient-to-br ${planColor} transition-opacity duration-500`} />
 
+                  {/* Discount Badge */}
+                  {plan.originalPriceTk && plan.originalPriceTk > plan.priceTk && (
+                    <div className="absolute top-2 left-2 z-20 px-2 py-0.5 rounded-md bg-red-500 text-[7px] lg:text-[8px] font-black text-white uppercase tracking-tighter animate-pulse shadow-lg">
+                      {Math.round(((plan.originalPriceTk - plan.priceTk) / plan.originalPriceTk) * 100)}% OFF
+                    </div>
+                  )}
+
                   <span className={`text-[8px] lg:text-[9px] font-black uppercase tracking-[2px] transition-colors duration-300 ${isLifetime ? 'text-amber-400' : isYearly ? 'text-purple-400' : 'text-blue-400'
                     }`}>
                     {t(plan.nameEn, plan.nameBn)}
                   </span>
                   <div className="flex flex-col items-center">
+                    {plan.originalPriceTk && (
+                      <div className="flex items-center gap-1 opacity-40 line-through mb-0.5">
+                        <span className="text-[10px] lg:text-[12px] font-bold">
+                          {mounted ? convertPrice(plan.originalPriceTk).amount : plan.originalPriceTk}
+                        </span>
+                        <span className="text-[7px] lg:text-[8px] font-black">{currency}</span>
+                      </div>
+                    )}
                     <div className="flex items-baseline gap-1">
                       <span className="text-xl lg:text-2xl font-black tracking-tighter group-hover/btn:scale-105 transition-transform duration-500 text-white">{amount}</span>
                       <span className="text-[8px] lg:text-[9px] font-black opacity-40 uppercase tracking-widest ml-1 text-white">{currency}</span>

@@ -38,9 +38,9 @@ export const defaultData = {
       "order": 1,
       "slug": "method-hub",
       "plans": [
-        { "id": "p1", "nameEn": "Monthly Access", "nameBn": "মাসিক অ্যাক্সেস", "priceTk": 699, "duration": "Monthly" },
-        { "id": "p2", "nameEn": "Yearly Access", "nameBn": "বার্ষিক অ্যাক্সেস", "priceTk": 5000, "duration": "Yearly" },
-        { "id": "p3", "nameEn": "Lifetime Access", "nameBn": "লাইফটাইম অ্যাক্সেস", "priceTk": 1500, "duration": "Lifetime" }
+        { "id": "p1", "nameEn": "Monthly Access", "nameBn": "মাসিক অ্যাক্সেস", "priceTk": 699, "originalPriceTk": 999, "duration": "Monthly" },
+        { "id": "p2", "nameEn": "Yearly Access", "nameBn": "বার্ষিক অ্যাক্সেস", "priceTk": 5000, "originalPriceTk": 6500, "duration": "Yearly" },
+        { "id": "p3", "nameEn": "Lifetime Access", "nameBn": "লাইফটাইম অ্যাক্সেস", "priceTk": 1500, "originalPriceTk": 3500, "duration": "Lifetime" }
       ],
       "bulletPoints": [
         { "id": "b1", "textEn": "All Types of Working Methods", "textBn": "সব ধরণের ওয়ার্কিং মেথড", "visible": true, "order": 1 },
