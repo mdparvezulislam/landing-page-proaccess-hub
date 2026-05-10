@@ -23,12 +23,15 @@ export interface BulletPoint {
 
 export interface Feature {
   id: string;
-  text: string;
-  textBn: string;
-  available: boolean;
+  title: string;
+  titleBn: string;
   visible: boolean;
-  highlighted: boolean;
   order: number;
+  plans: {
+    monthly: boolean;
+    yearly: boolean;
+    lifetime: boolean;
+  };
 }
 
 export interface PaymentMethod {
@@ -41,6 +44,7 @@ export interface PaymentMethod {
   instructions: string;
   enabled: boolean;
   icon: string;
+  color: string;
   order: number;
 }
 
@@ -62,7 +66,7 @@ export interface Product {
   order: number;
   plans: ProductPlan[];
   bulletPoints: BulletPoint[];
-  features: Feature[];
+  features: { id: string; text: string; textBn: string; available: boolean; visible: boolean; highlighted: boolean; order: number }[];
 }
 
 export interface FAQ {
@@ -124,6 +128,7 @@ export interface SiteSettings {
   floatingCTA: string;
   floatingCTABn: string;
   logo: string;
+  adminPassword?: string;
 }
 
 export interface CountdownSettings {
@@ -273,61 +278,59 @@ interface AppState {
 const initialHero: HeroContent = {
   badge: "🔥 Bangladesh's #1 VIP Platform",
   badgeBn: "🔥 বাংলাদেশের #১ ভিআইপি প্ল্যাটফর্ম",
-  title: "Unlock Premium",
-  titleBn: "প্রিমিয়াম",
-  titleAccent: "Access",
-  titleAccentBn: "অ্যাক্সেস",
-  subtitle: "to the Internet",
-  subtitleBn: "আনলক করুন",
-  description: "Join thousands of smart Bangladeshis accessing premium tools, courses & methods at unbeatable prices.",
-  descriptionBn: "হাজার হাজার স্মার্ট বাংলাদেশীদের সাথে যোগ দিন এবং সেরা দামে প্রিমিয়াম টুলস, কোর্স ও মেথড পান।",
-  cta1: "Get VIP Access",
-  cta1Bn: "ভিআইপি অ্যাক্সেস পান",
-  cta2: "View Products",
-  cta2Bn: "পণ্য দেখুন",
-  backgroundImage: "https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop",
-  announcement: "Welcome to Pro Access Hub!",
-  announcementBn: "প্রো অ্যাক্সেস হাবে আপনাকে স্বাগতম!",
+  title: "Join the Elite",
+  titleBn: "এলিট কমিউনিটিতে",
+  titleAccent: "VIP Hub",
+  titleAccentBn: "যোগ দিন",
+  subtitle: "Access Tomorrow's Internet Today",
+  subtitleBn: "আগামীর প্রযুক্তি আজই পান",
+  description: "Get lifetime access to premium methods, verified resources, and exclusive tools used by the top 1% of digital entrepreneurs.",
+  descriptionBn: "সেরা ১% ডিজিটাল উদ্যোক্তাদের ব্যবহৃত প্রিমিয়াম মেথড, ভেরিফাইড রিসোর্স এবং এক্সক্লুসিভ টুলসের লাইফটাইম অ্যাক্সেস পান।",
+  cta1: "Get VIP Access Now",
+  cta1Bn: "ভিআইপি অ্যাক্সেস নিন",
+  cta2: "Compare Plans",
+  cta2Bn: "প্ল্যান তুলনা করুন",
+  backgroundImage: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=2832&auto=format&fit=crop",
+  announcement: "Limited Time: Lifetime Membership prices increasing in 48 hours!",
+  announcementBn: "সীমিত সময়: লাইফটাইম মেম্বারশিপের দাম ৪৮ ঘণ্টার মধ্যে বাড়ছে!",
   showAnnouncement: true,
   stats: [
-    { label: "Happy Users", labelBn: "সন্তুষ্ট ব্যবহারকারী", value: "10K+", valueBn: "১০কে+" },
-    { label: "Premium Tools", labelBn: "প্রিমিয়াম টুলস", value: "500+", valueBn: "৫০০+" },
-    { label: "Success Rate", labelBn: "সফলতার হার", value: "99%", valueBn: "৯৯+" },
+    { label: "Active Members", labelBn: "সক্রিয় সদস্য", value: "12,450+", valueBn: "১২,৪৫০+" },
+    { label: "Verified Resources", labelBn: "ভেরিফাইড রিসোর্স", value: "250K+", valueBn: "২৫০কে+" },
+    { label: "Daily Methods", labelBn: "ডেইলি মেথড", value: "15+", valueBn: "১৫+" },
+    { label: "Success Rate", labelBn: "সাফল্যের হার", value: "99.8%", valueBn: "৯৯.৮%" },
   ]
 };
 
 const initialProducts: Product[] = [
   {
-    id: 'method-hub',
-    title: 'Method Hub - Lifetime',
-    titleBn: 'মেথড হাব - লাইফটাইম',
-    subtitle: 'All Types of Working Methods & Resources Hub',
-    subtitleBn: 'সব ধরণের মেথড এবং রিসোর্স এর সমাহার',
-    badge: 'Best Seller',
-    badgeBn: 'বেস্ট সেলার',
-    shortDescription: 'Get access to everything you need to start your digital journey.',
-    shortDescriptionBn: 'আপনার ডিজিটাল যাত্রা শুরু করার জন্য প্রয়োজনীয় সবকিছুর অ্যাক্সেস পান।',
-    buttonText: 'Get Lifetime Access',
-    buttonTextBn: 'লাইফটাইম অ্যাক্সেস নিন',
+    id: 'vip-membership',
+    title: 'VIP Master Membership',
+    titleBn: 'ভিআইপি মাস্টার মেম্বারশিপ',
+    subtitle: 'Everything you need to scale',
+    subtitleBn: 'স্কেল করার জন্য যা প্রয়োজন',
+    badge: 'High Conversion',
+    badgeBn: 'হাই কনভার্সন',
+    shortDescription: 'The ultimate vault for digital nomads and smart hustlers in Bangladesh.',
+    shortDescriptionBn: 'বাংলাদেশের ডিজিটাল উদ্যোক্তা এবং স্মার্ট পেশাদারদের জন্য সেরা ভল্ট।',
+    buttonText: 'Join VIP Community',
+    buttonTextBn: 'ভিআইপি কমিউনিটিতে যোগ দিন',
     telegramLink: 'https://t.me/Agent_47VIP',
-    image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=2070&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop',
     visible: true,
     order: 1,
     plans: [
-      { id: 'plan-1', name: 'Lifetime Access', nameBn: 'লাইফটাইম অ্যাক্সেস', priceTk: 1500, priceUsd: 13, duration: 'Lifetime' }
+      { id: 'p1', name: 'Standard Monthly', nameBn: 'মান্থলি স্ট্যান্ডার্ড', priceTk: 499, priceUsd: 5, duration: 'Monthly' },
+      { id: 'p2', name: 'Elite Yearly', nameBn: 'ইয়ারলি এলিট', priceTk: 2499, priceUsd: 22, duration: 'Yearly' },
+      { id: 'p3', name: 'Legendary Lifetime', nameBn: 'লাইফটাইম লেজেন্ডারি', priceTk: 4999, priceUsd: 45, duration: 'Lifetime' }
     ],
     bulletPoints: [
-      { id: 'b1', text: 'All Types of Working Methods', textBn: 'সব ধরণের ওয়ার্কিং মেথড', visible: true, order: 1 },
-      { id: 'b2', text: 'Payment Gateway Unlock Systems', textBn: 'পেমেন্ট গেটওয়ে আনলক সিস্টেম', visible: true, order: 2 },
-      { id: 'b3', text: 'Ready-To-Sell High-Ticket Products', textBn: 'রেডি-টু-সেল হাই-টিকিট প্রোডাক্ট', visible: true, order: 3 },
-      { id: 'b4', text: 'Step-By-Step Launch Guides', textBn: 'স্টেপ-বাই-স্টেপ লঞ্চ গাইড', visible: true, order: 4 },
-      { id: 'b5', text: 'ChatGPT Plus & Go (Free)', textBn: 'চ্যাটজিপিটি প্লাস এবং গো (ফ্রি)', visible: true, order: 5 },
+      { id: 'b1', text: 'Daily Updated Working Methods', textBn: 'প্রতিদিন আপডেট হওয়া মেথড', visible: true, order: 1 },
+      { id: 'b2', text: 'Private Telegram VIP Group', textBn: 'প্রাইভেট টেলিগ্রাম ভিআইপি গ্রুপ', visible: true, order: 2 },
+      { id: 'b3', text: 'Exclusive Digital Asset Vault', textBn: 'এক্সক্লুসিভ ডিজিটাল অ্যাসেট ভল্ট', visible: true, order: 3 },
+      { id: 'b4', text: 'Direct 1-on-1 Support', textBn: 'সরাসরি ১-অন-১ সাপোর্ট', visible: true, order: 4 },
     ],
-    features: [
-      { id: 'f1', text: 'Gemini Pro + 5TB Drive 12M', textBn: 'জেমিনি প্রো + ৫টিবি ড্রাইভ ১২ মাস', available: true, visible: true, highlighted: false, order: 1 },
-      { id: 'f2', text: 'Adobe Photoshop Pro – 1 Year', textBn: 'অ্যাডোব ফটোশপ প্রো - ১ বছর', available: true, visible: true, highlighted: false, order: 2 },
-      { id: 'f3', text: 'Canva Pro – 3 Years', textBn: 'ক্যানভা প্রো - ৩ বছর', available: true, visible: true, highlighted: false, order: 3 },
-    ]
+    features: []
   }
 ];
 
@@ -344,7 +347,7 @@ export const useStore = create<AppState>()(
 
       products: initialProducts,
       setProducts: (products) => set({ products }),
-      addProduct: (product) => set((state) => ({ products: [...state.products, product] })),
+      addProduct: (product) => set((state) => ({ products: [product, ...state.products] })),
       updateProduct: (id, product) => set((state) => ({
         products: state.products.map((p) => (p.id === id ? product : p)),
       })),
@@ -353,10 +356,10 @@ export const useStore = create<AppState>()(
       })),
 
       faqs: [
-        { id: '1', q: 'How to pay?', qBn: 'কিভাবে পেমেন্ট করবেন?', a: 'You can pay via bKash/Nagad.', aBn: 'বিকাশ বা নগদের মাধ্যমে পেমেন্ট করতে পারেন।', visible: true, order: 1 }
+        { id: '1', q: 'How do I get access after payment?', qBn: 'পেমেন্টের পর এক্সেস পাবো কি?', a: 'You will get instant access credentials automatically after verification.', aBn: 'ভেরিফিকেশনের পর আপনি স্বয়ংক্রিয়ভাবে এক্সেস পেয়ে যাবেন।', visible: true, order: 1 }
       ],
       setFAQs: (faqs) => set({ faqs }),
-      addFAQ: (faq) => set((state) => ({ faqs: [...state.faqs, faq] })),
+      addFAQ: (faq) => set((state) => ({ faqs: [faq, ...state.faqs] })),
       updateFAQ: (id, faq) => set((state) => ({
         faqs: state.faqs.map((f) => (f.id === id ? faq : f)),
       })),
@@ -365,10 +368,11 @@ export const useStore = create<AppState>()(
       })),
 
       reviews: [
-        { id: '1', name: 'Rahat Ahmed', role: 'Digital Marketer', roleBn: 'ডিজিটাল মার্কেটার', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rahat', rating: 5, review: 'Great service!', reviewBn: 'দুর্দান্ত সার্ভিস!', featured: true, visible: true, order: 1 }
+        { id: '1', name: 'Ahmed Shuvo', role: 'Full Stack Developer', roleBn: 'ডেভেলপার', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmed', rating: 5, review: 'The best investment I made this year. The methods are actually working!', reviewBn: 'এ বছরের সেরা ইনভেস্টমেন্ট। মেথডগুলো সত্যিই কাজ করে!', featured: true, visible: true, order: 1 },
+        { id: '2', name: 'Sabbir Hossain', role: 'Freelancer', roleBn: 'ফ্রিল্যান্সার', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sabbir', rating: 5, review: 'Unlimited resources and a great community. Highly recommended.', reviewBn: 'অফুরন্ত রিসোর্স এবং চমৎকার কমিউনিটি। হাইলি রিকমেন্ডেড।', featured: true, visible: true, order: 2 }
       ],
       setReviews: (reviews) => set({ reviews }),
-      addReview: (review) => set((state) => ({ reviews: [...state.reviews, review] })),
+      addReview: (review) => set((state) => ({ reviews: [review, ...state.reviews] })),
       updateReview: (id, review) => set((state) => ({
         reviews: state.reviews.map((r) => (r.id === id ? review : r)),
       })),
@@ -378,11 +382,11 @@ export const useStore = create<AppState>()(
 
       countdown: {
         enabled: true,
-        targetDate: new Date(Date.now() + 86400000 * 3).toISOString(),
-        title: "Price Increasing Soon!",
-        titleBn: "মূল্য শীঘ্রই বাড়বে!",
-        subtitle: "Get your access before the price goes up.",
-        subtitleBn: "দাম বাড়ার আগেই আপনার অ্যাক্সেস নিন।",
+        targetDate: new Date(Date.now() + 86400000 * 2).toISOString(),
+        title: "Price Hike Incoming!",
+        titleBn: "মূল্য বাড়ছে!",
+        subtitle: "Join now to lock in your lifetime access before the price doubles.",
+        subtitleBn: "দাম দ্বিগুণ হওয়ার আগেই আপনার লাইফটাইম অ্যাক্সেস নিশ্চিত করুন।",
       },
       updateCountdown: (countdown) => set({ countdown }),
 
@@ -393,12 +397,12 @@ export const useStore = create<AppState>()(
         accountTypeBn: "ব্যক্তিগত",
         instructionTitle: "Payment Instructions",
         instructionTitleBn: "পেমেন্ট নির্দেশাবলী",
-        instructions: ["Send money to the number", "Message on Telegram"],
-        instructionsBn: ["নম্বরে মানি সেন্ড করুন", "টেলিগ্রামে মেসেজ দিন"],
+        instructions: ["Send money to the number", "Copy TrxID", "Submit verification form"],
+        instructionsBn: ["নম্বরে সেন্ড মানি করুন", "ট্রানজেকশন আইডি কপি করুন", "ভেরিফিকেশন ফর্ম জমা দিন"],
         qrCode: "",
         telegramLink: "https://t.me/Agent_47VIP",
-        warningText: "Please send the exact amount.",
-        warningTextBn: "অনুগ্রহ করে সঠিক পরিমাণ টাকা পাঠান।",
+        warningText: "Please ensure the amount is correct to avoid activation delays.",
+        warningTextBn: "অ্যাক্টিভেশনে বিলম্ব এড়াতে সঠিক পরিমাণ টাকা পাঠিয়েছেন তা নিশ্চিত করুন।",
         currency: "TK",
       },
       updatePaymentSettings: (paymentSettings) => set({ paymentSettings }),
@@ -408,93 +412,84 @@ export const useStore = create<AppState>()(
           id: 'bkash',
           name: "bKash",
           type: "Personal",
-          number: "",
-          accountName: "Pro Access",
+          number: "017XXXXXXXX",
+          accountName: "VIP Hub Admin",
           qrCode: "",
-          instructions: "Send Money to our bKash personal number and message us on Telegram with the transaction ID.",
+          instructions: "1. Dial *247# or open bKash app\n2. Select Send Money\n3. Enter the number above\n4. Enter the plan price\n5. Complete payment",
           enabled: true,
           icon: "bkash",
+          color: "#D12053",
           order: 1
         },
         {
           id: 'nagad',
           name: "Nagad",
           type: "Personal",
-          number: "",
-          accountName: "Pro Access",
+          number: "018XXXXXXXX",
+          accountName: "VIP Hub Admin",
           qrCode: "",
-          instructions: "Send Money to our Nagad personal number and message us on Telegram with the transaction ID.",
+          instructions: "1. Dial *167# or open Nagad app\n2. Select Send Money\n3. Enter the number above\n4. Enter the plan price\n5. Complete payment",
           enabled: true,
           icon: "nagad",
+          color: "#F7941D",
           order: 2
-        },
-        {
-          id: 'binance',
-          name: "Binance",
-          type: "Crypto",
-          number: "",
-          accountName: "Pro Access",
-          qrCode: "",
-          instructions: "Transfer USDT to our Binance Pay ID or BEP20 address and share the confirmation screenshot.",
-          enabled: true,
-          icon: "binance",
-          order: 3
         }
       ],
       setPaymentMethods: (paymentMethods) => set({ paymentMethods }),
-
       settings: {
-        siteName: "Pro Access VIP",
-        siteNameBn: "প্রো অ্যাক্সেস ভিআইপি",
+        siteName: "VIP Membership",
+        siteNameBn: "ভিআইপি মেম্বারশিপ",
         telegramLink: "https://t.me/Agent_47VIP",
         telegramHandle: "@Agent_47VIP",
         floatingCTA: "Join VIP",
-        floatingCTABn: "ভিআইপি যোগ দিন",
-        logo: "PAV",
+        floatingCTABn: "ভিআইপি জয়েন করুন",
+        logo: "VIP",
+        adminPassword: "admin123",
       },
       updateSettings: (settings) => set({ settings }),
 
       footer: {
-        copyright: "© 2024 Pro Access Hub. All Rights Reserved.",
-        copyrightBn: "© ২০২৪ প্রো অ্যাক্সেস হাব। সর্বস্বত্ব সংরক্ষিত।",
+        copyright: "© 2024 Pro Access VIP Hub. Crafted for Digital Nomads.",
+        copyrightBn: "© ২০২৪ প্রো অ্যাক্সেস ভিআইপি হাব। ডিজিটাল উদ্যোক্তাদের জন্য তৈরি।",
         links: [
-          { label: "Terms", labelBn: "শর্তাবলী", url: "#" },
-          { label: "Privacy", labelBn: "গোপনীয়তা", url: "#" },
+          { label: "Methods", labelBn: "মেথড", url: "#products" },
+          { label: "Pricing", labelBn: "প্রাইসিং", url: "#pricing" },
+          { label: "Reviews", labelBn: "রিভিউ", url: "#reviews" },
         ],
       },
       updateFooter: (footer) => set({ footer }),
 
       pricingFeatures: [
-        { id: '1', text: 'Premium Methods Access', textBn: 'প্রিমিয়াম মেথড এক্সেস', available: true, visible: true, order: 1, highlighted: true },
-        { id: '2', text: 'Private Resource Database', textBn: 'প্রাইভেট রিসোর্স ডাটাবেস', available: true, visible: true, order: 2, highlighted: false },
-        { id: '3', text: 'Lifetime Free Updates', textBn: 'লাইফটাইম ফ্রি আপডেট', available: true, visible: true, order: 3, highlighted: false },
-        { id: '4', text: 'Priority Telegram Support', textBn: 'প্রায়োরিটি টেলিগ্রাম সাপোর্ট', available: true, visible: true, order: 4, highlighted: false },
-        { id: '5', text: '24/7 Server Uptime', textBn: '২৪/৭ সার্ভার আপটাইম', available: true, visible: true, order: 5, highlighted: false },
-        { id: '6', text: 'No Hidden Charges', textBn: 'কোন হিডেন চার্জ নেই', available: false, visible: true, order: 6, highlighted: false },
+        { id: 'f1', title: 'Private Vault Access', titleBn: 'প্রাইভেট ভল্ট এক্সেস', visible: true, order: 1, plans: { monthly: true, yearly: true, lifetime: true } },
+        { id: 'f2', title: 'Daily Method Updates', titleBn: 'ডেইলি মেথড আপডেট', visible: true, order: 2, plans: { monthly: true, yearly: true, lifetime: true } },
+        { id: 'f3', title: 'VIP Community Access', titleBn: 'ভিআইপি কমিউনিটি এক্সেস', visible: true, order: 3, plans: { monthly: false, yearly: true, lifetime: true } },
+        { id: 'f4', title: '1-on-1 Strategy Calls', titleBn: '১-অন-১ স্ট্র্যাটেজি কল', visible: true, order: 4, plans: { monthly: false, yearly: false, lifetime: true } },
+        { id: 'f5', title: 'Premium Resource Packs', titleBn: 'প্রিমিয়াম রিসোর্স প্যাক', visible: true, order: 5, plans: { monthly: false, yearly: true, lifetime: true } },
+        { id: 'f6', title: 'Lifetime Free Updates', titleBn: 'লাইফটাইম ফ্রি আপডেট', visible: true, order: 6, plans: { monthly: false, yearly: false, lifetime: true } },
       ],
       setPricingFeatures: (pricingFeatures) => set({ pricingFeatures }),
 
       globalFeatures: [
         { id: '1', title: 'Private Database', titleBn: 'প্রাইভেট ডাটাবেস', description: 'Access to 250,000+ premium resources exclusively for VIPs.', descriptionBn: '২৫০,০০০+ প্রিমিয়াম রিসোর্সে ভিআইপিদের জন্য বিশেষ অ্যাক্সেস।', icon: 'Database', visible: true, order: 1 },
-        { id: '2', title: 'AI Agent Mastery', titleBn: 'এআই এজেন্ট মাস্টারি', description: 'Latest 2026 AI methods to automate your business.', descriptionBn: 'আপনার ব্যবসাকে অটোমেট করতে ২০২৬-এর লেটেস্ট এআই মেথড।', icon: 'Cpu', visible: true, order: 2 },
-        { id: '3', title: 'Verified Quality', titleBn: 'ভেরিফাইড কোয়ালিটি', description: 'Every resource is tested and verified by our experts.', descriptionBn: 'প্রতিটি রিসোর্স আমাদের বিশেষজ্ঞদের দ্বারা পরীক্ষিত ও ভেরিফাইড।', icon: 'ShieldCheck', visible: true, order: 3 },
+        { id: '2', title: 'AI Automation', titleBn: 'এআই অটোমেশন', description: 'Latest methods to automate your business using AI.', descriptionBn: 'এআই ব্যবহার করে আপনার ব্যবসাকে অটোমেট করার লেটেস্ট মেথড।', icon: 'Cpu', visible: true, order: 2 },
+        { id: '3', title: 'Verified Quality', titleBn: 'ভেরিফাইড কোয়ালিটি', description: 'Every resource is tested and verified by our experts.', descriptionBn: 'প্রতিটি রিসোর্স আমাদের বিশেষজ্ঞরা দ্বারা পরীক্ষিত ও ভেরিফাইড।', icon: 'ShieldCheck', visible: true, order: 3 },
       ],
       setGlobalFeatures: (globalFeatures) => set({ globalFeatures }),
 
       navbar: {
         items: [
           { label: "Home", labelBn: "হোম", url: "/", order: 1 },
-          { label: "Products", labelBn: "প্রোডাক্টস", url: "#products", order: 2 },
-          { label: "Reviews", labelBn: "রিভিউ", url: "#reviews", order: 3 },
-          { label: "FAQ", labelBn: "প্রশ্নোত্তর", url: "#faq", order: 4 },
+          { label: "Vault", labelBn: "ভল্ট", url: "#products", order: 2 },
+          { label: "Compare", labelBn: "তুলনা", url: "#pricing", order: 3 },
+          { label: "Testimonials", labelBn: "টেস্টিমোনিয়াল", url: "#reviews", order: 4 },
         ]
       },
       updateNavbar: (navbar) => set({ navbar }),
 
       trustBadges: [
-        { id: '1', text: "Secure Payment", textBn: "নিরাপদ পেমেন্ট", icon: "ShieldCheck", visible: true, order: 1 },
-        { id: '2', text: "24/7 Support", textBn: "২৪/৭ সাপোর্ট", icon: "Headphones", visible: true, order: 2 },
-        { id: '3', text: "Instant Access", textBn: "তাৎক্ষণিক অ্যাক্সেস", icon: "Zap", visible: true, order: 3 },
+        { id: '1', text: "Verified Secure", textBn: "ভেরিফাইড সিকিউর", icon: "Lock", visible: true, order: 1 },
+        { id: '2', text: "99.9% Success", textBn: "৯৯.৯% সফলতা", icon: "TrendingUp", visible: true, order: 2 },
+        { id: '3', text: "Instant Credentials", textBn: "তাৎক্ষণিক এক্সেস", icon: "Zap", visible: true, order: 3 },
       ],
       setTrustBadges: (trustBadges) => set({ trustBadges }),
 
@@ -517,7 +512,8 @@ export const useStore = create<AppState>()(
       setSelectedOrderContext: (context) => set({ selectedOrderContext: context }),
     }),
     {
-      name: 'pro-access-hub-cms-v2',
+      name: 'pro-access-hub-cms-v4',
     }
   )
 );
+

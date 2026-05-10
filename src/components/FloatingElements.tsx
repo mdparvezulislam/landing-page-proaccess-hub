@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useStore } from '../store/useStore';
-import { Send, ShoppingCart, ArrowUp } from 'lucide-react';
+import { Send, ShoppingCart, ArrowUp, Zap } from 'lucide-react';
 
 export const FloatingElements = () => {
   const { language, settings } = useStore();
@@ -17,38 +17,41 @@ export const FloatingElements = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const t = (en: string, bn: string) => language === 'en' ? en : bn;
+
   return (
     <>
       {/* Floating Telegram Support */}
-      <div className="fixed bottom-8 left-8 z-[60]">
+      <div className="fixed bottom-8 left-8 z-[150]">
         <motion.a
           href={settings.telegramLink}
           target="_blank"
           rel="noreferrer"
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          whileHover={{ scale: 1.1 }}
+          whileHover={{ scale: 1.1, rotate: 5 }}
           whileTap={{ scale: 0.9 }}
-          className="w-16 h-16 rounded-2xl bg-[#0088cc] text-white flex items-center justify-center shadow-2xl border border-white/20 group relative"
+          className="w-16 h-16 rounded-[24px] bg-[#0088cc] text-white flex items-center justify-center shadow-2xl border border-white/20 group relative overflow-hidden"
         >
-          <Send className="w-8 h-8" />
-          <div className="absolute left-full ml-4 px-4 py-2 bg-white text-bg-dark text-xs font-black rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl uppercase tracking-widest">
-            {language === 'en' ? 'Need Help?' : 'সাহায্য প্রয়োজন?'}
+          <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Send className="w-8 h-8 relative z-10" />
+          <div className="absolute left-full ml-4 px-5 py-2.5 bg-white text-bg-dark text-[10px] font-black rounded-xl opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0 whitespace-nowrap pointer-events-none shadow-2xl uppercase tracking-[2px] border border-white/20 backdrop-blur-xl">
+            {t('Join VIP Chat', 'ভিআইপি চ্যাট')}
           </div>
         </motion.a>
       </div>
 
       {/* Floating Buy Button (Mobile Only) */}
-      <div className="fixed bottom-8 right-8 z-[60] lg:hidden">
+      <div className="fixed bottom-8 right-8 z-[150] lg:hidden">
         <motion.a
           href="#pricing"
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          className="w-16 h-16 rounded-2xl bg-primary text-white flex items-center justify-center shadow-2xl border border-white/20 glow-btn"
+          className="w-16 h-16 rounded-[24px] bg-primary text-white flex items-center justify-center shadow-2xl border border-white/20 glow-btn"
         >
-          <ShoppingCart className="w-8 h-8" />
+          <Zap className="w-8 h-8 fill-white" />
         </motion.a>
       </div>
 
@@ -60,9 +63,9 @@ export const FloatingElements = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="fixed bottom-28 right-8 z-[60] w-10 h-10 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center text-text-muted hover:text-text-primary transition-all hidden lg:flex"
+            className="fixed bottom-28 right-8 z-[150] w-12 h-12 rounded-2xl bg-white/[0.03] backdrop-blur-2xl border border-white/10 flex items-center justify-center text-text-muted hover:text-text-primary transition-all hidden lg:flex shadow-2xl hover:bg-white/10 group"
           >
-            <ArrowUp className="w-5 h-5" />
+            <ArrowUp className="w-5 h-5 group-hover:-translate-y-1 transition-transform" />
           </motion.button>
         )}
       </AnimatePresence>
@@ -74,20 +77,21 @@ export const FloatingElements = () => {
             initial={{ y: 100 }}
             animate={{ y: 0 }}
             exit={{ y: 100 }}
-            className="fixed bottom-0 left-0 right-0 z-[50] p-4 lg:hidden"
+            className="fixed bottom-0 left-0 right-0 z-[140] p-4 lg:hidden"
           >
-            <div className="glass-card rounded-2xl p-4 flex items-center justify-between border-primary/30 premium-shadow backdrop-blur-2xl">
-              <div>
-                <p className="text-[10px] font-black text-primary-light uppercase tracking-widest">Limited Offer</p>
-                <p className="text-sm font-bold text-text-primary">
-                  {language === 'en' ? 'Get VIP Access' : 'ভিআইপি অ্যাক্সেস নিন'}
+            <div className="glass-card rounded-[32px] p-5 flex items-center justify-between border-primary/30 shadow-2xl backdrop-blur-3xl overflow-hidden relative">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-secondary to-primary" />
+              <div className="relative z-10">
+                <p className="text-[9px] font-black text-primary-light uppercase tracking-[2px] mb-1">Elite Opportunity</p>
+                <p className="text-sm font-black text-text-primary tracking-tight">
+                  {t('Join VIP Masterclass', 'ভিআইপি মেম্বারশিপ নিন')}
                 </p>
               </div>
               <a
                 href="#pricing"
-                className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm glow-btn"
+                className="bg-primary text-white px-8 py-4 rounded-[20px] font-black text-[11px] uppercase tracking-widest shadow-xl shadow-primary/20 glow-btn relative z-10"
               >
-                {language === 'en' ? 'Join Now' : 'এখনই যোগ দিন'}
+                {t('Access Now', 'এক্সেস নিন')}
               </a>
             </div>
           </motion.div>

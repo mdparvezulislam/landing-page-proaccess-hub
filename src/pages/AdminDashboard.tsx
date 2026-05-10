@@ -1,1012 +1,388 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useStore, Product, FAQ, Review, BulletPoint, Feature, ProductPlan } from '../store/useStore';
+import { useStore, HeroContent, Product, ProductPlan, Feature, FAQ, Review, PaymentMethod } from '../store/useStore';
 import {
    LayoutDashboard,
-   Package,
-   ShoppingCart,
    Settings,
+   Package,
+   CreditCard,
+   MessageSquare,
    HelpCircle,
-   Star,
-   Type,
-   Bell,
-   LogOut,
-   ChevronRight,
-   Save,
+   BarChart3,
    Plus,
    Trash2,
-   Check,
-   X,
-   Languages,
-   DollarSign,
-   Send,
-   Globe,
-   GripVertical,
-   Image as ImageIcon,
-   Link as LinkIcon,
-   ShieldCheck,
-   Zap,
-   Clock,
    Eye,
    EyeOff,
-   ChevronDown,
-   ChevronUp,
-   Layout
+   GripVertical,
+   ChevronRight,
+   LogOut,
+   Save,
+   Check,
+   X,
+   Upload,
+   Globe,
+   Star,
+   Users,
+   TrendingUp,
+   Wallet,
+   Calendar,
+   Smartphone,
+   ShieldCheck
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { toast } from 'sonner';
 
-// DnD Kit Imports
-import {
-   DndContext,
-   closestCenter,
-   KeyboardSensor,
-   PointerSensor,
-   useSensor,
-   useSensors,
-   DragEndEvent,
-} from '@dnd-kit/core';
-import {
-   arrayMove,
-   SortableContext,
-   sortableKeyboardCoordinates,
-   verticalListSortingStrategy,
-   useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+// --- Admin Components ---
 
-// --- Reusable Sortable Item Component ---
-interface SortableItemProps {
-   id: string;
-   children: React.ReactNode;
-   handleClassName?: string;
-   key?: any;
-}
-
-const SortableItem = ({ id, children, handleClassName }: SortableItemProps) => {
-   const {
-      attributes,
-      listeners,
-      setNodeRef,
-      transform,
-      transition,
-      isDragging,
-   } = useSortable({ id });
-
-   const style = {
-      transform: CSS.Transform.toString(transform),
-      transition,
-      zIndex: isDragging ? 50 : 'auto',
-      opacity: isDragging ? 0.5 : 1,
-   };
+const Sidebar = ({ activeTab, setActiveTab, onLogout }: any) => {
+   const menuItems = [
+      { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+      { id: 'orders', label: 'Orders', icon: CreditCard },
+      { id: 'hero', label: 'Hero Section', icon: LayoutDashboard },
+      { id: 'products', label: 'Products', icon: Package },
+      { id: 'pricing', label: 'Comparison', icon: BarChart3 },
+      { id: 'payments', label: 'Payments', icon: Wallet },
+      { id: 'reviews', label: 'Reviews', icon: Star },
+      { id: 'faq', label: 'FAQ', icon: HelpCircle },
+      { id: 'settings', label: 'Settings', icon: Settings },
+   ];
 
    return (
+      <aside className="w-80 h-screen sticky top-0 bg-[#05091D] border-r border-white/5 p-8 flex flex-col">
+         <div className="flex items-center gap-4 mb-12">
+            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-black">A</div>
+            <div>
+               <h1 className="font-black text-lg leading-none">Admin Panel</h1>
+               <span className="text-[10px] font-black text-primary uppercase tracking-widest mt-1">VIP Hub Console</span>
+            </div>
+         </div>
+
+         <nav className="space-y-2 flex-1">
+            {menuItems.map((item) => (
+               <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-bold text-sm transition-all group ${activeTab === item.id
+                        ? 'bg-primary text-white shadow-xl shadow-primary/20'
+                        : 'text-text-muted hover:text-text-primary hover:bg-white/5'
+                     }`}
+               >
+                  <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-white' : 'text-text-muted group-hover:text-primary'}`} />
+                  {item.label}
+               </button>
+            ))}
+         </nav>
+
+         <button
+            onClick={onLogout}
+            className="mt-8 flex items-center gap-4 px-6 py-4 rounded-2xl font-bold text-sm text-red-400 hover:bg-red-400/10 transition-all border border-red-400/10"
+         >
+            <LogOut className="w-5 h-5" />
+            Logout
+         </button>
+      </aside>
+   );
+};
+
+// Sortable Item Wrapper
+const SortableItem = ({ id, children }: any) => {
+   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+   const style = { transform: CSS.Transform.toString(transform), transition };
+   return (
       <div ref={setNodeRef} style={style} className="relative group">
-         <div {...attributes} {...listeners} className={`absolute left-2 top-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing p-2 text-text-muted hover:text-primary transition-colors z-10 ${handleClassName}`}>
-            <GripVertical className="w-4 h-4" />
+         <div {...attributes} {...listeners} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing p-2 bg-white/10 rounded-lg transition-all z-10">
+            <GripVertical className="w-4 h-4 text-text-muted" />
          </div>
          {children}
       </div>
    );
 };
 
-export const AdminDashboard = () => {
-   const [activeTab, setActiveTab] = useState('overview');
-   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-   const navigate = useNavigate();
-   const {
-      setAdminStatus,
-      language,
-      products,
-      setProducts,
-      hero,
-      updateHero,
-      faqs,
-      setFAQs,
-      reviews,
-      setReviews,
-      settings,
-      updateSettings,
-      paymentSettings,
-      updatePaymentSettings,
-      pixelSettings,
-      updatePixelSettings,
-      countdown,
-      updateCountdown,
-      footer,
-      updateFooter,
-      navbar,
-      updateNavbar,
-      trustBadges,
-      setTrustBadges,
-      globalFeatures,
-      setGlobalFeatures,
-      pricingFeatures,
-      setPricingFeatures,
-      paymentMethods,
-      setPaymentMethods
-   } = useStore();
+const OrdersTab = ({ orders, updateOrder, deleteOrder }: any) => {
+   const [filter, setFilter] = useState('All');
+   const [search, setSearch] = useState('');
 
-   const handleLogout = () => {
-      setAdminStatus(false);
-      navigate('/');
-      toast.info('Logged out from Admin Dashboard');
+   const filteredOrders = orders.filter((o: any) => {
+      const matchesFilter = filter === 'All' || o.status === filter;
+      const matchesSearch = o.customerName.toLowerCase().includes(search.toLowerCase()) || 
+                           o.transactionId.toLowerCase().includes(search.toLowerCase()) ||
+                           o.telegramUsername?.toLowerCase().includes(search.toLowerCase());
+      return matchesFilter && matchesSearch;
+   });
+
+   const getStatusColor = (status: string) => {
+      switch (status) {
+         case 'Completed': return 'bg-success/10 text-success border-success/20';
+         case 'Pending': return 'bg-warning/10 text-warning border-warning/20';
+         case 'Rejected': return 'bg-red-500/10 text-red-400 border-red-500/20';
+         default: return 'bg-white/5 text-text-muted border-white/10';
+      }
    };
 
-   const tabs = [
-      { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-      { id: 'hero', label: 'Hero', icon: Type },
-      { id: 'navbar', label: 'Navbar', icon: Layout },
-      { id: 'features', label: 'Features', icon: Zap },
-      { id: 'products', label: 'Products', icon: Package },
-      { id: 'reviews', label: 'Reviews', icon: Star },
-      { id: 'faq', label: 'FAQ', icon: HelpCircle },
-      { id: 'countdown', label: 'Countdown', icon: Clock },
-      { id: 'pricing', label: 'Pricing', icon: DollarSign },
-      { id: 'payment', label: 'Payment', icon: DollarSign },
-      { id: 'footer', label: 'Footer', icon: ShieldCheck },
-      { id: 'settings', label: 'Settings', icon: Settings },
-   ];
-
    return (
-      <div className="min-h-screen bg-[#020617] text-text-primary font-sans selection:bg-primary/30">
-         {/* Mobile Header */}
-         <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#0F172A] border-b border-white/5 z-[60] flex items-center justify-between px-6">
-            <div className="flex items-center gap-3">
-               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-black">A</div>
-               <span className="font-bold">Admin CMS</span>
+      <div className="space-y-10">
+         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 bg-white/5 p-10 rounded-[48px] border border-white/10">
+            <div>
+               <h3 className="text-3xl font-black tracking-tighter">Order Management</h3>
+               <p className="text-[10px] font-black text-text-muted uppercase tracking-[3px] mt-2">Verify transactions and activate memberships</p>
             </div>
-            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 text-text-primary">
-               {isSidebarOpen ? <X /> : <MenuIcon />}
-            </button>
-         </div>
-
-         <div className="flex pt-16 lg:pt-6">
-            {/* Sidebar */}
-            <aside className={`fixed inset-y-0 left-0 w-72 bg-[#0F172A] border-r border-white/5 z-50 transition-transform duration-300 lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-               <div className="flex flex-col h-full">
-                  <div className="p-10 hidden lg:flex items-center gap-4">
-                     <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-black text-xl shadow-lg shadow-primary/20">A</div>
-                     <div>
-                        <h1 className="font-black text-lg leading-none">Command</h1>
-                        <p className="text-[10px] text-text-muted uppercase tracking-widest font-bold mt-1">Center CMS</p>
-                     </div>
-                  </div>
-
-                  <nav className="flex-1 px-6 space-y-2 overflow-y-auto py-6 scrollbar-hide">
-                     {tabs.map(tab => (
-                        <button
-                           key={tab.id}
-                           onClick={() => { setActiveTab(tab.id); setIsSidebarOpen(false); }}
-                           className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === tab.id
-                              ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                              : 'text-text-muted hover:bg-white/5 hover:text-text-primary'
-                              }`}
-                        >
-                           <tab.icon className="w-5 h-5" />
-                           {tab.label}
-                        </button>
-                     ))}
-                  </nav>
-
-                  <div className="p-4 border-t border-white/5">
-                     <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-red-400 hover:bg-red-500/10 transition-all"
-                     >
-                        <LogOut className="w-5 h-5" />
-                        Logout System
-                     </button>
-                  </div>
+            <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
+               <div className="relative flex-1 lg:w-80">
+                  <input 
+                     type="text" 
+                     placeholder="Search by name, TrxID..." 
+                     value={search}
+                     onChange={(e) => setSearch(e.target.value)}
+                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-bold"
+                  />
                </div>
-            </aside>
-
-            {/* Main Content */}
-            <main className="flex-1 lg:ml-72 min-h-screen p-8 lg:pt-20 lg:pl-20 lg:pr-12 lg:pb-24">
-               <header className="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div>
-                     <div className="flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-[3px] mb-2">
-                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                        Admin Dashboard
-                     </div>
-                     <h1 className="text-4xl font-black text-text-primary tracking-tight">
-                        {tabs.find(t => t.id === activeTab)?.label}
-                     </h1>
-                  </div>
-
-                  <div className="flex items-center gap-3 bg-white/5 p-1.5 rounded-2xl border border-white/10">
-                     <div className="px-4 py-2 text-xs font-black text-text-muted border-r border-white/10 uppercase">Autosave Active</div>
-                     <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center text-success">
-                        <Check className="w-5 h-5" />
-                     </div>
-                  </div>
-               </header>
-
-               <AnimatePresence mode="wait">
-                  <motion.div
-                     key={activeTab}
-                     initial={{ opacity: 0, y: 20 }}
-                     animate={{ opacity: 1, y: 0 }}
-                     exit={{ opacity: 0, y: -20 }}
-                     transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-                     className="pb-20"
-                  >
-                     {activeTab === 'overview' && <OverviewTab products={products} />}
-                     {activeTab === 'hero' && <HeroTab hero={hero} updateHero={updateHero} />}
-                     {activeTab === 'navbar' && <NavbarTab navbar={navbar} updateNavbar={updateNavbar} />}
-                     {activeTab === 'features' && <FeaturesTab globalFeatures={globalFeatures} setGlobalFeatures={setGlobalFeatures} />}
-                     {activeTab === 'products' && <ProductsTab products={products} setProducts={setProducts} />}
-                     {activeTab === 'reviews' && <ReviewsTab reviews={reviews} setReviews={setReviews} />}
-                     {activeTab === 'faq' && <FAQTab faqs={faqs} setFAQs={setFAQs} />}
-                     {activeTab === 'countdown' && <CountdownTab countdown={countdown} updateCountdown={updateCountdown} />}
-                     {activeTab === 'payment' && <PaymentTab paymentSettings={paymentSettings} updatePaymentSettings={updatePaymentSettings} paymentMethods={paymentMethods} setPaymentMethods={setPaymentMethods} />}
-                     {activeTab === 'pricing' && <PricingTab pricingFeatures={pricingFeatures} setPricingFeatures={setPricingFeatures} />}
-                     {activeTab === 'footer' && <FooterTab footer={footer} updateFooter={updateFooter} />}
-                     {activeTab === 'settings' && (
-                        <SettingsTab
-                           settings={settings}
-                           updateSettings={updateSettings}
-                           pixelSettings={pixelSettings}
-                           updatePixelSettings={updatePixelSettings}
-                           trustBadges={trustBadges}
-                           setTrustBadges={setTrustBadges}
-                        />
-                     )}
-                  </motion.div>
-               </AnimatePresence>
-            </main>
+               <div className="flex bg-white/5 p-1.5 rounded-2xl border border-white/10">
+                  {['All', 'Pending', 'Completed', 'Rejected'].map((f) => (
+                     <button
+                        key={f}
+                        onClick={() => setFilter(f)}
+                        className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === f ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:text-text-primary'}`}
+                     >
+                        {f}
+                     </button>
+                  ))}
+               </div>
+            </div>
          </div>
 
-         {/* Admin Quick Float */}
-         <Link to="/" className="fixed bottom-8 right-8 w-14 h-14 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center text-text-primary hover:bg-white/10 transition-all shadow-2xl z-[100] group">
-            <Eye className="w-6 h-6 group-hover:scale-110 transition-transform" />
-         </Link>
+         <div className="glass-card rounded-[48px] border-white/5 overflow-hidden">
+            <div className="overflow-x-auto">
+               <table className="w-full text-left border-collapse">
+                  <thead>
+                     <tr className="bg-white/[0.03] text-[10px] font-black text-text-muted uppercase tracking-[3px] border-b border-white/5">
+                        <th className="px-10 py-6">Customer</th>
+                        <th className="px-10 py-6">Order Details</th>
+                        <th className="px-10 py-6">Payment Info</th>
+                        <th className="px-10 py-6">Status</th>
+                        <th className="px-10 py-6 text-right">Actions</th>
+                     </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                     {filteredOrders.length === 0 ? (
+                        <tr>
+                           <td colSpan={5} className="px-10 py-32 text-center">
+                              <div className="flex flex-col items-center gap-4">
+                                 <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-text-muted">
+                                    <Package className="w-8 h-8 opacity-20" />
+                                 </div>
+                                 <span className="text-text-muted font-bold text-sm">No orders matching your criteria.</span>
+                              </div>
+                           </td>
+                        </tr>
+                     ) : (
+                        [...filteredOrders].reverse().map((order: any) => (
+                           <tr key={order.id} className="hover:bg-white/[0.01] transition-all group">
+                              <td className="px-10 py-8">
+                                 <div className="flex items-center gap-5">
+                                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-lg">
+                                       {order.customerName[0]}
+                                    </div>
+                                    <div className="flex flex-col">
+                                       <span className="font-black text-text-primary">{order.customerName}</span>
+                                       <span className="text-xs font-bold text-primary">@{order.telegramUsername}</span>
+                                    </div>
+                                 </div>
+                              </td>
+                              <td className="px-10 py-8">
+                                 <div className="flex flex-col gap-1.5">
+                                    <div className="flex items-center gap-2">
+                                       <span className="px-3 py-1 rounded-lg bg-white/5 text-[10px] font-black uppercase tracking-widest border border-white/10">{order.plan}</span>
+                                    </div>
+                                    <span className="text-lg font-black text-text-primary tracking-tighter">{order.amount.toLocaleString()} TK</span>
+                                    <span className="text-[10px] text-text-muted font-black uppercase tracking-widest">{new Date(order.createdAt).toLocaleString()}</span>
+                                 </div>
+                              </td>
+                              <td className="px-10 py-8">
+                                 <div className="flex flex-col gap-2">
+                                    <div className="flex items-center gap-2">
+                                       <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">TrxID:</span>
+                                       <span className="text-xs font-black text-success uppercase select-all">{order.transactionId}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                       <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">From:</span>
+                                       <span className="text-xs font-black text-text-primary">{order.paymentNumber}</span>
+                                    </div>
+                                 </div>
+                              </td>
+                              <td className="px-10 py-8">
+                                 <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border ${getStatusColor(order.status)}`}>
+                                    {order.status}
+                                 </span>
+                              </td>
+                              <td className="px-10 py-8">
+                                 <div className="flex items-center justify-end gap-3">
+                                    {order.status === 'Pending' && (
+                                       <>
+                                          <button 
+                                             onClick={() => {
+                                                updateOrder(order.id, { ...order, status: 'Completed' });
+                                                toast.success('Order Approved & Member Activated');
+                                             }}
+                                             className="w-12 h-12 rounded-2xl bg-success/10 text-success hover:bg-success hover:text-white transition-all flex items-center justify-center shadow-lg shadow-success/10"
+                                             title="Approve Order"
+                                          >
+                                             <Check className="w-5 h-5" />
+                                          </button>
+                                          <button 
+                                             onClick={() => {
+                                                updateOrder(order.id, { ...order, status: 'Rejected' });
+                                                toast.error('Order Rejected');
+                                             }}
+                                             className="w-12 h-12 rounded-2xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center shadow-lg shadow-red-500/10"
+                                             title="Reject Order"
+                                          >
+                                             <X className="w-5 h-5" />
+                                          </button>
+                                       </>
+                                    )}
+                                    <button 
+                                       onClick={() => {
+                                          if (confirm('Delete this order record permanently?')) {
+                                             deleteOrder(order.id);
+                                             toast.info('Order record deleted');
+                                          }
+                                       }}
+                                       className="w-12 h-12 rounded-2xl bg-white/5 text-text-muted hover:bg-red-500/10 hover:text-red-400 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"
+                                    >
+                                       <Trash2 className="w-5 h-5" />
+                                    </button>
+                                 </div>
+                              </td>
+                           </tr>
+                        ))
+                     )}
+                  </tbody>
+               </table>
+            </div>
+         </div>
       </div>
    );
 };
 
-// --- Tab Components ---
+// ... Rest of components ...
 
-const OverviewTab = ({ products }: { products: Product[] }) => {
+const AnalyticsTab = ({ orders }: any) => {
+   const totalSales = orders.reduce((acc: number, order: any) => acc + (order.status === 'Completed' ? order.amount : 0), 0);
+   const activeOrders = orders.filter((o: any) => o.status === 'Pending').length;
+   const completedOrders = orders.filter((o: any) => o.status === 'Completed').length;
+   const conversionRate = orders.length > 0 ? Math.round((completedOrders / orders.length) * 100) : 0;
+
    const stats = [
-      { label: 'Platform Status', value: 'Operational', color: 'text-success', icon: Zap },
-      { label: 'Active Products', value: products.filter(p => p.visible).length, color: 'text-primary', icon: Package },
-      { label: 'Total Products', value: products.length, color: 'text-secondary', icon: Layout },
-      { label: 'Last Updated', value: 'Just Now', color: 'text-warning', icon: Clock },
+      { label: 'Total Sales', value: `${totalSales.toLocaleString()} TK`, icon: TrendingUp, color: 'text-success', bg: 'bg-success/10' },
+      { label: 'Pending Orders', value: activeOrders.toString(), icon: Package, color: 'text-primary', bg: 'bg-primary/10' },
+      { label: 'Total Customers', value: orders.length.toString(), icon: Users, color: 'text-secondary', bg: 'bg-secondary/10' },
+      { label: 'Conversion', value: `${conversionRate}%`, icon: Check, color: 'text-success', bg: 'bg-success/10' },
    ];
 
    return (
-      <div className="space-y-8">
+      <div className="space-y-10">
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {stats.map((stat, i) => (
-               <div key={i} className="glass-card p-8 rounded-3xl group hover:border-primary/30 transition-all duration-500">
-                  <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ${stat.color}`}>
+               <div key={i} className="glass-card p-8 rounded-[32px] border-white/5">
+                  <div className={`w-12 h-12 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center mb-6`}>
                      <stat.icon className="w-6 h-6" />
                   </div>
-                  <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">{stat.label}</p>
-                  <p className="text-2xl font-black text-text-primary">{stat.value}</p>
+                  <span className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-2 block">{stat.label}</span>
+                  <span className="text-3xl font-black text-text-primary tracking-tighter">{stat.value}</span>
                </div>
             ))}
          </div>
 
-         <div className="glass-card p-10 rounded-[40px] border-white/5 relative overflow-hidden">
-            <div className="relative z-10">
-               <h3 className="text-2xl font-black mb-2">Welcome to your CMS</h3>
-               <p className="text-text-secondary max-w-lg mb-8">Everything you see here is instantly reflected on your live landing page. No manual deployments needed.</p>
-               <div className="flex flex-wrap gap-4">
-                  <div className="px-6 py-4 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
-                     <div className="w-2 h-2 rounded-full bg-success" />
-                     <span className="text-sm font-bold">LocalStorage Sync Enabled</span>
-                  </div>
-                  <div className="px-6 py-4 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
-                     <div className="w-2 h-2 rounded-full bg-primary" />
-                     <span className="text-sm font-bold">Autosave Active</span>
-                  </div>
-               </div>
+         <div className="glass-card rounded-[40px] border-white/5 overflow-hidden">
+            <div className="p-8 border-b border-white/5 flex items-center justify-between">
+               <h3 className="text-xl font-black">Recent Orders</h3>
+               <button className="text-xs font-black text-primary hover:underline uppercase tracking-widest">View All</button>
             </div>
-            <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-primary/10 to-transparent -z-0" />
+            <div className="overflow-x-auto">
+               <table className="w-full text-left">
+                  <thead className="bg-white/[0.02] text-[10px] font-black text-text-muted uppercase tracking-[2px]">
+                     <tr>
+                        <th className="px-8 py-5">Customer</th>
+                        <th className="px-8 py-5">Plan</th>
+                        <th className="px-8 py-5">Amount</th>
+                        <th className="px-8 py-5">Status</th>
+                        <th className="px-8 py-5">Date</th>
+                     </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                     {orders.length === 0 ? (
+                        <tr>
+                           <td colSpan={5} className="px-8 py-20 text-center text-text-muted font-bold">No orders yet.</td>
+                        </tr>
+                     ) : (
+                        [...orders].reverse().map((order: any) => (
+                           <tr key={order.id} className="hover:bg-white/[0.01] transition-all">
+                              <td className="px-8 py-6">
+                                 <div className="flex flex-col">
+                                    <span className="font-black text-sm">{order.customerName}</span>
+                                    <span className="text-[10px] text-text-muted font-bold">{order.telegram}</span>
+                                 </div>
+                              </td>
+                              <td className="px-8 py-6">
+                                 <span className="px-3 py-1 rounded-lg bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest">{order.plan}</span>
+                              </td>
+                              <td className="px-8 py-6 font-black text-sm">{order.amount} TK</td>
+                              <td className="px-8 py-6">
+                                 <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${order.status === 'Completed' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'}`}>
+                                    {order.status}
+                                 </span>
+                              </td>
+                              <td className="px-8 py-6 text-text-muted text-xs font-bold">{new Date(order.createdAt).toLocaleDateString()}</td>
+                           </tr>
+                        ))
+                     )}
+                  </tbody>
+               </table>
+            </div>
          </div>
       </div>
    );
 };
 
 const HeroTab = ({ hero, updateHero }: any) => {
-   const [activeLang, setActiveLang] = useState<'en' | 'bn'>('en');
-
-   const handleChange = (field: string, value: any) => {
-      updateHero({ ...hero, [field]: value });
-   };
-
    return (
-      <div className="space-y-8">
-         <div className="glass-card p-10 rounded-[40px] border-white/5">
-            <div className="flex items-center justify-between mb-8">
-               <h3 className="text-xl font-black">Hero Content</h3>
-               <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
-                  <button onClick={() => setActiveLang('en')} className={`px-4 py-2 rounded-lg text-xs font-black transition-all ${activeLang === 'en' ? 'bg-white text-black shadow-lg' : 'text-text-muted hover:text-text-primary'}`}>ENGLISH</button>
-                  <button onClick={() => setActiveLang('bn')} className={`px-4 py-2 rounded-lg text-xs font-black transition-all ${activeLang === 'bn' ? 'bg-white text-black shadow-lg' : 'text-text-muted hover:text-text-primary'}`}>বাংলা</button>
+      <div className="space-y-10 max-w-4xl">
+         <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-10">
+            <div className="flex items-center gap-4 pb-6 border-b border-white/5">
+               <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary"><LayoutDashboard className="w-6 h-6" /></div>
+               <div>
+                  <h3 className="text-xl font-black">Main Hero Content</h3>
+                  <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Update the main entry section of your site</p>
                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-               <Input label={activeLang === 'en' ? "Badge Text" : "ব্যাজ টেক্সট"} value={activeLang === 'en' ? hero.badge : hero.badgeBn} onChange={(v) => handleChange(activeLang === 'en' ? 'badge' : 'badgeBn', v)} />
-               <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <Input label={activeLang === 'en' ? "Title Main" : "টাইটেল (প্রধান)"} value={activeLang === 'en' ? hero.title : hero.titleBn} onChange={(v) => handleChange(activeLang === 'en' ? 'title' : 'titleBn', v)} />
-                  <Input label={activeLang === 'en' ? "Title Accent" : "টাইটেল (অ্যাকসেন্ট)"} value={activeLang === 'en' ? hero.titleAccent : hero.titleAccentBn} onChange={(v) => handleChange(activeLang === 'en' ? 'titleAccent' : 'titleAccentBn', v)} />
-                  <Input label={activeLang === 'en' ? "Subtitle" : "সাবটাইটেল"} value={activeLang === 'en' ? hero.subtitle : hero.subtitleBn} onChange={(v) => handleChange(activeLang === 'en' ? 'subtitle' : 'subtitleBn', v)} />
-               </div>
-               <div className="md:col-span-2">
-                  <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-3 block">Description</label>
-                  <textarea
-                     value={activeLang === 'en' ? hero.description : hero.descriptionBn}
-                     onChange={(e) => handleChange(activeLang === 'en' ? 'description' : 'descriptionBn', e.target.value)}
-                     className="w-full bg-white/5 border border-white/10 rounded-[24px] px-6 py-5 text-sm font-medium focus:ring-2 focus:ring-primary/50 focus:outline-none transition-all h-32"
-                  />
-               </div>
-               <Input label="CTA Button 1" value={activeLang === 'en' ? hero.cta1 : hero.cta1Bn} onChange={(v) => handleChange(activeLang === 'en' ? 'cta1' : 'cta1Bn', v)} />
-               <Input label="CTA Button 2" value={activeLang === 'en' ? hero.cta2 : hero.cta2Bn} onChange={(v) => handleChange(activeLang === 'en' ? 'cta2' : 'cta2Bn', v)} />
-               <div className="md:col-span-2">
-                  <Input label="Background Image URL" value={hero.backgroundImage} onChange={(v) => handleChange('backgroundImage', v)} />
-               </div>
+               <Input label="Badge (EN)" value={hero.badge} onChange={(v) => updateHero({ ...hero, badge: v })} />
+               <Input label="Badge (BN)" value={hero.badgeBn} onChange={(v) => updateHero({ ...hero, badgeBn: v })} />
+               <Input label="Main Title (EN)" value={hero.title} onChange={(v) => updateHero({ ...hero, title: v })} />
+               <Input label="Main Title (BN)" value={hero.titleBn} onChange={(v) => updateHero({ ...hero, titleBn: v })} />
+               <Input label="Title Accent (EN)" value={hero.titleAccent} onChange={(v) => updateHero({ ...hero, titleAccent: v })} />
+               <Input label="Title Accent (BN)" value={hero.titleAccentBn} onChange={(v) => updateHero({ ...hero, titleAccentBn: v })} />
+               <Input label="Subtitle (EN)" value={hero.subtitle} onChange={(v) => updateHero({ ...hero, subtitle: v })} />
+               <Input label="Subtitle (BN)" value={hero.subtitleBn} onChange={(v) => updateHero({ ...hero, subtitleBn: v })} />
             </div>
-         </div>
 
-         <div className="glass-card p-10 rounded-[40px] border-white/5">
-            <h3 className="text-xl font-black mb-8">Hero Statistics</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-               {hero.stats.map((stat: any, i: number) => (
-                  <div key={i} className="p-6 rounded-3xl bg-white/5 border border-white/10 space-y-4">
-                     <div className="flex justify-between items-center mb-2">
-                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">Stat #{i + 1}</span>
-                     </div>
-                     <Input label="Value (EN)" value={stat.value} onChange={(v) => {
-                        const newStats = [...hero.stats];
-                        newStats[i].value = v;
-                        handleChange('stats', newStats);
-                     }} />
-                     <Input label="Value (BN)" value={stat.valueBn} onChange={(v) => {
-                        const newStats = [...hero.stats];
-                        newStats[i].valueBn = v;
-                        handleChange('stats', newStats);
-                     }} />
-                     <Input label="Label (EN)" value={stat.label} onChange={(v) => {
-                        const newStats = [...hero.stats];
-                        newStats[i].label = v;
-                        handleChange('stats', newStats);
-                     }} />
-                     <Input label="Label (BN)" value={stat.labelBn} onChange={(v) => {
-                        const newStats = [...hero.stats];
-                        newStats[i].labelBn = v;
-                        handleChange('stats', newStats);
-                     }} />
-                  </div>
-               ))}
+            <div className="space-y-2">
+               <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] ml-1">Description (EN)</label>
+               <textarea value={hero.description} onChange={(e) => updateHero({ ...hero, description: e.target.value })} className="w-full h-32 bg-white/5 border border-white/10 rounded-3xl p-6 text-sm focus:outline-none focus:ring-1 focus:ring-primary font-medium" />
             </div>
-         </div>
 
-         <div className="glass-card p-10 rounded-[40px] border-white/5">
-            <div className="flex items-center justify-between mb-8">
-               <h3 className="text-xl font-black">Announcement Banner</h3>
-               <button onClick={() => handleChange('showAnnouncement', !hero.showAnnouncement)} className={`px-6 py-3 rounded-2xl font-black text-xs transition-all ${hero.showAnnouncement ? 'bg-success/10 text-success border border-success/20' : 'bg-white/5 text-text-muted border border-white/10'}`}>
-                  {hero.showAnnouncement ? 'VISIBLE' : 'HIDDEN'}
-               </button>
+            <div className="space-y-2">
+               <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] ml-1">Description (BN)</label>
+               <textarea value={hero.descriptionBn} onChange={(e) => updateHero({ ...hero, descriptionBn: e.target.value })} className="w-full h-32 bg-white/5 border border-white/10 rounded-3xl p-6 text-sm focus:outline-none focus:ring-1 focus:ring-primary font-medium" />
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-               <Input label="Announcement (EN)" value={hero.announcement} onChange={(v) => handleChange('announcement', v)} />
-               <Input label="Announcement (BN)" value={hero.announcementBn} onChange={(v) => handleChange('announcementBn', v)} />
+               <Input label="Hero Image URL" value={hero.backgroundImage} onChange={(v) => updateHero({ ...hero, backgroundImage: v })} />
+               <Input label="Announcement" value={hero.announcement} onChange={(v) => updateHero({ ...hero, announcement: v })} />
             </div>
-         </div>
-      </div>
-   );
-};
-
-const NavbarTab = ({ navbar, updateNavbar }: any) => {
-   const sensors = useSensors(
-      useSensor(PointerSensor),
-      useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-   );
-
-   const handleDragEnd = (event: DragEndEvent) => {
-      const { active, over } = event;
-      if (over && active.id !== over.id) {
-         const oldIndex = navbar.items.findIndex((i: any) => i.url === active.id);
-         const newIndex = navbar.items.findIndex((i: any) => i.url === over.id);
-         const newItems = arrayMove(navbar.items, oldIndex, newIndex).map((item: any, index: number) => Object.assign({}, item, { order: index + 1 }));
-         updateNavbar({ ...navbar, items: newItems });
-      }
-   };
-
-   const addItem = () => {
-      const newItem = { label: 'New Link', labelBn: 'নতুন লিঙ্ক', url: '#', order: navbar.items.length + 1 };
-      updateNavbar({ ...navbar, items: [...navbar.items, newItem] });
-   };
-
-   const removeItem = (url: string) => {
-      const newItems = navbar.items.filter((i: any) => i.url !== url).map((item: any, index: number) => ({ ...item, order: index + 1 }));
-      updateNavbar({ ...navbar, items: newItems });
-   };
-
-   const updateItem = (url: string, field: string, value: string) => {
-      const newItems = navbar.items.map((i: any) => i.url === url ? { ...i, [field]: value } : i);
-      updateNavbar({ ...navbar, items: newItems });
-   };
-
-   return (
-      <div className="glass-card p-10 rounded-[40px] border-white/5">
-         <div className="flex justify-between items-center mb-10">
-            <h3 className="text-xl font-black">Navbar Menu</h3>
-            <button onClick={addItem} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-sm flex items-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-primary/20">
-               <Plus className="w-5 h-5" /> Add Menu Item
-            </button>
-         </div>
-
-         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={navbar.items.map((i: any) => i.url)} strategy={verticalListSortingStrategy}>
-               <div className="space-y-4">
-                  {navbar.items.map((item: any) => (
-                     <SortableItem key={item.url} id={item.url}>
-                        <div className="pl-14 pr-6 py-6 bg-white/5 border border-white/10 rounded-[28px] grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-                           <Input label="Label (EN)" value={item.label} onChange={(v) => updateItem(item.url, 'label', v)} />
-                           <Input label="Label (BN)" value={item.labelBn} onChange={(v) => updateItem(item.url, 'labelBn', v)} />
-                           <div className="flex items-end gap-4">
-                              <div className="flex-1">
-                                 <Input label="URL / ID" value={item.url} onChange={(v) => updateItem(item.url, 'url', v)} />
-                              </div>
-                              <button onClick={() => removeItem(item.url)} className="p-3.5 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 transition-all">
-                                 <Trash2 className="w-5 h-5" />
-                              </button>
-                           </div>
-                        </div>
-                     </SortableItem>
-                  ))}
-               </div>
-            </SortableContext>
-         </DndContext>
-      </div>
-   );
-};
-
-const FeaturesTab = ({ globalFeatures, setGlobalFeatures }: any) => {
-   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
-
-   const handleDragEnd = (event: DragEndEvent) => {
-      const { active, over } = event;
-      if (over && active.id !== over.id) {
-         const oldIndex = globalFeatures.findIndex((i: any) => i.id === active.id);
-         const newIndex = globalFeatures.findIndex((i: any) => i.id === over.id);
-         setGlobalFeatures(arrayMove(globalFeatures, oldIndex, newIndex).map((f: any, i: number) => ({ ...f, order: i + 1 })));
-      }
-   };
-
-   const addFeature = () => {
-      setGlobalFeatures([...globalFeatures, { id: Date.now().toString(), title: 'New Feature', titleBn: 'নতুন ফিচার', description: 'Description', descriptionBn: 'বিবরণ', icon: 'Zap', visible: true, order: globalFeatures.length + 1 }]);
-   };
-
-   const updateFeature = (id: string, updates: any) => {
-      setGlobalFeatures(globalFeatures.map((f: any) => f.id === id ? { ...f, ...updates } : f));
-   };
-
-   const deleteFeature = (id: string) => {
-      setGlobalFeatures(globalFeatures.filter((f: any) => f.id !== id));
-   };
-
-   return (
-      <div className="space-y-8">
-         <div className="flex justify-between items-center">
-            <h3 className="text-xl font-black">Global Features</h3>
-            <button onClick={addFeature} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-sm flex items-center gap-2 shadow-lg shadow-primary/20">
-               <Plus className="w-5 h-5" /> Add Feature
-            </button>
-         </div>
-
-         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={globalFeatures.map((f: any) => f.id)} strategy={verticalListSortingStrategy}>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {globalFeatures.map((f: any) => (
-                     <SortableItem key={f.id} id={f.id}>
-                        <div className="glass-card p-8 rounded-[32px] border-white/5 space-y-6">
-                           <div className="flex justify-between items-center">
-                              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                                 <Zap className="w-5 h-5" />
-                              </div>
-                              <div className="flex gap-2">
-                                 <button onClick={() => updateFeature(f.id, { visible: !f.visible })} className={`p-2 rounded-xl ${f.visible ? 'text-primary' : 'text-text-muted'}`}>
-                                    {f.visible ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
-                                 </button>
-                                 <button onClick={() => deleteFeature(f.id)} className="p-2 text-red-400"><Trash2 className="w-5 h-5" /></button>
-                              </div>
-                           </div>
-                           <div className="grid grid-cols-1 gap-6">
-                              <Input label="Title (EN)" value={f.title} onChange={(v: string) => updateFeature(f.id, { title: v })} />
-                              <Input label="Title (BN)" value={f.titleBn} onChange={(v: string) => updateFeature(f.id, { titleBn: v })} />
-                              <Input label="Icon (Lucide)" value={f.icon} onChange={(v: string) => updateFeature(f.id, { icon: v })} />
-                              <div className="md:col-span-2">
-                                 <label className="text-[10px] font-black text-text-muted uppercase mb-1.5 tracking-widest px-1">Description (EN)</label>
-                                 <textarea value={f.description} onChange={(e) => updateFeature(f.id, { description: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm h-24 focus:outline-none" />
-                              </div>
-                              <div className="md:col-span-2">
-                                 <label className="text-[10px] font-black text-text-muted uppercase mb-1.5 tracking-widest px-1">Description (BN)</label>
-                                 <textarea value={f.descriptionBn} onChange={(e) => updateFeature(f.id, { descriptionBn: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm h-24 focus:outline-none" />
-                              </div>
-                           </div>
-                        </div>
-                     </SortableItem>
-                  ))}
-               </div>
-            </SortableContext>
-         </DndContext>
-      </div>
-   );
-};
-
-const ProductsTab = ({ products, setProducts }: any) => {
-   const [expandedId, setExpandedId] = useState<string | null>(null);
-
-   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
-
-   const handleDragEnd = (event: DragEndEvent) => {
-      const { active, over } = event;
-      if (over && active.id !== over.id) {
-         const oldIndex = products.findIndex((i: any) => i.id === active.id);
-         const newIndex = products.findIndex((i: any) => i.id === over.id);
-         const newProducts = arrayMove(products, oldIndex, newIndex).map((p: any, i: number) => ({ ...p, order: i + 1 }));
-         setProducts(newProducts);
-      }
-   };
-
-   const addProduct = () => {
-      const id = Date.now().toString();
-      const newProduct: Product = {
-         id,
-         title: 'New Product',
-         titleBn: 'নতুন পণ্য',
-         subtitle: 'Premium Access',
-         subtitleBn: 'প্রিমিয়াম অ্যাক্সেস',
-         badge: 'New',
-         badgeBn: 'নতুন',
-         shortDescription: 'Description here',
-         shortDescriptionBn: 'বিবরণ এখানে',
-         buttonText: 'Buy Now',
-         buttonTextBn: 'এখনই কিনুন',
-         telegramLink: '#',
-         image: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop',
-         visible: true,
-         order: products.length + 1,
-         plans: [],
-         bulletPoints: [],
-         features: []
-      };
-      setProducts([...products, newProduct]);
-      setExpandedId(id);
-   };
-
-   const deleteProduct = (id: string) => {
-      setProducts(products.filter((p: any) => p.id !== id));
-   };
-
-   const updateProduct = (id: string, updates: Partial<Product>) => {
-      setProducts(products.map((p: any) => p.id === id ? { ...p, ...updates } : p));
-   };
-
-   return (
-      <div className="space-y-10">
-         <div className="flex justify-between items-center">
-            <h3 className="text-xl font-black">Manage Products</h3>
-            <button onClick={addProduct} className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-sm flex items-center gap-2 hover:opacity-90 transition-all shadow-xl shadow-primary/20">
-               <Plus className="w-5 h-5" /> Create New Product
-            </button>
-         </div>
-
-         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={products.map((p: any) => p.id)} strategy={verticalListSortingStrategy}>
-               <div className="space-y-6">
-                  {products.map((p: Product) => (
-                     <SortableItem key={p.id} id={p.id}>
-                        <div className={`glass-card rounded-[40px] border-white/5 transition-all duration-500 ${expandedId === p.id ? 'ring-2 ring-primary/50' : ''}`}>
-                           <div className="p-8 flex items-center justify-between cursor-pointer" onClick={() => setExpandedId(expandedId === p.id ? null : p.id)}>
-                              <div className="pl-8 flex items-center gap-6">
-                                 <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
-                                    <img src={p.image} className="w-full h-full object-cover" />
-                                 </div>
-                                 <div>
-                                    <h4 className="text-xl font-black">{p.title}</h4>
-                                    <p className="text-sm text-text-muted font-medium">{p.subtitle}</p>
-                                 </div>
-                              </div>
-                              <div className="flex items-center gap-4">
-                                 <button onClick={(e) => { e.stopPropagation(); updateProduct(p.id, { visible: !p.visible }); }} className={`p-3 rounded-xl transition-all ${p.visible ? 'text-primary bg-primary/10' : 'text-text-muted bg-white/5'}`}>
-                                    {p.visible ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
-                                 </button>
-                                 <button onClick={(e) => { e.stopPropagation(); deleteProduct(p.id); }} className="p-3 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20">
-                                    <Trash2 className="w-5 h-5" />
-                                 </button>
-                                 <div className="ml-4">
-                                    {expandedId === p.id ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
-                                 </div>
-                              </div>
-                           </div>
-
-                           <AnimatePresence>
-                              {expandedId === p.id && (
-                                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                                    <div className="px-8 pb-12 space-y-12 border-t border-white/5 pt-10">
-                                       {/* Basic Info */}
-                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                          <div className="space-y-6">
-                                             <Input label="Title (EN)" value={p.title} onChange={(v) => updateProduct(p.id, { title: v })} />
-                                             <Input label="Title (BN)" value={p.titleBn} onChange={(v) => updateProduct(p.id, { titleBn: v })} />
-                                             <Input label="Subtitle (EN)" value={p.subtitle} onChange={(v) => updateProduct(p.id, { subtitle: v })} />
-                                             <Input label="Subtitle (BN)" value={p.subtitleBn} onChange={(v) => updateProduct(p.id, { subtitleBn: v })} />
-                                          </div>
-                                          <div className="space-y-6">
-                                             <Input label="Badge (EN)" value={p.badge} onChange={(v) => updateProduct(p.id, { badge: v })} />
-                                             <Input label="Badge (BN)" value={p.badgeBn} onChange={(v) => updateProduct(p.id, { badgeBn: v })} />
-                                             <Input label="Product Image URL" value={p.image} onChange={(v) => updateProduct(p.id, { image: v })} />
-                                             <Input label="Telegram Link" value={p.telegramLink} onChange={(v) => updateProduct(p.id, { telegramLink: v })} />
-                                          </div>
-                                          <div className="md:col-span-2">
-                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-3 block">Short Description (EN)</label>
-                                             <textarea value={p.shortDescription} onChange={(e) => updateProduct(p.id, { shortDescription: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-4 text-sm h-24 focus:outline-none focus:ring-1 focus:ring-primary" />
-                                          </div>
-                                          <div className="md:col-span-2">
-                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-3 block">Short Description (BN)</label>
-                                             <textarea value={p.shortDescriptionBn} onChange={(e) => updateProduct(p.id, { shortDescriptionBn: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-4 text-sm h-24 focus:outline-none focus:ring-1 focus:ring-primary" />
-                                          </div>
-                                       </div>
-
-                                       {/* Pricing Plans */}
-                                       <div className="space-y-6">
-                                          <div className="flex justify-between items-center">
-                                             <h5 className="font-black text-primary uppercase tracking-widest text-xs">Pricing Plans</h5>
-                                             <button onClick={() => updateProduct(p.id, { plans: [...p.plans, { id: Date.now().toString(), name: 'New Plan', nameBn: 'নতুন প্ল্যান', priceTk: 0, duration: 'Monthly' }] })} className="text-primary font-bold text-xs flex items-center gap-2 px-4 py-2 hover:bg-primary/5 rounded-xl transition-all">
-                                                <Plus className="w-4 h-4" /> Add Plan
-                                             </button>
-                                          </div>
-                                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                             {p.plans.map((plan, idx) => (
-                                                <div key={plan.id} className="p-6 rounded-3xl bg-white/5 border border-white/10 flex flex-col gap-4 relative group">
-                                                   <button onClick={() => updateProduct(p.id, { plans: p.plans.filter((_, i) => i !== idx) })} className="absolute top-4 right-4 text-red-400 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-4 h-4" /></button>
-                                                   <div className="grid grid-cols-2 gap-4">
-                                                      <Input label="Name (EN)" value={plan.name} onChange={(v) => {
-                                                         const newPlans = [...p.plans];
-                                                         newPlans[idx].name = v;
-                                                         updateProduct(p.id, { plans: newPlans });
-                                                      }} />
-                                                      <Input label="Name (BN)" value={plan.nameBn} onChange={(v) => {
-                                                         const newPlans = [...p.plans];
-                                                         newPlans[idx].nameBn = v;
-                                                         updateProduct(p.id, { plans: newPlans });
-                                                      }} />
-                                                   </div>
-                                                   <div className="grid grid-cols-2 gap-4">
-                                                      <Input label="Price (TK)" value={plan.priceTk} type="number" onChange={(v) => {
-                                                         const newPlans = [...p.plans];
-                                                         newPlans[idx].priceTk = parseInt(v);
-                                                         updateProduct(p.id, { plans: newPlans });
-                                                      }} />
-                                                      <div className="flex flex-col">
-                                                         <label className="text-[10px] font-black text-text-muted uppercase mb-1.5 tracking-widest">Duration</label>
-                                                         <select
-                                                            value={plan.duration}
-                                                            onChange={(e) => {
-                                                               const newPlans = [...p.plans];
-                                                               newPlans[idx].duration = e.target.value as any;
-                                                               updateProduct(p.id, { plans: newPlans });
-                                                            }}
-                                                            className="h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-sm font-bold text-text-primary focus:outline-none"
-                                                         >
-                                                            <option value="Monthly">Monthly</option>
-                                                            <option value="Yearly">Yearly</option>
-                                                            <option value="Lifetime">Lifetime</option>
-                                                         </select>
-                                                      </div>
-                                                   </div>
-                                                </div>
-                                             ))}
-                                          </div>
-                                       </div>
-
-                                       {/* Bullet Points */}
-                                       <div className="space-y-6">
-                                          <div className="flex justify-between items-center">
-                                             <h5 className="font-black text-secondary uppercase tracking-widest text-xs">Bullet Points</h5>
-                                             <button onClick={() => updateProduct(p.id, { bulletPoints: [...p.bulletPoints, { id: Date.now().toString(), text: 'New Point', textBn: 'নতুন পয়েন্ট', visible: true, order: p.bulletPoints.length + 1 }] })} className="text-secondary font-bold text-xs flex items-center gap-2 px-4 py-2 hover:bg-secondary/5 rounded-xl transition-all">
-                                                <Plus className="w-4 h-4" /> Add Bullet Point
-                                             </button>
-                                          </div>
-                                          <div className="space-y-4">
-                                             {p.bulletPoints.map((bp, idx) => (
-                                                <div key={bp.id} className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-4">
-                                                   <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                      <Input label="Text (EN)" value={bp.text} onChange={(v) => {
-                                                         const newBps = [...p.bulletPoints];
-                                                         newBps[idx].text = v;
-                                                         updateProduct(p.id, { bulletPoints: newBps });
-                                                      }} />
-                                                      <Input label="Text (BN)" value={bp.textBn} onChange={(v) => {
-                                                         const newBps = [...p.bulletPoints];
-                                                         newBps[idx].textBn = v;
-                                                         updateProduct(p.id, { bulletPoints: newBps });
-                                                      }} />
-                                                   </div>
-                                                   <button onClick={() => {
-                                                      const newBps = [...p.bulletPoints];
-                                                      newBps[idx].visible = !newBps[idx].visible;
-                                                      updateProduct(p.id, { bulletPoints: newBps });
-                                                   }} className={`p-2 rounded-lg ${bp.visible ? 'text-primary' : 'text-text-muted'}`}>
-                                                      {bp.visible ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
-                                                   </button>
-                                                   <button onClick={() => updateProduct(p.id, { bulletPoints: p.bulletPoints.filter((_, i) => i !== idx) })} className="p-2 text-red-400"><Trash2 className="w-5 h-5" /></button>
-                                                </div>
-                                             ))}
-                                          </div>
-                                       </div>
-
-                                       {/* Features */}
-                                       <div className="space-y-6">
-                                          <div className="flex justify-between items-center">
-                                             <h5 className="font-black text-warning uppercase tracking-widest text-xs">Featured Services</h5>
-                                             <button onClick={() => updateProduct(p.id, { features: [...p.features, { id: Date.now().toString(), text: 'New Feature', textBn: 'নতুন ফিচার', available: true, visible: true, highlighted: false, order: p.features.length + 1 }] })} className="text-warning font-bold text-xs flex items-center gap-2 px-4 py-2 hover:bg-warning/5 rounded-xl transition-all">
-                                                <Plus className="w-4 h-4" /> Add Feature
-                                             </button>
-                                          </div>
-                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                             {p.features.map((f, idx) => (
-                                                <div key={f.id} className="p-6 rounded-3xl bg-white/5 border border-white/10 space-y-4">
-                                                   <div className="grid grid-cols-1 gap-4">
-                                                      <Input label="Feature (EN)" value={f.text} onChange={(v) => {
-                                                         const newFs = [...p.features];
-                                                         newFs[idx].text = v;
-                                                         updateProduct(p.id, { features: newFs });
-                                                      }} />
-                                                      <Input label="Feature (BN)" value={f.textBn} onChange={(v) => {
-                                                         const newFs = [...p.features];
-                                                         newFs[idx].textBn = v;
-                                                         updateProduct(p.id, { features: newFs });
-                                                      }} />
-                                                   </div>
-                                                   <div className="grid grid-cols-2 gap-4">
-                                                      <button onClick={() => {
-                                                         const newFs = [...p.features];
-                                                         newFs[idx].available = !newFs[idx].available;
-                                                         updateProduct(p.id, { features: newFs });
-                                                      }} className={`py-3 rounded-xl font-bold text-[10px] transition-all border ${f.available ? 'bg-success/10 text-success border-success/20' : 'bg-white/5 text-text-muted border-white/10'}`}>
-                                                         {f.available ? 'AVAILABLE' : 'UNAVAILABLE'}
-                                                      </button>
-                                                      <button onClick={() => {
-                                                         const newFs = [...p.features];
-                                                         newFs[idx].highlighted = !newFs[idx].highlighted;
-                                                         updateProduct(p.id, { features: newFs });
-                                                      }} className={`py-3 rounded-xl font-bold text-[10px] transition-all border ${f.highlighted ? 'bg-primary/10 text-primary border-primary/20' : 'bg-white/5 text-text-muted border-white/10'}`}>
-                                                         {f.highlighted ? 'HIGHLIGHTED' : 'STANDARD'}
-                                                      </button>
-                                                   </div>
-                                                   <button onClick={() => updateProduct(p.id, { features: p.features.filter((_, i) => i !== idx) })} className="w-full py-3 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 transition-all font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
-                                                      <Trash2 className="w-4 h-4" /> Remove Feature
-                                                   </button>
-                                                </div>
-                                             ))}
-                                          </div>
-                                       </div>
-                                    </div>
-                                 </motion.div>
-                              )}
-                           </AnimatePresence>
-                        </div>
-                     </SortableItem>
-                  ))}
-               </div>
-            </SortableContext>
-         </DndContext>
-      </div>
-   );
-};
-
-const ReviewsTab = ({ reviews, setReviews }: any) => {
-   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
-
-   const handleDragEnd = (event: DragEndEvent) => {
-      const { active, over } = event;
-      if (over && active.id !== over.id) {
-         const oldIndex = reviews.findIndex((i: any) => i.id === active.id);
-         const newIndex = reviews.findIndex((i: any) => i.id === over.id);
-         setReviews(arrayMove(reviews, oldIndex, newIndex).map((r: any, i: number) => ({ ...r, order: i + 1 })));
-      }
-   };
-
-   const addReview = () => {
-      const newReview: Review = {
-         id: Date.now().toString(),
-         name: 'New User',
-         role: 'Customer',
-         roleBn: 'ক্রেতা',
-         image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + Date.now(),
-         rating: 5,
-         review: 'Excellent service!',
-         reviewBn: 'অসাধারণ সার্ভিস!',
-         featured: true,
-         visible: true,
-         order: reviews.length + 1
-      };
-      setReviews([...reviews, newReview]);
-   };
-
-   const updateReview = (id: string, updates: Partial<Review>) => {
-      setReviews(reviews.map((r: any) => r.id === id ? { ...r, ...updates } : r));
-   };
-
-   const deleteReview = (id: string) => {
-      setReviews(reviews.filter((r: any) => r.id !== id));
-   };
-
-   return (
-      <div className="space-y-10">
-         <div className="flex justify-between items-center">
-            <h3 className="text-xl font-black">User Reviews</h3>
-            <button onClick={addReview} className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-sm flex items-center gap-2 hover:opacity-90 transition-all shadow-xl shadow-primary/20">
-               <Plus className="w-5 h-5" /> Add Review
-            </button>
-         </div>
-
-         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={reviews.map((r: any) => r.id)} strategy={verticalListSortingStrategy}>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {reviews.map((r: Review) => (
-                     <SortableItem key={r.id} id={r.id}>
-                        <div className="glass-card p-8 rounded-[32px] border-white/5 space-y-6">
-                           <div className="flex items-center gap-4">
-                              <div className="w-14 h-14 rounded-full overflow-hidden bg-white/5 border border-white/10">
-                                 <img src={r.image} className="w-full h-full object-cover" />
-                              </div>
-                              <div className="flex-1">
-                                 <Input label="Name" value={r.name} onChange={(v) => updateReview(r.id, { name: v })} />
-                              </div>
-                              <div className="flex gap-2">
-                                 <button onClick={() => updateReview(r.id, { visible: !r.visible })} className={`p-2.5 rounded-xl ${r.visible ? 'bg-primary/10 text-primary' : 'bg-white/5 text-text-muted'}`}>
-                                    {r.visible ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
-                                 </button>
-                                 <button onClick={() => deleteReview(r.id)} className="p-2.5 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20">
-                                    <Trash2 className="w-5 h-5" />
-                                 </button>
-                              </div>
-                           </div>
-                           <div className="grid grid-cols-2 gap-6">
-                              <Input label="Role (EN)" value={r.role} onChange={(v) => updateReview(r.id, { role: v })} />
-                              <Input label="Role (BN)" value={r.roleBn} onChange={(v) => updateReview(r.id, { roleBn: v })} />
-                           </div>
-                           <div className="grid grid-cols-2 gap-6">
-                              <Input label="Rating (1-5)" value={r.rating} type="number" onChange={(v) => updateReview(r.id, { rating: parseInt(v) })} />
-                              <div className="flex flex-col">
-                                 <label className="text-[10px] font-black text-text-muted uppercase mb-1.5 tracking-widest">Featured</label>
-                                 <button onClick={() => updateReview(r.id, { featured: !r.featured })} className={`h-12 rounded-xl font-bold text-xs transition-all ${r.featured ? 'bg-success/10 text-success border border-success/20' : 'bg-white/5 text-text-muted border border-white/10'}`}>
-                                    {r.featured ? 'FEATURED' : 'STANDARD'}
-                                 </button>
-                              </div>
-                           </div>
-                           <div className="grid grid-cols-1 gap-6">
-                              <div className="md:col-span-2">
-                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-3 block">Review (EN)</label>
-                                 <textarea value={r.review} onChange={(e) => updateReview(r.id, { review: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm h-24 focus:outline-none" />
-                              </div>
-                              <div className="md:col-span-2">
-                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-3 block">Review (BN)</label>
-                                 <textarea value={r.reviewBn} onChange={(e) => updateReview(r.id, { reviewBn: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm h-24 focus:outline-none" />
-                              </div>
-                           </div>
-                        </div>
-                     </SortableItem>
-                  ))}
-               </div>
-            </SortableContext>
-         </DndContext>
-      </div>
-   );
-};
-
-const FAQTab = ({ faqs, setFAQs }: any) => {
-   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
-
-   const handleDragEnd = (event: DragEndEvent) => {
-      const { active, over } = event;
-      if (over && active.id !== over.id) {
-         const oldIndex = faqs.findIndex((i: any) => i.id === active.id);
-         const newIndex = faqs.findIndex((i: any) => i.id === over.id);
-         setFAQs(arrayMove(faqs, oldIndex, newIndex).map((f: any, i: number) => ({ ...f, order: i + 1 })));
-      }
-   };
-
-   const addFAQ = () => {
-      const newFAQ: FAQ = {
-         id: Date.now().toString(),
-         q: 'New Question?',
-         qBn: 'নতুন প্রশ্ন?',
-         a: 'Answer content...',
-         aBn: 'উত্তর এখানে...',
-         visible: true,
-         order: faqs.length + 1
-      };
-      setFAQs([...faqs, newFAQ]);
-   };
-
-   const updateFAQ = (id: string, updates: Partial<FAQ>) => {
-      setFAQs(faqs.map((f: any) => f.id === id ? { ...f, ...updates } : f));
-   };
-
-   const deleteFAQ = (id: string) => {
-      setFAQs(faqs.filter((f: any) => f.id !== id));
-   };
-
-   return (
-      <div className="space-y-10">
-         <div className="flex justify-between items-center">
-            <h3 className="text-xl font-black">FAQ Items</h3>
-            <button onClick={addFAQ} className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-sm flex items-center gap-2 hover:opacity-90 transition-all shadow-xl shadow-primary/20">
-               <Plus className="w-5 h-5" /> Add Question
-            </button>
-         </div>
-
-         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={faqs.map((f: any) => f.id)} strategy={verticalListSortingStrategy}>
-               <div className="space-y-6">
-                  {faqs.map((f: FAQ) => (
-                     <SortableItem key={f.id} id={f.id}>
-                        <div className="glass-card p-8 rounded-[32px] border-white/5 space-y-8">
-                           <div className="flex justify-between items-start">
-                              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-black ml-10">?</div>
-                              <div className="flex gap-2">
-                                 <button onClick={() => updateFAQ(f.id, { visible: !f.visible })} className={`p-2.5 rounded-xl ${f.visible ? 'bg-primary/10 text-primary' : 'bg-white/5 text-text-muted'}`}>
-                                    {f.visible ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
-                                 </button>
-                                 <button onClick={() => deleteFAQ(f.id)} className="p-2.5 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20">
-                                    <Trash2 className="w-5 h-5" />
-                                 </button>
-                              </div>
-                           </div>
-                           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                              <div className="space-y-6">
-                                 <Input label="Question (EN)" value={f.q} onChange={(v) => updateFAQ(f.id, { q: v })} />
-                                 <div>
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-3 block">Answer (EN)</label>
-                                    <textarea value={f.a} onChange={(e) => updateFAQ(f.id, { a: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm h-32 focus:outline-none" />
-                                 </div>
-                              </div>
-                              <div className="space-y-6">
-                                 <Input label="Question (BN)" value={f.qBn} onChange={(v) => updateFAQ(f.id, { qBn: v })} />
-                                 <div>
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-3 block">Answer (BN)</label>
-                                    <textarea value={f.aBn} onChange={(e) => updateFAQ(f.id, { aBn: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm h-32 focus:outline-none" />
-                                 </div>
-                              </div>
-                           </div>
-                        </div>
-                     </SortableItem>
-                  ))}
-               </div>
-            </SortableContext>
-         </DndContext>
-      </div>
-   );
-};
-
-const CountdownTab = ({ countdown, updateCountdown }: any) => {
-   return (
-      <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-10">
-         <div className="flex items-center justify-between">
-            <h3 className="text-xl font-black">Promo Countdown</h3>
-            <button onClick={() => updateCountdown({ ...countdown, enabled: !countdown.enabled })} className={`px-8 py-3 rounded-2xl font-black text-xs transition-all ${countdown.enabled ? 'bg-success/10 text-success border border-success/20' : 'bg-white/5 text-text-muted border border-white/10'}`}>
-               {countdown.enabled ? 'ACTIVE' : 'DISABLED'}
-            </button>
-         </div>
-
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="md:col-span-2">
-               <Input label="Target Date (Format: YYYY-MM-DDTHH:mm:ss)" value={countdown.targetDate} onChange={(v) => updateCountdown({ ...countdown, targetDate: v })} />
-               <p className="text-[10px] text-text-muted mt-2 uppercase font-bold tracking-widest">Current System Time: {new Date().toISOString()}</p>
-            </div>
-            <Input label="Title (EN)" value={countdown.title} onChange={(v) => updateCountdown({ ...countdown, title: v })} />
-            <Input label="Title (BN)" value={countdown.titleBn} onChange={(v) => updateCountdown({ ...countdown, titleBn: v })} />
-            <Input label="Subtitle (EN)" value={countdown.subtitle} onChange={(v) => updateCountdown({ ...countdown, subtitle: v })} />
-            <Input label="Subtitle (BN)" value={countdown.subtitleBn} onChange={(v) => updateCountdown({ ...countdown, subtitleBn: v })} />
          </div>
       </div>
    );
@@ -1025,15 +401,15 @@ const PricingTab = ({ pricingFeatures, setPricingFeatures }: any) => {
    };
 
    const addFeature = () => {
-      setPricingFeatures([...pricingFeatures, { 
-         id: Date.now().toString(), 
-         text: 'New Feature', 
-         textBn: 'নতুন ফিচার', 
-         available: true, 
-         visible: true, 
-         order: pricingFeatures.length + 1,
-         highlighted: false
-      }]);
+      setPricingFeatures([{
+         id: Date.now().toString(),
+         title: 'New Feature',
+         titleBn: 'নতুন ফিচার',
+         visible: true,
+         order: 0,
+         plans: { monthly: true, yearly: true, lifetime: true }
+      }, ...pricingFeatures].map((f, i) => ({ ...f, order: i + 1 })));
+      toast.success('Feature added to top');
    };
 
    const removeFeature = (id: string) => {
@@ -1044,12 +420,24 @@ const PricingTab = ({ pricingFeatures, setPricingFeatures }: any) => {
       setPricingFeatures(pricingFeatures.map((f: any) => f.id === id ? { ...f, ...updates } : f));
    };
 
+   const togglePlan = (id: string, plan: 'monthly' | 'yearly' | 'lifetime') => {
+      const feature = pricingFeatures.find((f: any) => f.id === id);
+      if (feature) {
+         updateFeature(id, {
+            plans: { ...feature.plans, [plan]: !feature.plans[plan] }
+         });
+      }
+   };
+
    return (
-      <div className="space-y-10">
-         <div className="flex justify-between items-center">
-            <h3 className="text-xl font-black">Feature Comparison Manager</h3>
-            <button onClick={addFeature} className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-sm flex items-center gap-2 shadow-xl shadow-primary/20 hover:scale-105 transition-all active:scale-95">
-               <Plus className="w-5 h-5" /> Add Comparison Feature
+      <div className="space-y-8">
+         <div className="flex justify-between items-center bg-white/5 p-8 rounded-[32px] border border-white/10">
+            <div>
+               <h3 className="text-2xl font-black">Plan Comparison Manager</h3>
+               <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-1">Control feature availability per tier</p>
+            </div>
+            <button onClick={addFeature} className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-xs flex items-center gap-2 shadow-lg shadow-primary/20 hover:scale-105 transition-all">
+               <Plus className="w-5 h-5" /> Add New Row
             </button>
          </div>
 
@@ -1058,46 +446,35 @@ const PricingTab = ({ pricingFeatures, setPricingFeatures }: any) => {
                <div className="space-y-4">
                   {pricingFeatures.map((f: any) => (
                      <SortableItem key={f.id} id={f.id}>
-                        <div className="glass-card p-8 rounded-[32px] border-white/5 grid grid-cols-1 md:grid-cols-12 gap-8 items-center relative group">
-                           <div className="md:col-span-4 grid grid-cols-1 gap-4">
-                              <Input label="Feature (EN)" value={f.text} onChange={(v: string) => updateFeature(f.id, { text: v })} />
-                              <Input label="Feature (BN)" value={f.textBn} onChange={(v: string) => updateFeature(f.id, { textBn: v })} />
+                        <div className="glass-card p-8 rounded-[32px] border-white/5 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative group bg-white/[0.01]">
+                           <div className="lg:col-span-4 grid grid-cols-1 gap-4">
+                              <Input label="Feature Title (EN)" value={f.title} onChange={(v: string) => updateFeature(f.id, { title: v })} />
+                              <Input label="Feature Title (BN)" value={f.titleBn} onChange={(v: string) => updateFeature(f.id, { titleBn: v })} />
                            </div>
 
-                           <div className="md:col-span-5 grid grid-cols-2 gap-4">
-                              <div className="flex flex-col">
-                                 <label className="text-[10px] font-black text-text-muted uppercase mb-2 tracking-widest px-1">Availability</label>
-                                 <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
-                                    <button 
-                                       onClick={() => updateFeature(f.id, { available: true })}
-                                       className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[10px] font-black transition-all ${f.available ? 'bg-success text-white shadow-lg' : 'text-text-muted hover:text-text-primary'}`}
+                           <div className="lg:col-span-5">
+                              <label className="text-[10px] font-black text-text-muted uppercase mb-4 tracking-widest px-1 block text-center lg:text-left">Plan Availability</label>
+                              <div className="flex flex-wrap justify-center lg:justify-start gap-2">
+                                 {['monthly', 'yearly', 'lifetime'].map((plan) => (
+                                    <button
+                                       key={plan}
+                                       onClick={() => togglePlan(f.id, plan as any)}
+                                       className={`px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${f.plans[plan]
+                                             ? 'bg-success/10 text-success border-success/30 shadow-lg shadow-success/10'
+                                             : 'bg-white/5 text-text-muted border-white/10 opacity-40'
+                                          }`}
                                     >
-                                       <Check className="w-3 h-3" /> AVAILABLE
+                                       {plan}
                                     </button>
-                                    <button 
-                                       onClick={() => updateFeature(f.id, { available: false })}
-                                       className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[10px] font-black transition-all ${!f.available ? 'bg-red-500 text-white shadow-lg' : 'text-text-muted hover:text-text-primary'}`}
-                                    >
-                                       <X className="w-3 h-3" /> UNAVAILABLE
-                                    </button>
-                                 </div>
-                              </div>
-                              <div className="flex flex-col">
-                                 <label className="text-[10px] font-black text-text-muted uppercase mb-2 tracking-widest px-1">Style</label>
-                                 <button 
-                                    onClick={() => updateFeature(f.id, { highlighted: !f.highlighted })}
-                                    className={`h-[46px] rounded-xl font-black text-[10px] tracking-widest transition-all border ${f.highlighted ? 'bg-primary/10 text-primary border-primary/20' : 'bg-white/5 text-text-muted border-white/10'}`}
-                                 >
-                                    {f.highlighted ? 'HIGHLIGHTED' : 'STANDARD'}
-                                 </button>
+                                 ))}
                               </div>
                            </div>
 
-                           <div className="md:col-span-3 flex items-center justify-end gap-3">
-                              <button onClick={() => updateFeature(f.id, { visible: !f.visible })} className={`p-3.5 rounded-xl transition-all ${f.visible ? 'bg-primary/10 text-primary' : 'bg-white/5 text-text-muted'}`}>
+                           <div className="lg:col-span-3 flex items-center justify-end gap-3 pt-4 lg:pt-0 border-t lg:border-t-0 border-white/5">
+                              <button onClick={() => updateFeature(f.id, { visible: !f.visible })} className={`p-4 rounded-2xl transition-all ${f.visible ? 'bg-primary/10 text-primary border-primary/20' : 'bg-white/5 text-text-muted border-white/10'}`}>
                                  {f.visible ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                               </button>
-                              <button onClick={() => removeFeature(f.id)} className="p-3.5 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 transition-all">
+                              <button onClick={() => removeFeature(f.id)} className="p-4 bg-red-500/10 text-red-400 rounded-2xl hover:bg-red-500/20 border border-red-500/10 transition-all">
                                  <Trash2 className="w-5 h-5" />
                               </button>
                            </div>
@@ -1111,7 +488,237 @@ const PricingTab = ({ pricingFeatures, setPricingFeatures }: any) => {
    );
 };
 
-const PaymentTab = ({ paymentSettings, updatePaymentSettings, paymentMethods, setPaymentMethods }: any) => {
+const ProductsTab = ({ products, setProducts }: any) => {
+   const addProduct = () => {
+      setProducts([{
+         id: Date.now().toString(),
+         title: 'New VIP Plan',
+         titleBn: 'নতুন ভিআইপি প্ল্যান',
+         subtitle: 'Access to exclusive content',
+         subtitleBn: 'এক্সক্লুসিভ কন্টেন্ট এক্সেস',
+         badge: 'New',
+         badgeBn: 'নতুন',
+         shortDescription: '',
+         shortDescriptionBn: '',
+         buttonText: 'Join Now',
+         buttonTextBn: 'এখনই যোগ দিন',
+         telegramLink: '',
+         image: '',
+         visible: true,
+         order: 0,
+         plans: [
+            { id: 'p1', name: 'Monthly', nameBn: 'মান্থলি', priceTk: 500, priceUsd: 5, duration: 'Monthly' },
+            { id: 'p2', name: 'Yearly', nameBn: 'ইয়ারলি', priceTk: 3000, priceUsd: 30, duration: 'Yearly' },
+            { id: 'p3', name: 'Lifetime', nameBn: 'লাইফটাইম', priceTk: 5000, priceUsd: 50, duration: 'Lifetime' }
+         ],
+         bulletPoints: [],
+         features: []
+      }, ...products].map((p, i) => ({ ...p, order: i + 1 })));
+      toast.success('Product added');
+   };
+
+   const updateProduct = (id: string, updates: any) => {
+      setProducts(products.map((p: any) => p.id === id ? { ...p, ...updates } : p));
+   };
+
+   return (
+      <div className="space-y-8">
+         <div className="flex justify-between items-center bg-white/5 p-8 rounded-[32px] border border-white/10">
+            <div>
+               <h3 className="text-2xl font-black">Product Management</h3>
+               <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-1">Create and manage your subscription tiers</p>
+            </div>
+            <button onClick={addProduct} className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-xs flex items-center gap-2 shadow-lg shadow-primary/20">
+               <Plus className="w-5 h-5" /> Add New Product
+            </button>
+         </div>
+
+         <div className="grid grid-cols-1 gap-8">
+            {products.map((p: any) => (
+               <div key={p.id} className="glass-card p-10 rounded-[48px] border-white/5 space-y-10 bg-white/[0.01]">
+                  <div className="flex justify-between items-start border-b border-white/5 pb-8">
+                     <div className="flex gap-8 items-center">
+                        <div className="w-24 h-24 rounded-3xl bg-white/5 border border-white/10 overflow-hidden">
+                           {p.image ? <img src={p.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-text-muted"><Package className="w-8 h-8" /></div>}
+                        </div>
+                        <div>
+                           <h4 className="text-2xl font-black tracking-tighter">{p.title}</h4>
+                           <span className="text-[10px] font-black text-primary uppercase tracking-widest">{p.badge}</span>
+                        </div>
+                     </div>
+                     <div className="flex gap-3">
+                        <button onClick={() => updateProduct(p.id, { visible: !p.visible })} className={`p-4 rounded-2xl transition-all ${p.visible ? 'bg-primary/10 text-primary' : 'bg-white/5 text-text-muted'}`}>
+                           {p.visible ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                        </button>
+                        <button onClick={() => setProducts(products.filter((prod: any) => prod.id !== p.id))} className="p-4 bg-red-500/10 text-red-400 rounded-2xl border border-red-500/10"><Trash2 className="w-5 h-5" /></button>
+                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                     <Input label="Title (EN)" value={p.title} onChange={(v: string) => updateProduct(p.id, { title: v })} />
+                     <Input label="Title (BN)" value={p.titleBn} onChange={(v: string) => updateProduct(p.id, { titleBn: v })} />
+                     <Input label="Subtitle (EN)" value={p.subtitle} onChange={(v: string) => updateProduct(p.id, { subtitle: v })} />
+                     <Input label="Subtitle (BN)" value={p.subtitleBn} onChange={(v: string) => updateProduct(p.id, { subtitleBn: v })} />
+                     <Input label="Badge (EN)" value={p.badge} onChange={(v: string) => updateProduct(p.id, { badge: v })} />
+                     <Input label="Badge (BN)" value={p.badgeBn} onChange={(v: string) => updateProduct(p.id, { badgeBn: v })} />
+                     <Input label="Image URL" value={p.image} onChange={(v: string) => updateProduct(p.id, { image: v })} />
+                     <Input label="Button Text" value={p.buttonText} onChange={(v: string) => updateProduct(p.id, { buttonText: v })} />
+                     <Input label="Support Link" value={p.telegramLink} onChange={(v: string) => updateProduct(p.id, { telegramLink: v })} />
+                  </div>
+
+                  <div className="space-y-6 pt-6 border-t border-white/5">
+                     <h5 className="text-xs font-black uppercase tracking-widest text-text-muted px-1">Pricing Tiers</h5>
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {p.plans.map((plan: any, idx: number) => (
+                           <div key={idx} className="p-6 rounded-3xl bg-white/5 border border-white/10 space-y-4">
+                              <span className="text-[10px] font-black text-primary uppercase tracking-widest">{plan.duration}</span>
+                              <div className="space-y-3">
+                                 <Input label="Price (TK)" value={plan.priceTk} onChange={(v) => {
+                                    const newPlans = [...p.plans];
+                                    newPlans[idx].priceTk = Number(v);
+                                    updateProduct(p.id, { plans: newPlans });
+                                 }} />
+                                 <Input label="Name (EN)" value={plan.name} onChange={(v) => {
+                                    const newPlans = [...p.plans];
+                                    newPlans[idx].name = v;
+                                    updateProduct(p.id, { plans: newPlans });
+                                 }} />
+                              </div>
+                           </div>
+                        ))}
+                     </div>
+                  </div>
+               </div>
+            ))}
+         </div>
+      </div>
+   );
+};
+
+const ReviewsTab = ({ reviews, setReviews }: any) => {
+   const addReview = () => {
+      setReviews([{
+         id: Date.now().toString(),
+         name: 'Customer Name',
+         role: 'VIP Member',
+         roleBn: 'ভিআইপি মেম্বার',
+         image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + Math.random(),
+         rating: 5,
+         review: 'Great service!',
+         reviewBn: 'অসাধারণ সার্ভিস!',
+         featured: true,
+         visible: true,
+         order: 0
+      }, ...reviews].map((r, i) => ({ ...r, order: i + 1 })));
+      toast.success('Review added');
+   };
+
+   const updateReview = (id: string, updates: any) => {
+      setReviews(reviews.map((r: any) => r.id === id ? { ...r, ...updates } : r));
+   };
+
+   return (
+      <div className="space-y-8">
+         <div className="flex justify-between items-center bg-white/5 p-8 rounded-[32px] border border-white/10">
+            <div>
+               <h3 className="text-2xl font-black">Member Testimonials</h3>
+               <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-1">Showcase social proof to build trust</p>
+            </div>
+            <button onClick={addReview} className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-xs flex items-center gap-2 shadow-lg shadow-primary/20">
+               <Plus className="w-5 h-5" /> Add New Review
+            </button>
+         </div>
+
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {reviews.map((r: any) => (
+               <div key={r.id} className="glass-card p-10 rounded-[48px] border-white/5 space-y-8 relative group">
+                  <div className="flex justify-between items-center">
+                     <div className="flex items-center gap-4">
+                        <img src={r.image} className="w-16 h-16 rounded-2xl border border-white/10" />
+                        <div>
+                           <h4 className="font-black text-lg tracking-tighter">{r.name}</h4>
+                           <span className="text-[10px] font-bold text-text-muted">{r.role}</span>
+                        </div>
+                     </div>
+                     <div className="flex gap-2">
+                        <button onClick={() => updateReview(r.id, { visible: !r.visible })} className={`p-3 rounded-xl ${r.visible ? 'text-primary bg-primary/10' : 'text-text-muted bg-white/5'}`}><Eye className="w-4 h-4" /></button>
+                        <button onClick={() => setReviews(reviews.filter((rev: any) => rev.id !== r.id))} className="p-3 bg-red-500/10 text-red-400 rounded-xl"><Trash2 className="w-4 h-4" /></button>
+                     </div>
+                  </div>
+                  <div className="space-y-4">
+                     <Input label="Name" value={r.name} onChange={(v) => updateReview(r.id, { name: v })} />
+                     <Input label="Review (EN)" value={r.review} onChange={(v) => updateReview(r.id, { review: v })} />
+                     <Input label="Review (BN)" value={r.reviewBn} onChange={(v) => updateReview(r.id, { reviewBn: v })} />
+                     <div className="flex gap-4">
+                        <div className="flex-1"><Input label="Rating (1-5)" value={r.rating} onChange={(v) => updateReview(r.id, { rating: Number(v) })} /></div>
+                        <div className="flex-1"><Input label="Role (EN)" value={r.role} onChange={(v) => updateReview(r.id, { role: v })} /></div>
+                     </div>
+                  </div>
+               </div>
+            ))}
+         </div>
+      </div>
+   );
+};
+
+const FAQTab = ({ faqs, setFAQs }: any) => {
+   const addFAQ = () => {
+      setFAQs([{
+         id: Date.now().toString(),
+         q: 'New Question',
+         qBn: 'নতুন প্রশ্ন',
+         a: 'Answer content...',
+         aBn: 'উত্তরের বিস্তারিত...',
+         visible: true,
+         order: 0
+      }, ...faqs].map((f, i) => ({ ...f, order: i + 1 })));
+      toast.success('FAQ added');
+   };
+
+   const updateFAQ = (id: string, updates: any) => {
+      setFAQs(faqs.map((f: any) => f.id === id ? { ...f, ...updates } : f));
+   };
+
+   return (
+      <div className="space-y-8">
+         <div className="flex justify-between items-center bg-white/5 p-8 rounded-[32px] border border-white/10">
+            <div>
+               <h3 className="text-2xl font-black">Help Center (FAQ)</h3>
+               <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-1">Answer common customer questions</p>
+            </div>
+            <button onClick={addFAQ} className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-xs flex items-center gap-2 shadow-lg shadow-primary/20">
+               <Plus className="w-5 h-5" /> Add FAQ
+            </button>
+         </div>
+
+         <div className="space-y-6">
+            {faqs.map((f: any) => (
+               <div key={f.id} className="glass-card p-10 rounded-[40px] border-white/5 space-y-8">
+                  <div className="flex justify-between items-center">
+                     <h4 className="text-lg font-black tracking-tight">{f.q || 'Untitled Question'}</h4>
+                     <div className="flex gap-3">
+                        <button onClick={() => updateFAQ(f.id, { visible: !f.visible })} className={`p-3 rounded-xl ${f.visible ? 'bg-primary/10 text-primary' : 'bg-white/5 text-text-muted'}`}><Eye className="w-4 h-4" /></button>
+                        <button onClick={() => setFAQs(faqs.filter((faq: any) => faq.id !== f.id))} className="p-3 bg-red-500/10 text-red-400 rounded-xl"><Trash2 className="w-4 h-4" /></button>
+                     </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <div className="space-y-6">
+                        <Input label="Question (EN)" value={f.q} onChange={(v) => updateFAQ(f.id, { q: v })} />
+                        <textarea value={f.a} onChange={(e) => updateFAQ(f.id, { a: e.target.value })} className="w-full h-32 bg-white/5 border border-white/10 rounded-2xl p-6 text-sm" placeholder="Answer (EN)" />
+                     </div>
+                     <div className="space-y-6">
+                        <Input label="Question (BN)" value={f.qBn} onChange={(v) => updateFAQ(f.id, { qBn: v })} />
+                        <textarea value={f.aBn} onChange={(e) => updateFAQ(f.id, { aBn: e.target.value })} className="w-full h-32 bg-white/5 border border-white/10 rounded-2xl p-6 text-sm" placeholder="Answer (BN)" />
+                     </div>
+                  </div>
+               </div>
+            ))}
+         </div>
+      </div>
+   );
+};
+
+const PaymentTab = ({ paymentMethods, setPaymentMethods }: any) => {
    const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
 
    const handleDragEnd = (event: DragEndEvent) => {
@@ -1124,7 +731,7 @@ const PaymentTab = ({ paymentSettings, updatePaymentSettings, paymentMethods, se
    };
 
    const addMethod = () => {
-      setPaymentMethods([...paymentMethods, {
+      setPaymentMethods([{
          id: Date.now().toString(),
          name: 'New Method',
          type: 'Personal',
@@ -1134,8 +741,10 @@ const PaymentTab = ({ paymentSettings, updatePaymentSettings, paymentMethods, se
          instructions: '',
          enabled: true,
          icon: 'wallet',
-         order: paymentMethods.length + 1
-      }]);
+         color: '#7C3AED',
+         order: 0
+      }, ...paymentMethods].map((m, i) => ({ ...m, order: i + 1 })));
+      toast.success('Method added to top');
    };
 
    const updateMethod = (id: string, updates: any) => {
@@ -1147,56 +756,68 @@ const PaymentTab = ({ paymentSettings, updatePaymentSettings, paymentMethods, se
    };
 
    return (
-      <div className="space-y-12">
-         <div className="flex justify-between items-center">
-            <h3 className="text-xl font-black">Payment Method Manager</h3>
-            <button onClick={addMethod} className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-sm flex items-center gap-2 shadow-xl shadow-primary/20 hover:scale-105 transition-all">
-               <Plus className="w-5 h-5" /> Add Payment Method
+      <div className="space-y-10">
+         <div className="flex justify-between items-center bg-white/5 p-8 rounded-[32px] border border-white/10">
+            <div>
+               <h3 className="text-2xl font-black">Payment Channels</h3>
+               <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-1">Configure multi-payment gateways for checkout</p>
+            </div>
+            <button onClick={addMethod} className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-xs flex items-center gap-2 shadow-lg shadow-primary/20 hover:scale-105 transition-all">
+               <Plus className="w-5 h-5" /> Add New Channel
             </button>
          </div>
 
          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={paymentMethods.map((m: any) => m.id)} strategy={verticalListSortingStrategy}>
-               <div className="space-y-6">
+               <div className="space-y-8">
                   {paymentMethods.map((m: any) => (
                      <SortableItem key={m.id} id={m.id}>
-                        <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-10 relative group">
-                           <div className="flex justify-between items-center pb-6 border-b border-white/5">
-                              <div className="flex items-center gap-4">
-                                 <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black uppercase tracking-widest text-lg ml-8">
+                        <div className="glass-card p-10 rounded-[48px] border-white/5 space-y-10 relative group bg-white/[0.01]">
+                           <div className="flex flex-col md:flex-row justify-between items-center pb-8 border-b border-white/5 gap-8">
+                              <div className="flex items-center gap-6">
+                                 <div
+                                    className="w-16 h-16 rounded-[22px] flex items-center justify-center text-white font-black text-2xl shadow-2xl transition-transform duration-500 group-hover:scale-110"
+                                    style={{ backgroundColor: m.color }}
+                                 >
                                     {m.name[0]}
                                  </div>
                                  <div>
-                                    <h4 className="font-black text-xl">{m.name}</h4>
-                                    <span className="text-[10px] font-black text-text-muted uppercase tracking-[2px]">{m.type}</span>
+                                    <h4 className="font-black text-2xl tracking-tighter">{m.name}</h4>
+                                    <span className="text-[10px] font-black text-text-muted uppercase tracking-[3px]">{m.type} Account</span>
                                  </div>
                               </div>
-                              <div className="flex items-center gap-3">
-                                 <button onClick={() => updateMethod(m.id, { enabled: !m.enabled })} className={`px-6 py-2.5 rounded-xl font-black text-[10px] tracking-widest transition-all border ${m.enabled ? 'bg-success/10 text-success border-success/20' : 'bg-white/5 text-text-muted border-white/10'}`}>
-                                    {m.enabled ? 'ENABLED' : 'DISABLED'}
+                              <div className="flex items-center gap-4">
+                                 <button onClick={() => updateMethod(m.id, { enabled: !m.enabled })} className={`px-6 py-3 rounded-xl font-black text-[10px] tracking-widest transition-all border ${m.enabled ? 'bg-success/10 text-success border-success/20' : 'bg-white/5 text-text-muted border-white/10'}`}>
+                                    {m.enabled ? 'ACTIVE' : 'INACTIVE'}
                                  </button>
-                                 <button onClick={() => deleteMethod(m.id)} className="p-3 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 transition-all">
+                                 <button onClick={() => deleteMethod(m.id)} className="p-4 bg-red-500/10 text-red-400 rounded-2xl hover:bg-red-500/20 border border-red-500/10 transition-all">
                                     <Trash2 className="w-5 h-5" />
                                  </button>
                               </div>
                            </div>
 
-                           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                              <Input label="Method Name" value={m.name} onChange={(v) => updateMethod(m.id, { name: v })} />
-                              <Input label="Account Type" value={m.type} onChange={(v) => updateMethod(m.id, { type: v })} />
-                              <Input label="Icon Name" value={m.icon} onChange={(v) => updateMethod(m.id, { icon: v })} />
-                              <Input label="Account Number" value={m.number} onChange={(v) => updateMethod(m.id, { number: v })} />
-                              <Input label="Account Name" value={m.accountName} onChange={(v) => updateMethod(m.id, { accountName: v })} />
-                              <Input label="QR Code URL" value={m.qrCode} onChange={(v) => updateMethod(m.id, { qrCode: v })} />
+                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                              <Input label="Display Name" value={m.name} onChange={(v: string) => updateMethod(m.id, { name: v })} />
+                              <Input label="Account Type" value={m.type} onChange={(v: string) => updateMethod(m.id, { type: v })} />
+                              <div className="space-y-2">
+                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] ml-1">Brand Color (Hex)</label>
+                                 <div className="flex gap-3">
+                                    <div className="w-14 h-14 rounded-2xl border border-white/10 shadow-inner" style={{ backgroundColor: m.color }} />
+                                    <input value={m.color} onChange={(e) => updateMethod(m.id, { color: e.target.value })} className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 text-sm font-black uppercase" />
+                                 </div>
+                              </div>
+                              <Input label="Account Number / ID" value={m.number} onChange={(v: string) => updateMethod(m.id, { number: v })} />
+                              <Input label="Account Holder Name" value={m.accountName} onChange={(v: string) => updateMethod(m.id, { accountName: v })} />
+                              <Input label="QR Code Image URL" value={m.qrCode} onChange={(v: string) => updateMethod(m.id, { qrCode: v })} />
                            </div>
 
-                           <div>
-                              <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-3 block">Payment Instructions</label>
-                              <textarea 
-                                 value={m.instructions} 
-                                 onChange={(e) => updateMethod(m.id, { instructions: e.target.value })} 
-                                 className="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-5 text-sm h-32 focus:outline-none" 
-                                 placeholder="Enter step-by-step instructions..."
+                           <div className="space-y-3">
+                              <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] mb-2 block px-1">Payment Instructions (Step-by-Step)</label>
+                              <textarea
+                                 value={m.instructions}
+                                 onChange={(e) => updateMethod(m.id, { instructions: e.target.value })}
+                                 className="w-full bg-white/5 border border-white/10 rounded-[32px] px-8 py-6 text-sm h-40 focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-medium leading-relaxed"
+                                 placeholder="Enter detailed steps for the customer..."
                               />
                            </div>
                         </div>
@@ -1205,117 +826,58 @@ const PaymentTab = ({ paymentSettings, updatePaymentSettings, paymentMethods, se
                </div>
             </SortableContext>
          </DndContext>
-
-         <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-8">
-            <h3 className="text-xl font-black text-red-400">Global Payment Settings</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-               <Input label="Currency Symbol" value={paymentSettings.currency} onChange={(v) => updatePaymentSettings({ ...paymentSettings, currency: v })} />
-               <Input label="Telegram Contact Link" value={paymentSettings.telegramLink} onChange={(v) => updatePaymentSettings({ ...paymentSettings, telegramLink: v })} />
-               <Input label="Global Warning (EN)" value={paymentSettings.warningText} onChange={(v) => updatePaymentSettings({ ...paymentSettings, warningText: v })} />
-               <Input label="Global Warning (BN)" value={paymentSettings.warningTextBn} onChange={(v) => updatePaymentSettings({ ...paymentSettings, warningTextBn: v })} />
-            </div>
-         </div>
       </div>
    );
 };
 
-const FooterTab = ({ footer, updateFooter }: any) => {
-   return (
-      <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-10">
-         <h3 className="text-xl font-black">Footer Management</h3>
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Input label="Copyright Text (EN)" value={footer.copyright} onChange={(v) => updateFooter({ ...footer, copyright: v })} />
-            <Input label="Copyright Text (BN)" value={footer.copyrightBn} onChange={(v) => updateFooter({ ...footer, copyrightBn: v })} />
-         </div>
-
-         <div className="space-y-6">
-            <div className="flex justify-between items-center">
-               <h4 className="text-xs font-black text-primary uppercase tracking-widest">Footer Links</h4>
-               <button onClick={() => updateFooter({ ...footer, links: [...footer.links, { label: 'New Link', labelBn: 'নতুন লিঙ্ক', url: '#' }] })} className="text-primary font-bold text-xs flex items-center gap-2">
-                  <Plus className="w-4 h-4" /> Add Link
-               </button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               {footer.links.map((link: any, idx: number) => (
-                  <div key={idx} className="p-6 rounded-3xl bg-white/5 border border-white/10 space-y-4 relative group">
-                     <button onClick={() => updateFooter({ ...footer, links: footer.links.filter((_: any, i: number) => i !== idx) })} className="absolute top-4 right-4 text-red-400 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-4 h-4" /></button>
-                     <Input label="Label (EN)" value={link.label} onChange={(v) => {
-                        const newLinks = [...footer.links];
-                        newLinks[idx].label = v;
-                        updateFooter({ ...footer, links: newLinks });
-                     }} />
-                     <Input label="Label (BN)" value={link.labelBn} onChange={(v) => {
-                        const newLinks = [...footer.links];
-                        newLinks[idx].labelBn = v;
-                        updateFooter({ ...footer, links: newLinks });
-                     }} />
-                     <Input label="URL" value={link.url} onChange={(v) => {
-                        const newLinks = [...footer.links];
-                        newLinks[idx].url = v;
-                        updateFooter({ ...footer, links: newLinks });
-                     }} />
-                  </div>
-               ))}
-            </div>
-         </div>
-      </div>
-   );
-};
-
+// Settings Tab (Merged TrustBadges, Pixels, General)
 const SettingsTab = ({ settings, updateSettings, pixelSettings, updatePixelSettings, trustBadges, setTrustBadges }: any) => {
    return (
-      <div className="space-y-10">
-         <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-8">
-            <h3 className="text-xl font-black">General Platform Settings</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-               <Input label="Site Name (EN)" value={settings.siteName} onChange={(v) => updateSettings({ ...settings, siteName: v })} />
-               <Input label="Site Name (BN)" value={settings.siteNameBn} onChange={(v) => updateSettings({ ...settings, siteNameBn: v })} />
-               <Input label="Logo Text / Initial" value={settings.logo} onChange={(v) => updateSettings({ ...settings, logo: v })} />
-               <Input label="Global Telegram Handle" value={settings.telegramHandle} onChange={(v) => updateSettings({ ...settings, telegramHandle: v })} />
-               <Input label="Global Telegram Link" value={settings.telegramLink} onChange={(v) => updateSettings({ ...settings, telegramLink: v })} />
-               <Input label="Floating CTA (EN)" value={settings.floatingCTA} onChange={(v) => updateSettings({ ...settings, floatingCTA: v })} />
-               <Input label="Floating CTA (BN)" value={settings.floatingCTABn} onChange={(v) => updateSettings({ ...settings, floatingCTABn: v })} />
+      <div className="space-y-10 max-w-6xl">
+         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-8">
+               <div className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary"><Globe className="w-6 h-6" /></div>
+                  <h3 className="text-xl font-black">Site Identity</h3>
+               </div>
+               <div className="space-y-6">
+                  <Input label="Site Name (EN)" value={settings.siteName} onChange={(v) => updateSettings({ ...settings, siteName: v })} />
+                  <Input label="Site Name (BN)" value={settings.siteNameBn} onChange={(v) => updateSettings({ ...settings, siteNameBn: v })} />
+                  <Input label="Logo Text" value={settings.logo} onChange={(v) => updateSettings({ ...settings, logo: v })} />
+                  <Input label="Admin Password" value={settings.adminPassword || 'admin123'} type="password" onChange={(v) => updateSettings({ ...settings, adminPassword: v })} />
+               </div>
+            </div>
+
+            <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-8">
+               <div className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-success/10 flex items-center justify-center text-success"><Smartphone className="w-6 h-6" /></div>
+                  <h3 className="text-xl font-black">Telegram Integration</h3>
+               </div>
+               <div className="space-y-6">
+                  <Input label="Admin Handle" value={settings.telegramHandle} onChange={(v) => updateSettings({ ...settings, telegramHandle: v })} />
+                  <Input label="Support Link" value={settings.telegramLink} onChange={(v) => updateSettings({ ...settings, telegramLink: v })} />
+                  <Input label="Floating CTA Text" value={settings.floatingCTA} onChange={(v) => updateSettings({ ...settings, floatingCTA: v })} />
+               </div>
             </div>
          </div>
 
-         <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-8">
-            <div className="flex items-center justify-between">
-               <h3 className="text-xl font-black">Tracking & Pixels</h3>
-               <button onClick={() => updatePixelSettings({ ...pixelSettings, enabled: !pixelSettings.enabled })} className={`px-6 py-3 rounded-2xl font-black text-xs transition-all ${pixelSettings.enabled ? 'bg-success/10 text-success border border-success/20' : 'bg-white/5 text-text-muted border border-white/10'}`}>
-                  {pixelSettings.enabled ? 'PIXEL ON' : 'PIXEL OFF'}
-               </button>
-            </div>
-            <div className="max-w-md">
-               <Input label="Facebook Pixel ID" value={pixelSettings.pixelId} onChange={(v) => updatePixelSettings({ ...pixelSettings, pixelId: v })} />
-            </div>
-         </div>
-
-         <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-8">
-            <div className="flex justify-between items-center">
-               <h3 className="text-xl font-black">Trust Badges</h3>
-               <button onClick={() => setTrustBadges([...trustBadges, { id: Date.now().toString(), text: 'Secure', textBn: 'নিরাপদ', icon: 'Shield', visible: true, order: trustBadges.length + 1 }])} className="text-primary font-bold text-sm flex items-center gap-2">
+         <div className="glass-card p-10 rounded-[40px] border-white/5 space-y-10">
+            <div className="flex items-center justify-between border-b border-white/5 pb-8">
+               <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary"><ShieldCheck className="w-6 h-6" /></div>
+                  <h3 className="text-xl font-black">Trust Indicators</h3>
+               </div>
+               <button onClick={() => setTrustBadges([{ id: Date.now().toString(), text: 'New Badge', textBn: 'নতুন ব্যাজ', icon: 'Shield', visible: true, order: 0 }, ...trustBadges])} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs flex items-center gap-2">
                   <Plus className="w-4 h-4" /> Add Badge
                </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                {trustBadges.map((badge: any, idx: number) => (
-                  <div key={badge.id} className="p-6 rounded-3xl bg-white/5 border border-white/10 space-y-4 relative group">
-                     <button onClick={() => setTrustBadges(trustBadges.filter((_: any, i: number) => i !== idx))} className="absolute top-4 right-4 text-red-400 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-4 h-4" /></button>
-                     <Input label="Text (EN)" value={badge.text} onChange={(v) => {
-                        const newBadges = [...trustBadges];
-                        newBadges[idx].text = v;
-                        setTrustBadges(newBadges);
-                     }} />
-                     <Input label="Text (BN)" value={badge.textBn} onChange={(v) => {
-                        const newBadges = [...trustBadges];
-                        newBadges[idx].textBn = v;
-                        setTrustBadges(newBadges);
-                     }} />
-                     <Input label="Icon Name (Lucide)" value={badge.icon} onChange={(v) => {
-                        const newBadges = [...trustBadges];
-                        newBadges[idx].icon = v;
-                        setTrustBadges(newBadges);
-                     }} />
+                  <div key={badge.id} className="p-8 rounded-[32px] bg-white/[0.02] border border-white/5 space-y-6 relative group">
+                     <button onClick={() => setTrustBadges(trustBadges.filter((b: any) => b.id !== badge.id))} className="absolute top-6 right-6 text-red-400 opacity-0 group-hover:opacity-100 transition-all p-2 hover:bg-red-400/10 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                     <Input label="Label (EN)" value={badge.text} onChange={(v) => setTrustBadges(trustBadges.map((b: any) => b.id === badge.id ? { ...b, text: v } : b))} />
+                     <Input label="Label (BN)" value={badge.textBn} onChange={(v) => setTrustBadges(trustBadges.map((b: any) => b.id === badge.id ? { ...b, textBn: v } : b))} />
+                     <Input label="Icon (Lucide)" value={badge.icon} onChange={(v) => setTrustBadges(trustBadges.map((b: any) => b.id === badge.id ? { ...b, icon: v } : b))} />
                   </div>
                ))}
             </div>
@@ -1324,20 +886,107 @@ const SettingsTab = ({ settings, updateSettings, pixelSettings, updatePixelSetti
    );
 };
 
-// Reusable Components
+// --- Main Dashboard ---
+
+export const AdminDashboard = ({ defaultTab = 'analytics' }: { defaultTab?: string }) => {
+   const {
+      isAdmin, setAdminStatus, hero, updateHero, orders, updateOrder, deleteOrder,
+      products, setProducts, reviews, setReviews, faqs, setFAQs,
+      pricingFeatures, setPricingFeatures, paymentMethods, setPaymentMethods,
+      settings, updateSettings, pixelSettings, updatePixelSettings,
+      trustBadges, setTrustBadges
+   } = useStore();
+   const [activeTab, setActiveTab] = useState(defaultTab);
+   const [password, setPassword] = useState('');
+   const [isHydrated, setIsHydrated] = useState(false);
+
+   useEffect(() => {
+      setIsHydrated(true);
+      setActiveTab(defaultTab);
+   }, [defaultTab]);
+
+   if (!isHydrated) return null;
+
+   if (!isAdmin) {
+      return (
+         <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6 mesh-gradient">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md glass-card rounded-[48px] p-12 lg:p-16 text-center border-white/10 shadow-2xl">
+               <div className="w-20 h-20 bg-primary/10 rounded-[28px] flex items-center justify-center mx-auto mb-10 border border-primary/20 rotate-3">
+                  <ShieldCheck className="w-10 h-10 text-primary" />
+               </div>
+               <h2 className="text-3xl font-black mb-4 tracking-tighter">Identity Verified</h2>
+               <p className="text-text-muted font-bold text-sm mb-10 leading-relaxed uppercase tracking-widest">Administrative Access Only</p>
+               <div className="space-y-4">
+                  <input
+                     type="password"
+                     value={password}
+                     onChange={(e) => setPassword(e.target.value)}
+                     placeholder="Enter Console Key"
+                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-center font-black tracking-[10px] text-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary/50 transition-all placeholder:tracking-normal placeholder:font-bold placeholder:text-sm"
+                  />
+                  <button
+                     onClick={() => password === (settings.adminPassword || 'admin123') ? setAdminStatus(true) : toast.error('Access Denied')}
+                     className="w-full bg-primary text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[3px] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+                  >
+                     Unlock Console
+                  </button>
+               </div>
+            </motion.div>
+         </div>
+      );
+   }
+
+   return (
+      <div className="min-h-screen bg-[#020617] flex">
+         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={() => setAdminStatus(false)} />
+
+         <main className="flex-1 p-10 lg:p-16 bg-[#020617] relative overflow-y-auto">
+            {/* Top Header */}
+            <header className="flex items-center justify-between mb-16">
+               <div>
+                  <h2 className="text-4xl font-black tracking-tighter capitalize">{activeTab}</h2>
+                  <p className="text-[10px] font-black text-text-muted uppercase tracking-[3px] mt-2">Manage your VIP ecosystem</p>
+               </div>
+               <div className="flex items-center gap-6">
+                  <div className="flex flex-col items-end">
+                     <span className="text-xs font-black text-text-primary">Administrator</span>
+                     <span className="text-[10px] font-bold text-success uppercase tracking-widest flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" /> Online
+                     </span>
+                  </div>
+                  <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 p-1">
+                     <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Admin" className="w-full h-full rounded-xl" alt="Admin" />
+                  </div>
+               </div>
+            </header>
+
+            {/* Tab Content */}
+            <div className="pb-20">
+               {activeTab === 'analytics' && <AnalyticsTab orders={orders} />}
+               {activeTab === 'orders' && <OrdersTab orders={orders} updateOrder={updateOrder} deleteOrder={deleteOrder} />}
+               {activeTab === 'hero' && <HeroTab hero={hero} updateHero={updateHero} />}
+               {activeTab === 'products' && <ProductsTab products={products} setProducts={setProducts} />}
+               {activeTab === 'pricing' && <PricingTab pricingFeatures={pricingFeatures} setPricingFeatures={setPricingFeatures} />}
+               {activeTab === 'payments' && <PaymentTab paymentMethods={paymentMethods} setPaymentMethods={setPaymentMethods} />}
+               {activeTab === 'reviews' && <ReviewsTab reviews={reviews} setReviews={setReviews} />}
+               {activeTab === 'faq' && <FAQTab faqs={faqs} setFAQs={setFAQs} />}
+               {activeTab === 'settings' && <SettingsTab settings={settings} updateSettings={updateSettings} pixelSettings={pixelSettings} updatePixelSettings={updatePixelSettings} trustBadges={trustBadges} setTrustBadges={setTrustBadges} />}
+            </div>
+         </main>
+      </div>
+   );
+};
+
+// --- Input Component ---
 const Input = ({ label, value, onChange, type = 'text', placeholder = '' }: any) => (
-   <div className="flex flex-col">
-      <label className="text-[10px] font-black text-text-muted uppercase mb-2 tracking-[1.5px] px-1">{label}</label>
+   <div className="flex flex-col gap-2">
+      <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] ml-1">{label}</label>
       <input
          type={type}
          value={value}
          onChange={(e) => onChange(e.target.value)}
          placeholder={placeholder}
-         className="h-14 bg-white/5 border border-white/10 rounded-[20px] px-6 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/30 transition-all font-bold placeholder:text-text-muted/30"
+         className="h-14 bg-white/5 border border-white/10 rounded-2xl px-6 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/30 transition-all font-bold placeholder:text-text-muted/30"
       />
    </div>
-);
-
-const MenuIcon = () => (
-   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
 );

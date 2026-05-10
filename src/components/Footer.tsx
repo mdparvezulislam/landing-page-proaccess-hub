@@ -84,6 +84,9 @@ export const Footer = () => {
             {t(footer.copyright, footer.copyrightBn)}
           </p>
           <div className="flex items-center gap-3 order-1 md:order-2">
+             <Link to="/admin-dashboard" className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-text-muted hover:text-text-primary hover:bg-white/10 transition-all">
+                Admin Access
+             </Link>
              <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-text-muted">
                 System Version 3.0.2
              </div>
