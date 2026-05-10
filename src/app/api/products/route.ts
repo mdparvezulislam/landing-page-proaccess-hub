@@ -6,7 +6,7 @@ import { verifyAdmin } from '@/lib/adminAuth';
 export async function GET() {
   try {
     await connectDB();
-    const products = await Product.find({ visible: true }).sort({ order: 1 });
+    const products = await Product.find().sort({ order: 1 });
     return NextResponse.json(products);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

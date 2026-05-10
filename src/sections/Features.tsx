@@ -13,9 +13,9 @@ export const Features = ({ data, section }: { data: any[], section: any }) => {
   const visibleFeatures = globalFeatures.filter((f: any) => f.visible).sort((a: any, b: any) => a.order - b.order);
 
   return (
-    <section id="features" className="py-20 lg:py-40 bg-white/[0.01] relative overflow-hidden">
+    <section id="features" className="py-12 lg:py-24 bg-white/[0.01] relative overflow-hidden">
       <div className="container mx-auto px-4 lg:px-6 relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-32">
+        <div className="text-center max-w-3xl mx-auto mb-8 lg:mb-16">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

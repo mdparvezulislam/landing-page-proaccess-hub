@@ -38,13 +38,13 @@ export const CountdownBanner = ({ data }: { data: any }) => {
   if (!countdown.enabled) return null;
 
   return (
-    <section className="py-20 lg:py-40 relative overflow-hidden bg-bg-dark">
+    <section className="py-12 lg:py-24 relative overflow-hidden bg-bg-dark">
       <div className="container mx-auto px-4 lg:px-6">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="relative glass-card rounded-[40px] lg:rounded-[64px] p-8 lg:p-24 border-white/5 shadow-2xl overflow-hidden text-center"
+          className="relative glass-card rounded-[40px] lg:rounded-[56px] p-8 lg:p-16 border-white/5 shadow-2xl overflow-hidden text-center"
         >
           {/* Animated Background Atmosphere */}
           <div className="absolute inset-0 z-0">

@@ -15,13 +15,13 @@ export const FAQSection = ({ data, settings: rawSettings }: { data: any, setting
   const visibleFaqs = [...faqs].filter((f: any) => f.visible).sort((a: any, b: any) => a.order - b.order);
 
   return (
-    <section id="faq" className="py-20 lg:py-40 relative bg-bg-dark overflow-hidden">
+    <section id="faq" className="py-12 lg:py-24 relative bg-bg-dark overflow-hidden">
       {/* Decorative Glows */}
       <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[300px] lg:w-[600px] h-[300px] lg:h-[600px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[300px] lg:w-[600px] h-[300px] lg:h-[600px] bg-secondary/5 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="container mx-auto px-4 lg:px-6 relative z-10">
-        <div className="text-center max-w-4xl mx-auto mb-16 lg:mb-24">
+        <div className="text-center max-w-4xl mx-auto mb-8 lg:mb-16">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}

@@ -12,13 +12,13 @@ export const ReviewsSection = ({ data }: { data: any }) => {
   const visibleReviews = [...reviews].filter((r: any) => r.visible).sort((a: any, b: any) => a.order - b.order);
 
   return (
-    <section id="reviews" className="py-20 lg:py-40 relative bg-bg-dark overflow-hidden">
+    <section id="reviews" className="py-12 lg:py-24 relative bg-bg-dark overflow-hidden">
       {/* Background Atmosphere */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-secondary/5 blur-[120px] rounded-full pointer-events-none animate-float" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none animate-float" style={{ animationDelay: '2s' }} />
 
       <div className="container mx-auto px-4 lg:px-6 relative z-10">
-        <div className="text-center max-w-4xl mx-auto mb-16 lg:mb-24">
+        <div className="text-center max-w-4xl mx-auto mb-8 lg:mb-16">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
