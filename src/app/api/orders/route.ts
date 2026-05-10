@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Order from '@/models/Order';
-import { getServerSession } from 'next-auth';
+import { verifyAdminAuthToken } from '@/lib/adminAuth';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const session = await getServerSession();
-    const isAdmin = session && ((session.user as any)?.role === 'SuperAdmin' || (session.user as any)?.role === 'Admin');
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const cookieHeader = req.headers.get('cookie') || '';
+    const token = cookieHeader.split(';').map((c) => c.trim()).find((c) => c.startsWith('admin-auth='))?.split('=')[1];
+    const { valid } = token ? await verifyAdminAuthToken(decodeURIComponent(token)) : { valid: false };
+    if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
     await connectDB();
     const orders = await Order.find().sort({ createdAt: -1 });
     return NextResponse.json(orders);
@@ -38,11 +38,10 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    const session = await getServerSession();
-    const isAdmin = session && ((session.user as any)?.role === 'SuperAdmin' || (session.user as any)?.role === 'Admin');
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const cookieHeader = req.headers.get('cookie') || '';
+    const token = cookieHeader.split(';').map((c) => c.trim()).find((c) => c.startsWith('admin-auth='))?.split('=')[1];
+    const { valid } = token ? await verifyAdminAuthToken(decodeURIComponent(token)) : { valid: false };
+    if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     await connectDB();
     const { id, ...updateData } = await req.json();
     const order = await Order.findByIdAndUpdate(id, updateData, { new: true });

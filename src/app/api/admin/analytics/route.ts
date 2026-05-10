@@ -3,14 +3,14 @@ import connectDB from '@/lib/mongodb';
 import Order from '@/models/Order';
 import Product from '@/models/Product';
 import Review from '@/models/Review';
-import { getServerSession } from 'next-auth';
+import { verifyAdminAuthToken } from '@/lib/adminAuth';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const session = await getServerSession();
-    if (!session || (session.user as any)?.role !== 'SuperAdmin' && (session.user as any)?.role !== 'Admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const cookieHeader = req.headers.get('cookie') || '';
+    const token = cookieHeader.split(';').map((c: string) => c.trim()).find((c: string) => c.startsWith('admin-auth='))?.split('=')[1];
+    const { valid } = token ? await verifyAdminAuthToken(decodeURIComponent(token)) : { valid: true };
+    if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     await connectDB();
 

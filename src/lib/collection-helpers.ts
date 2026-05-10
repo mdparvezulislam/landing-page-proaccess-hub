@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { getServerSession } from 'next-auth';
+import { verifyAdminAuthToken } from '@/lib/adminAuth';
 
 export function createCollectionItemRoute(Model: any) {
   return {
@@ -19,10 +19,10 @@ export function createCollectionItemRoute(Model: any) {
     async PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
       try {
         const { id } = await params;
-        const session = await getServerSession();
-        if (!session || (session.user as any)?.role !== 'SuperAdmin' && (session.user as any)?.role !== 'Admin') {
-          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+        const cookieHeader = req.headers.get('cookie') || '';
+        const token = cookieHeader.split(';').map((c) => c.trim()).find((c) => c.startsWith('admin-auth='))?.split('=')[1];
+        const { valid } = token ? await verifyAdminAuthToken(decodeURIComponent(token)) : { valid: false };
+        if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         await connectDB();
         const data = await req.json();
@@ -37,10 +37,10 @@ export function createCollectionItemRoute(Model: any) {
     async DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
       try {
         const { id } = await params;
-        const session = await getServerSession();
-        if (!session || (session.user as any)?.role !== 'SuperAdmin' && (session.user as any)?.role !== 'Admin') {
-          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+        const cookieHeader = req.headers.get('cookie') || '';
+        const token = cookieHeader.split(';').map((c) => c.trim()).find((c) => c.startsWith('admin-auth='))?.split('=')[1];
+        const { valid } = token ? await verifyAdminAuthToken(decodeURIComponent(token)) : { valid: false };
+        if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         await connectDB();
         const item = await Model.findByIdAndDelete(id);

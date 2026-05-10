@@ -2,16 +2,16 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   MONGODB_URI: z.string().url(),
-  NEXTAUTH_SECRET: z.string().min(1),
-  NEXTAUTH_URL: z.string().url(),
-  NEXT_PUBLIC_APP_URL: z.string().url(),
+  ADMIN_EMAIL: z.string().email(),
+  ADMIN_PASSWORD: z.string().min(1),
+  NEXT_PUBLIC_APP_URL: z.string().url().optional(),
   JWT_SECRET: z.string().optional(),
 });
 
 const envParse = envSchema.safeParse({
   MONGODB_URI: process.env.MONGODB_URI,
-  NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-  NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+  ADMIN_EMAIL: process.env.ADMIN_EMAIL,
+  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   JWT_SECRET: process.env.JWT_SECRET,
 });

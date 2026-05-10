@@ -1,15 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { Lock, Mail, ArrowRight, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
 
 export default function AdminLogin() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -18,20 +17,22 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      const res = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+        credentials: "same-origin",
       });
 
-      if (res?.error) {
-        toast.error('Invalid credentials');
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data?.error || "Invalid credentials");
       } else {
-        toast.success('Login successful');
-        router.push('/admin/dashboard');
+        toast.success("Login successful");
+        router.push("/admin/dashboard");
       }
     } catch (error) {
-      toast.error('An error occurred');
+      toast.error("An error occurred");
     } finally {
       setLoading(false);
     }
@@ -42,10 +43,13 @@ export default function AdminLogin() {
       {/* Background Decor */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-1/4 -left-20 w-[600px] h-[600px] bg-primary/10 blur-[150px] rounded-full animate-float" />
-        <div className="absolute bottom-1/4 -right-20 w-[600px] h-[600px] bg-secondary/10 blur-[150px] rounded-full animate-float" style={{ animationDelay: '2s' }} />
+        <div
+          className="absolute bottom-1/4 -right-20 w-[600px] h-[600px] bg-secondary/10 blur-[150px] rounded-full animate-float"
+          style={{ animationDelay: "2s" }}
+        />
       </div>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md p-8 relative z-10"
@@ -55,13 +59,19 @@ export default function AdminLogin() {
             <div className="w-20 h-20 bg-primary/20 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-primary/30">
               <ShieldCheck className="w-10 h-10 text-primary" />
             </div>
-            <h1 className="text-3xl font-black tracking-tighter mb-2">Admin Access</h1>
-            <p className="text-[10px] font-black text-text-muted uppercase tracking-[3px]">Secure Portal Only</p>
+            <h1 className="text-3xl font-black tracking-tighter mb-2">
+              Admin Access
+            </h1>
+            <p className="text-[10px] font-black text-text-muted uppercase tracking-[3px]">
+              Secure Portal Only
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] ml-1">Email Address</label>
+              <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] ml-1">
+                Email Address
+              </label>
               <div className="relative">
                 <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                 <input
@@ -76,7 +86,9 @@ export default function AdminLogin() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] ml-1">Secure Password</label>
+              <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] ml-1">
+                Secure Password
+              </label>
               <div className="relative">
                 <Lock className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                 <input
@@ -95,7 +107,7 @@ export default function AdminLogin() {
               disabled={loading}
               className="w-full bg-primary hover:bg-primary-light text-white py-5 rounded-2xl font-black text-sm transition-all glow-btn shadow-xl shadow-primary/20 flex items-center justify-center gap-3 mt-4"
             >
-              {loading ? 'Verifying...' : 'Access Dashboard'}
+              {loading ? "Verifying..." : "Access Dashboard"}
               <ArrowRight className="w-5 h-5" />
             </button>
           </form>

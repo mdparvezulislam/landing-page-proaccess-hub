@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Settings from '@/models/Settings';
-import { getServerSession } from 'next-auth';
+import { verifyAdminAuthToken } from '@/lib/adminAuth';
 
 export function createSettingsSectionRoute(sectionName: string) {
   return {
@@ -17,10 +17,10 @@ export function createSettingsSectionRoute(sectionName: string) {
 
     async POST(req: Request) {
       try {
-        const session = await getServerSession();
-        if (!session || session.user?.email !== 'admin@proaccess.com') {
-          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+        const cookieHeader = req.headers.get('cookie') || '';
+        const token = cookieHeader.split(';').map((c) => c.trim()).find((c) => c.startsWith('admin-auth='))?.split('=')[1];
+        const { valid } = token ? await verifyAdminAuthToken(decodeURIComponent(token)) : { valid: false };
+        if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         await connectDB();
         const data = await req.json();

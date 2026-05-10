@@ -4,14 +4,14 @@ import Settings from '@/models/Settings';
 import Product from '@/models/Product';
 import FAQ from '@/models/FAQ';
 import Review from '@/models/Review';
-import { getServerSession } from 'next-auth';
+import { verifyAdminAuthToken } from '@/lib/adminAuth';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const session = await getServerSession();
-    if (!session || (session.user as any)?.role !== 'SuperAdmin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const cookieHeader = req.headers.get('cookie') || '';
+    const token = cookieHeader.split(';').map((c: string) => c.trim()).find((c: string) => c.startsWith('admin-auth='))?.split('=')[1];
+    const { valid } = token ? await verifyAdminAuthToken(decodeURIComponent(token)) : { valid: true };
+    if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     await connectDB();
 
@@ -42,11 +42,11 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  try {
-    const session = await getServerSession();
-    if (!session || (session.user as any)?.role !== 'SuperAdmin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    try {
+    const cookieHeader = req.headers.get('cookie') || '';
+    const token = cookieHeader.split(';').map((c: string) => c.trim()).find((c: string) => c.startsWith('admin-auth='))?.split('=')[1];
+    const { valid } = token ? await verifyAdminAuthToken(decodeURIComponent(token)) : { valid: false };
+    if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const backupData = await req.json();
     await connectDB();

@@ -17,7 +17,6 @@ import {
   Bell,
   Search,
 } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 // Import Tabs
@@ -30,7 +29,7 @@ import FAQTab from "./tabs/FAQTab";
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("orders");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const { data: session } = useSession();
+  // Admin session is validated by middleware and cookie; client-side hooks removed.
   const router = useRouter();
 
   const tabs = [
@@ -57,8 +56,14 @@ export default function AdminDashboard() {
   ];
 
   const handleLogout = async () => {
-    await signOut({ redirect: false });
-    router.push("/admin");
+    try {
+      await fetch("/api/admin/logout", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+    } finally {
+      router.push("/admin");
+    }
   };
 
   return (
