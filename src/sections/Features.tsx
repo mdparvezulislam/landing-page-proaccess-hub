@@ -1,13 +1,16 @@
+"use client";
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import * as LucideIcons from 'lucide-react';
 
-export const Features = () => {
-  const { language, globalFeatures, featuresSection } = useStore();
+export const Features = ({ data, section }: { data: any[], section: any }) => {
+  const { language } = useStore();
+  const globalFeatures = data || [];
+  const featuresSection = section || { titleEn: 'Features', titleBn: 'ফিচারসমূহ' };
   const t = (en: string, bn: string) => language === 'en' ? en : bn;
 
-  const visibleFeatures = globalFeatures.filter(f => f.visible).sort((a, b) => a.order - b.order);
+  const visibleFeatures = globalFeatures.filter((f: any) => f.visible).sort((a: any, b: any) => a.order - b.order);
 
   return (
     <section id="features" className="py-20 lg:py-40 bg-white/[0.01] relative overflow-hidden">

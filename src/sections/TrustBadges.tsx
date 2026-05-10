@@ -1,13 +1,15 @@
+"use client";
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import * as LucideIcons from 'lucide-react';
 
-export const TrustBadges = () => {
-  const { language, trustBadges } = useStore();
+export const TrustBadges = ({ data }: { data: any[] }) => {
+  const { language } = useStore();
+  const trustBadges = data || [];
   const t = (en: string, bn: string) => language === 'en' ? en : bn;
 
-  const visibleBadges = trustBadges.filter(b => b.visible).sort((a, b) => a.order - b.order);
+  const visibleBadges = trustBadges.filter((b: any) => b.visible).sort((a: any, b: any) => a.order - b.order);
 
   return (
     <section className="py-12 lg:py-20 bg-white/[0.01] border-y border-white/5 relative overflow-hidden">

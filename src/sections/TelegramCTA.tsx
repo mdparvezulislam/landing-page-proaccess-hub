@@ -1,10 +1,12 @@
+"use client";
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { Send, MessageCircle, Sparkles } from 'lucide-react';
 
-export const TelegramCTA = () => {
-  const { language, settings } = useStore();
+export const TelegramCTA = ({ data }: { data: any }) => {
+  const { language } = useStore();
+  const settings = data || {};
   const t = (en: string, bn: string) => language === 'en' ? en : bn;
 
   return (

@@ -1,10 +1,12 @@
+"use client";
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { Clock, Zap, Sparkles } from 'lucide-react';
 
-export const CountdownBanner = () => {
-  const { language, countdown } = useStore();
+export const CountdownBanner = ({ data }: { data: any }) => {
+  const { language } = useStore();
+  const countdown = data || { enabled: false };
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
 
   const t = (en: string, bn: string) => language === 'en' ? en : bn;

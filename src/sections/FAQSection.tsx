@@ -1,15 +1,18 @@
+"use client";
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { HelpCircle, ChevronDown, Sparkles, MessageSquare } from 'lucide-react';
 
-export const FAQSection = () => {
-  const { language, faqs, settings } = useStore();
+export const FAQSection = ({ data, settings: rawSettings }: { data: any, settings: any }) => {
+  const { language } = useStore();
+  const settings = rawSettings || {};
+  const faqs = data || [];
   const [activeIndex, setActiveIndex] = useState<string | null>(null);
 
   const t = (en: string, bn: string) => language === 'en' ? en : bn;
 
-  const visibleFaqs = [...faqs].filter(f => f.visible).sort((a, b) => a.order - b.order);
+  const visibleFaqs = [...faqs].filter((f: any) => f.visible).sort((a: any, b: any) => a.order - b.order);
 
   return (
     <section id="faq" className="py-20 lg:py-40 relative bg-bg-dark overflow-hidden">

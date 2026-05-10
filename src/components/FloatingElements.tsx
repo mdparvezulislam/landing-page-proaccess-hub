@@ -1,10 +1,12 @@
+"use client";
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { Send, ShoppingCart, ArrowUp, Zap } from 'lucide-react';
 
-export const FloatingElements = () => {
-  const { language, settings } = useStore();
+export const FloatingElements = ({ data }: { data: any }) => {
+  const { language } = useStore();
+  const settings = data?.site || {};
   const [showSticky, setShowSticky] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 

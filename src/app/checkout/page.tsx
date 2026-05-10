@@ -1,6 +1,9 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { useStore, PaymentMethod, Order } from '../store/useStore';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useStore } from '@/store/useStore';
+import { useSettings } from '@/hooks/useCMS';
 import {
   CheckCircle2,
   Copy,
@@ -19,17 +22,34 @@ import {
   CreditCard,
   Sparkles
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { toast } from 'sonner';
-import { trackInitiateCheckout, trackPurchase } from '../utils/facebookPixel';
 
-export const CheckoutPage = () => {
-  const { language, selectedOrderContext, addOrder, settings, paymentSettings } = useStore();
-  const navigate = useNavigate();
+export default function CheckoutPage() {
+  const { language, selectedOrderContext } = useStore();
+  const { data: siteData, isLoading: settingsLoading } = useSettings();
+  const router = useRouter();
 
-  const enabledMethods = paymentSettings.methods.filter(m => m.enabled).sort((a, b) => a.order - b.order);
-  const [selectedMethodId, setSelectedMethodId] = useState<string>(enabledMethods[0]?.id || '');
-  const selectedMethod = enabledMethods.find(m => m.id === selectedMethodId) || enabledMethods[0];
+  const paymentSettings = siteData?.paymentInstructions || {
+    titleEn: "Payment Instructions",
+    titleBn: "পেমেন্ট নির্দেশাবলী",
+    instructionsEn: [],
+    instructionsBn: [],
+    warningEn: "",
+    warningBn: "",
+  };
+  
+  const enabledMethods = (siteData?.paymentMethods || []).filter((m: any) => m.enabled).sort((a: any, b: any) => a.order - b.order);
+  const [selectedMethodId, setSelectedMethodId] = useState<string>('');
+  
+  useEffect(() => {
+    if (enabledMethods.length > 0 && !selectedMethodId) {
+      setSelectedMethodId(enabledMethods[0].id);
+    }
+  }, [enabledMethods, selectedMethodId]);
+
+  const selectedMethod = enabledMethods.find((m: any) => m.id === selectedMethodId) || enabledMethods[0];
 
   const [formData, setFormData] = useState({
     name: '',
@@ -41,7 +61,7 @@ export const CheckoutPage = () => {
   const [orderComplete, setOrderComplete] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  const t = (en: string, bn: string) => language === 'en' ? en : bn;
+  const t = (en: string, bn: string) => language === 'en' ? (en || '') : (bn || '');
 
   useEffect(() => {
     setIsHydrated(true);
@@ -51,21 +71,13 @@ export const CheckoutPage = () => {
   useEffect(() => {
     if (isHydrated && !selectedOrderContext) {
       const timer = setTimeout(() => {
-        if (!selectedOrderContext) navigate('/');
+        if (!selectedOrderContext) router.push('/');
       }, 500);
       return () => clearTimeout(timer);
     }
+  }, [selectedOrderContext, router, isHydrated]);
 
-    if (selectedOrderContext) {
-      trackInitiateCheckout({
-        content_name: selectedOrderContext.product.titleEn,
-        value: selectedOrderContext.plan.priceTk,
-        currency: 'BDT'
-      });
-    }
-  }, [selectedOrderContext, navigate, isHydrated]);
-
-  if (!isHydrated) return (
+  if (!isHydrated || settingsLoading) return (
     <div className="min-h-screen bg-[#020617] flex items-center justify-center">
       <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-xl animate-spin" />
     </div>
@@ -78,7 +90,7 @@ export const CheckoutPage = () => {
           <ShoppingBag className="w-12 h-12 text-primary" />
         </div>
         <h1 className="text-4xl font-black mb-4 tracking-tighter">{t('No Package Selected', 'প্যাকেজ পাওয়া যায়নি')}</h1>
-        <Link to="/" className="px-10 py-5 bg-primary text-white font-black rounded-2xl shadow-2xl shadow-primary/30 hover:scale-105 transition-all glow-btn">
+        <Link href="/" className="px-10 py-5 bg-primary text-white font-black rounded-2xl shadow-2xl shadow-primary/30 hover:scale-105 transition-all glow-btn">
           {t('View VIP Packages', 'ভিআইপি প্যাকেজ দেখুন')}
         </Link>
       </div>
@@ -92,7 +104,7 @@ export const CheckoutPage = () => {
     toast.success('Copied to clipboard');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.telegram || !formData.transactionId) {
       toast.error('Please fill in all required fields');
@@ -101,32 +113,34 @@ export const CheckoutPage = () => {
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const newOrder: Order = {
-        id: Math.random().toString(36).substr(2, 9).toUpperCase(),
-        productName: product.titleEn,
-        plan: plan.nameEn,
-        amount: plan.priceTk,
-        customerName: formData.name,
-        telegramUsername: formData.telegram.replace('@', ''),
-        paymentNumber: selectedMethod?.number || '',
-        transactionId: formData.transactionId,
-        screenshotUrl: formData.screenshot || '',
-        status: 'Pending',
-        createdAt: new Date().toISOString()
-      };
-
-      addOrder(newOrder);
-      trackPurchase({
-        content_name: product.titleEn,
-        value: plan.priceTk,
-        currency: 'BDT'
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productName: product.titleEn,
+          plan: plan.nameEn,
+          amount: plan.priceTk,
+          customerName: formData.name,
+          telegramUsername: formData.telegram.replace('@', ''),
+          paymentNumber: selectedMethod?.number || '',
+          transactionId: formData.transactionId,
+          screenshotUrl: formData.screenshot || '',
+          status: 'Pending',
+        }),
       });
 
+      if (res.ok) {
+        setOrderComplete(true);
+        toast.success('Payment details submitted successfully!');
+      } else {
+        toast.error('Failed to submit order');
+      }
+    } catch (error) {
+      toast.error('An error occurred');
+    } finally {
       setIsSubmitting(false);
-      setOrderComplete(true);
-      toast.success('Payment details submitted successfully!');
-    }, 2000);
+    }
   };
 
   return (
@@ -138,7 +152,7 @@ export const CheckoutPage = () => {
       </div>
 
       <div className="container mx-auto px-1 lg:px-6 max-w-7xl">
-        <Link to="/" className="inline-flex items-center gap-2 text-text-muted hover:text-text-primary mb-6 transition-all group font-black uppercase text-[10px] tracking-[2px] ml-2">
+        <Link href="/" className="inline-flex items-center gap-2 text-text-muted hover:text-text-primary mb-6 transition-all group font-black uppercase text-[10px] tracking-[2px] ml-2">
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           {t('Back', 'পিছনে')}
         </Link>
@@ -201,7 +215,7 @@ export const CheckoutPage = () => {
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 lg:gap-5 mb-8 lg:mb-12">
-                {enabledMethods.map((method: PaymentMethod) => (
+                {enabledMethods.map((method: any) => (
                   <button
                     key={method.id}
                     onClick={() => setSelectedMethodId(method.id)}
@@ -264,10 +278,12 @@ export const CheckoutPage = () => {
                           {t('How to Pay?', 'কিভাবে পেমেন্ট করবেন?')}
                         </h4>
                         <div className="space-y-2 lg:space-y-4">
-                          {paymentSettings.instructionsEn.map((inst, i) => (
+                          {(selectedMethod.instructionsEn || paymentSettings.instructionsEn?.[0] || '').split('\n').map((inst: string, i: number) => (
                             <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/5">
                               <span className="w-5 lg:w-6 h-5 lg:h-6 rounded-lg bg-primary/10 flex items-center justify-center text-[9px] lg:text-[10px] font-black text-primary flex-shrink-0">{i + 1}</span>
-                              <p className="text-xs lg:text-base font-bold text-text-secondary">{t(inst, paymentSettings.instructionsBn[i])}</p>
+                              <p className="text-xs lg:text-base font-bold text-text-secondary">
+                                {t(inst, (selectedMethod.instructionsBn || '').split('\n')[i] || (paymentSettings.instructionsBn?.[0] || '').split('\n')[i])}
+                              </p>
                             </div>
                           ))}
                         </div>
@@ -279,7 +295,7 @@ export const CheckoutPage = () => {
                         </h4>
                         <div className="p-6 lg:p-8 rounded-2xl lg:rounded-[32px] bg-warning/5 border border-warning/10 border-dashed">
                           <p className="text-xs lg:text-sm text-warning/80 font-bold leading-relaxed">
-                            {t(paymentSettings.warningTextEn, paymentSettings.warningTextBn)}
+                            {t(selectedMethod.warningTextEn || paymentSettings.warningEn, selectedMethod.warningTextBn || paymentSettings.warningBn)}
                           </p>
                         </div>
                       </div>
@@ -392,7 +408,7 @@ export const CheckoutPage = () => {
               </p>
               <div className="space-y-4">
                 <a
-                  href={settings.telegramLink}
+                  href={siteData?.site?.telegramLink}
                   target="_blank"
                   className="w-full bg-[#0088cc] text-white font-black py-4 lg:py-6 rounded-2xl lg:rounded-3xl flex items-center justify-center gap-3 shadow-xl"
                 >
@@ -400,7 +416,7 @@ export const CheckoutPage = () => {
                   {t('Message Admin', 'টেলিগ্রামে মেসেজ দিন')}
                 </a>
                 <button
-                  onClick={() => navigate('/')}
+                  onClick={() => router.push('/')}
                   className="w-full py-4 text-text-muted font-black uppercase text-[10px] tracking-[3px] hover:text-text-primary transition-all"
                 >
                   {t('Return Home', 'হোমে ফিরে যান')}
@@ -412,4 +428,4 @@ export const CheckoutPage = () => {
       </AnimatePresence>
     </div>
   );
-};
+}

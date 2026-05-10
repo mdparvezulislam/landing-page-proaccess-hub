@@ -1,22 +1,23 @@
+"use client";
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { useStore, Product, ProductPlan, Language } from '../store/useStore';
+import { motion } from 'framer-motion';
+import { useStore } from '../store/useStore';
 import { Check, ArrowRight, Zap, Star, ShieldCheck, Sparkles, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { trackAddToCart } from '../utils/facebookPixel';
 
 interface ProductCardProps {
-  product: Product;
+  product: any;
   idx: number;
-  language: Language;
-  handleJoin: (product: Product, plan: ProductPlan) => void;
+  language: any;
+  handleJoin: (product: any, plan: any) => void;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, idx, language, handleJoin }) => {
   const [activePlanId, setActivePlanId] = useState(product.plans[product.plans.length - 1]?.id);
   const t = (en: string, bn: string) => language === 'en' ? (en || '') : (bn || '');
 
-  const activePlan = product.plans.find(p => p.id === activePlanId) || product.plans[0];
+  const activePlan = product.plans.find((p: any) => p.id === activePlanId) || product.plans[0];
 
   return (
     <motion.div
@@ -63,7 +64,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, idx, language, handl
               <span className="text-[8px] lg:text-[10px] font-black text-text-muted uppercase tracking-[2px] lg:tracking-[4px]">Plan Comparison</span>
             </div>
             <div className="col-span-6 grid grid-cols-3 gap-1 lg:gap-2 text-center">
-              {product.plans.map(plan => (
+              {product.plans.map((plan: any) => (
                 <div key={plan.id} className="flex flex-col items-center">
                   <span className="text-[7px] lg:text-[9px] font-black text-text-primary uppercase tracking-[1px] lg:tracking-[2px] truncate w-full">{t(plan.nameEn, plan.nameBn)}</span>
                 </div>
@@ -73,7 +74,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, idx, language, handl
 
           {/* Features List */}
           <div className="space-y-2 lg:space-y-3">
-            {(product.features || []).filter(f => f.visible).sort((a, b) => a.order - b.order).map((f) => (
+            {(product.features || []).filter((f: any) => f.visible).sort((a: any, b: any) => a.order - b.order).map((f: any) => (
               <div key={f.id} className={`grid grid-cols-12 gap-2 lg:gap-4 p-3 lg:p-6 rounded-xl lg:rounded-3xl transition-all ${f.highlighted ? 'bg-primary/5 border border-primary/20 shadow-inner' : 'hover:bg-white/[0.02]'}`}>
                 <div className="col-span-6 flex items-center gap-3 lg:gap-4">
                   <div className={`w-6 lg:w-10 h-6 lg:h-10 rounded-lg lg:rounded-xl flex items-center justify-center flex-shrink-0 ${f.highlighted ? 'bg-primary text-white' : 'bg-white/5 text-text-muted'}`}>
@@ -84,7 +85,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, idx, language, handl
                   </span>
                 </div>
                 <div className="col-span-6 grid grid-cols-3 gap-1 lg:gap-2">
-                  {product.plans.map(plan => {
+                  {product.plans.map((plan: any) => {
                     const isIncluded = !f.includedInPlanIds || f.includedInPlanIds.length === 0 || f.includedInPlanIds.includes(plan.id);
                     return (
                       <div key={plan.id} className="flex items-center justify-center">
@@ -111,7 +112,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, idx, language, handl
       <div className="relative z-10 mt-auto pt-8 lg:pt-16 border-t border-white/5">
         <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-10">
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-4 w-full">
-            {product.plans.map((plan, i) => (
+            {product.plans.map((plan: any, i: number) => (
               <button
                 key={plan.id}
                 onClick={() => setActivePlanId(plan.id)}
@@ -158,17 +159,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, idx, language, handl
   );
 };
 
-export const ProductShowcase = () => {
-  const { language, products, setSelectedOrderContext } = useStore();
-  const navigate = useNavigate();
+export const ProductShowcase = ({ data }: { data: any }) => {
+  const { language, setSelectedOrderContext } = useStore();
+  const products = data || [];
+  const router = useRouter();
 
-  const handleJoin = (product: Product, plan: ProductPlan) => {
+  const handleJoin = (product: any, plan: any) => {
     setSelectedOrderContext({ product, plan });
     trackAddToCart({ content_name: product.titleEn, value: plan.priceTk, currency: 'BDT' });
-    navigate('/checkout');
+    router.push('/checkout');
   };
 
-  const visibleProducts = [...products].filter(p => p.visible).sort((a, b) => a.order - b.order);
+  const visibleProducts = [...products].filter((p: any) => p.visible).sort((a: any, b: any) => a.order - b.order);
 
   return (
     <section id="products" className="py-20 lg:py-48 relative overflow-hidden bg-bg-dark">

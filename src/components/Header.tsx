@@ -1,14 +1,17 @@
+"use client";
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { Menu, X, Globe, ArrowRight, Zap, ChevronRight, ShieldCheck } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import NextLink from 'next/link';
+import Link from 'next/link';
 
-export const Header = () => {
-  const { language, setLanguage, settings, navbar } = useStore();
+export const Header = ({ data }: { data: any }) => {
+  const { language, setLanguage } = useStore();
+  const settings = data?.site || {};
+  const navbar = data?.navbar || { items: [] };
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
-  const location = useLocation();
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -17,17 +20,16 @@ export const Header = () => {
   }, []);
 
   const t = (en: string, bn: string) => language === 'en' ? (en || '') : (bn || '');
-  const navItems = [...(navbar?.items || [])].sort((a, b) => a.order - b.order);
+  const navItems = [...(navbar.items || [])].sort((a: any, b: any) => a.order - b.order);
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-700 ${
-      scrolled 
-        ? "bg-[#020617]/70 backdrop-blur-2xl border-b border-white/5 py-3 lg:py-4 shadow-2xl" 
-        : "bg-transparent py-6 lg:py-8"
-    }`}>
+    <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-700 ${scrolled
+      ? "bg-[#020617]/70 backdrop-blur-2xl border-b border-white/5 py-3 lg:py-4 shadow-2xl"
+      : "bg-transparent py-6 lg:py-8"
+      }`}>
       <div className="container mx-auto px-4 lg:px-6 flex items-center justify-between">
         {/* Logo Section */}
-        <Link to="/" className="flex items-center gap-2 lg:gap-3 group relative">
+        <Link href="/" className="flex items-center gap-2 lg:gap-3 group relative">
           <div className="w-9 h-9 lg:w-11 lg:h-11 rounded-xl lg:rounded-[14px] bg-primary flex items-center justify-center text-white font-black text-lg lg:text-xl shadow-xl shadow-primary/25 group-hover:scale-110 group-hover:rotate-[6deg] transition-all duration-500">
             {(settings?.siteNameEn || 'V')[0]}
           </div>
@@ -43,8 +45,8 @@ export const Header = () => {
 
         {/* Desktop Nav */}
         <div className="hidden lg:flex items-center gap-1.5 bg-white/[0.03] p-1.5 rounded-2xl border border-white/5 backdrop-blur-md">
-          {navItems.map(item => (
-            <a 
+          {navItems.map((item: any) => (
+            <a
               key={item.id}
               href={item.url}
               className="px-5 py-2 text-[13px] font-bold text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-all relative group"
@@ -59,34 +61,34 @@ export const Header = () => {
         <div className="flex items-center gap-3 lg:gap-5">
           {/* Language Switcher */}
           <div className="hidden sm:flex bg-white/[0.03] p-1 rounded-xl border border-white/5 relative overflow-hidden group shadow-lg">
-             <button 
-               onClick={() => setLanguage('bn')}
-               className={`relative z-10 px-3 py-1 text-[9px] font-black transition-all duration-500 ${language === 'bn' ? 'text-black' : 'text-text-muted hover:text-text-primary'}`}
-             >
-               বাংলা
-             </button>
-             <button 
-               onClick={() => setLanguage('en')}
-               className={`relative z-10 px-3 py-1 text-[9px] font-black transition-all duration-500 ${language === 'en' ? 'text-black' : 'text-text-muted hover:text-text-primary'}`}
-             >
-               EN
-             </button>
-             <motion.div 
-               animate={{ x: language === 'bn' ? 0 : '100%' }}
-               transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-               className="absolute top-1 left-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm"
-             />
+            <button
+              onClick={() => setLanguage('bn')}
+              className={`relative z-10 px-3 py-1 text-[9px] font-black transition-all duration-500 ${language === 'bn' ? 'text-black' : 'text-text-muted hover:text-text-primary'}`}
+            >
+              বাংলা
+            </button>
+            <button
+              onClick={() => setLanguage('en')}
+              className={`relative z-10 px-3 py-1 text-[9px] font-black transition-all duration-500 ${language === 'en' ? 'text-black' : 'text-text-muted hover:text-text-primary'}`}
+            >
+              EN
+            </button>
+            <motion.div
+              animate={{ x: language === 'bn' ? 0 : '100%' }}
+              transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+              className="absolute top-1 left-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm"
+            />
           </div>
 
-          <Link 
-            to="/#pricing"
+          <Link
+            href="/#pricing"
             className="hidden md:flex items-center gap-2 bg-primary hover:bg-primary-light text-white px-6 py-2.5 rounded-xl font-black text-xs transition-all glow-btn"
           >
             {t(settings?.floatingCTAEn, settings?.floatingCTABn)}
             <Zap className="w-4 h-4 fill-white" />
           </Link>
 
-          <button 
+          <button
             onClick={() => setMobileMenu(!mobileMenu)}
             className="lg:hidden p-2 text-text-primary hover:bg-white/5 rounded-xl transition-all border border-white/5"
           >
@@ -99,34 +101,34 @@ export const Header = () => {
       <AnimatePresence>
         {mobileMenu && (
           <>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileMenu(false)}
               className="fixed inset-0 bg-bg-dark/80 backdrop-blur-md z-[110] lg:hidden"
             />
-            <motion.div 
+            <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               className="fixed top-0 right-0 bottom-0 w-[80%] max-w-sm bg-[#05091D] border-l border-white/10 z-[120] lg:hidden shadow-2xl p-6 flex flex-col"
             >
               <div className="flex items-center justify-between mb-10">
-                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-black">
-                       {(settings?.siteNameEn || 'V')[0]}
-                    </div>
-                    <span className="font-black tracking-tighter text-lg">{t(settings?.siteNameEn, settings?.siteNameBn)}</span>
-                 </div>
-                 <button onClick={() => setMobileMenu(false)} className="p-2 bg-white/5 rounded-xl border border-white/10">
-                    <X className="w-5 h-5" />
-                 </button>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-black">
+                    {(settings?.siteNameEn || 'V')[0]}
+                  </div>
+                  <span className="font-black tracking-tighter text-lg">{t(settings?.siteNameEn, settings?.siteNameBn)}</span>
+                </div>
+                <button onClick={() => setMobileMenu(false)} className="p-2 bg-white/5 rounded-xl border border-white/10">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
 
               <div className="space-y-2 mb-auto">
                 {navItems.map((item, i) => (
-                  <motion.a 
+                  <motion.a
                     key={item.id}
                     href={item.url}
                     initial={{ opacity: 0, x: 20 }}
@@ -143,13 +145,13 @@ export const Header = () => {
 
               <div className="mt-8 space-y-4 pt-8 border-t border-white/5">
                 <div className="flex bg-white/[0.03] p-1 rounded-xl border border-white/5 relative overflow-hidden">
-                   <button onClick={() => setLanguage('bn')} className={`relative z-10 flex-1 py-3 text-[10px] font-black transition-all ${language === 'bn' ? 'text-black' : 'text-text-muted'}`}>বাংলা</button>
-                   <button onClick={() => setLanguage('en')} className={`relative z-10 flex-1 py-3 text-[10px] font-black transition-all ${language === 'en' ? 'text-black' : 'text-text-muted'}`}>ENGLISH</button>
-                   <motion.div animate={{ x: language === 'bn' ? 0 : '100%' }} className="absolute top-1 left-1 bottom-1 w-[calc(50%-2px)] bg-white rounded-lg shadow-lg" />
+                  <button onClick={() => setLanguage('bn')} className={`relative z-10 flex-1 py-3 text-[10px] font-black transition-all ${language === 'bn' ? 'text-black' : 'text-text-muted'}`}>বাংলা</button>
+                  <button onClick={() => setLanguage('en')} className={`relative z-10 flex-1 py-3 text-[10px] font-black transition-all ${language === 'en' ? 'text-black' : 'text-text-muted'}`}>ENGLISH</button>
+                  <motion.div animate={{ x: language === 'bn' ? 0 : '100%' }} className="absolute top-1 left-1 bottom-1 w-[calc(50%-2px)] bg-white rounded-lg shadow-lg" />
                 </div>
-                
-                <Link 
-                  to="/#pricing"
+
+                <Link
+                  href="/#pricing"
                   onClick={() => setMobileMenu(false)}
                   className="w-full bg-primary text-white py-4 rounded-xl font-black text-center shadow-xl flex items-center justify-center gap-3"
                 >

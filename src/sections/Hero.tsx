@@ -1,11 +1,13 @@
+"use client";
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion, Variants } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { Sparkles, ArrowRight, ShieldCheck, Zap, Star, Users, Globe, Trophy } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/navigation';
 
-export const Hero = () => {
-  const { language, hero } = useStore();
+export const Hero = ({ data }: { data: any }) => {
+  const { language } = useStore();
+  const hero = data || {};
   const t = (en: string, bn: string) => language === 'en' ? (en || '') : (bn || '');
 
   const containerVariants = {
@@ -16,7 +18,7 @@ export const Hero = () => {
     }
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
   };
@@ -31,9 +33,9 @@ export const Hero = () => {
 
       <div className="container mx-auto px-4 lg:px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
-          
+
           {/* Left Content */}
-          <motion.div 
+          <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -46,8 +48,8 @@ export const Hero = () => {
               </span>
               <div className="h-3 w-px bg-white/10 mx-1" />
               <div className="flex items-center gap-1 text-secondary">
-                 <Trophy className="w-3 h-3" />
-                 <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-widest">2026 EDITION</span>
+                <Trophy className="w-3 h-3" />
+                <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-widest">2026 EDITION</span>
               </div>
             </motion.div>
 
@@ -75,17 +77,17 @@ export const Hero = () => {
 
             {/* Live Stats */}
             <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-4 gap-6 lg:gap-12 border-t border-white/5 pt-10 lg:pt-12">
-               {(hero?.stats || []).map((stat, i) => (
-                 <div key={i} className="flex flex-col gap-1 lg:gap-2 group">
-                    <span className="text-2xl lg:text-4xl font-black text-text-primary tracking-tighter">{t(stat.valueEn, stat.valueBn)}</span>
-                    <span className="text-[9px] lg:text-[11px] font-black text-text-muted uppercase tracking-[1px] lg:tracking-[2px]">{t(stat.labelEn, stat.labelBn)}</span>
-                 </div>
-               ))}
+              {(hero?.stats || []).map((stat: any, i: number) => (
+                <div key={i} className="flex flex-col gap-1 lg:gap-2 group">
+                  <span className="text-2xl lg:text-4xl font-black text-text-primary tracking-tighter">{t(stat.valueEn, stat.valueBn)}</span>
+                  <span className="text-[9px] lg:text-[11px] font-black text-text-muted uppercase tracking-[1px] lg:tracking-[2px]">{t(stat.labelEn, stat.labelBn)}</span>
+                </div>
+              ))}
             </motion.div>
           </motion.div>
 
           {/* Right Visuals - Floating Cards */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.5 }}
@@ -93,7 +95,7 @@ export const Hero = () => {
           >
             <div className="relative w-full aspect-square">
               {/* Main Card */}
-              <motion.div 
+              <motion.div
                 animate={{ y: [0, -20, 0] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                 className="absolute inset-0 glass-card rounded-[48px] p-8 lg:p-12 border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden"
@@ -105,18 +107,18 @@ export const Hero = () => {
                       <Sparkles className="w-8 h-8 text-primary" />
                     </div>
                     <div className="px-4 py-1.5 rounded-full bg-success/10 border border-success/20 text-success text-[10px] font-black uppercase tracking-widest">
-                       LIVE VAULT
+                      LIVE VAULT
                     </div>
                   </div>
-                  
+
                   <div className="space-y-6">
                     <div className="h-4 w-2/3 bg-white/5 rounded-full overflow-hidden">
-                       <motion.div 
-                         initial={{ x: '-100%' }}
-                         animate={{ x: '100%' }}
-                         transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                         className="h-full w-1/3 bg-primary"
-                       />
+                      <motion.div
+                        initial={{ x: '-100%' }}
+                        animate={{ x: '100%' }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                        className="h-full w-1/3 bg-primary"
+                      />
                     </div>
                     <div className="space-y-3">
                       <div className="h-3 w-full bg-white/5 rounded-full" />
@@ -125,22 +127,22 @@ export const Hero = () => {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                     <div className="p-5 rounded-3xl bg-white/5 border border-white/5 text-center">
-                        <Users className="w-5 h-5 text-primary mx-auto mb-2" />
-                        <span className="block text-xl font-black">12K+</span>
-                        <span className="text-[8px] font-black text-text-muted uppercase tracking-widest">MEMBERS</span>
-                     </div>
-                     <div className="p-5 rounded-3xl bg-white/5 border border-white/5 text-center">
-                        <Globe className="w-5 h-5 text-secondary mx-auto mb-2" />
-                        <span className="block text-xl font-black">40+</span>
-                        <span className="text-[8px] font-black text-text-muted uppercase tracking-widest">COUNTRIES</span>
-                     </div>
+                    <div className="p-5 rounded-3xl bg-white/5 border border-white/5 text-center">
+                      <Users className="w-5 h-5 text-primary mx-auto mb-2" />
+                      <span className="block text-xl font-black">12K+</span>
+                      <span className="text-[8px] font-black text-text-muted uppercase tracking-widest">MEMBERS</span>
+                    </div>
+                    <div className="p-5 rounded-3xl bg-white/5 border border-white/5 text-center">
+                      <Globe className="w-5 h-5 text-secondary mx-auto mb-2" />
+                      <span className="block text-xl font-black">40+</span>
+                      <span className="text-[8px] font-black text-text-muted uppercase tracking-widest">COUNTRIES</span>
+                    </div>
                   </div>
                 </div>
               </motion.div>
 
               {/* Floating Small Cards */}
-              <motion.div 
+              <motion.div
                 animate={{ y: [0, 15, 0], x: [0, 10, 0] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                 className="absolute -top-10 -right-10 glass-card p-5 rounded-2xl border-primary/20 shadow-xl backdrop-blur-3xl"
@@ -156,7 +158,7 @@ export const Hero = () => {
                 </div>
               </motion.div>
 
-              <motion.div 
+              <motion.div
                 animate={{ y: [0, -15, 0], x: [0, -10, 0] }}
                 transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
                 className="absolute -bottom-10 -left-10 glass-card p-5 rounded-2xl border-secondary/20 shadow-xl backdrop-blur-3xl"

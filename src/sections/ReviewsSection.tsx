@@ -1,13 +1,15 @@
+"use client";
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { Star, Quote, Sparkles, CheckCircle2 } from 'lucide-react';
 
-export const ReviewsSection = () => {
-  const { language, reviews } = useStore();
+export const ReviewsSection = ({ data }: { data: any }) => {
+  const { language } = useStore();
+  const reviews = data || [];
   const t = (en: string, bn: string) => language === 'en' ? en : bn;
 
-  const visibleReviews = [...reviews].filter(r => r.visible).sort((a, b) => a.order - b.order);
+  const visibleReviews = [...reviews].filter((r: any) => r.visible).sort((a: any, b: any) => a.order - b.order);
 
   return (
     <section id="reviews" className="py-20 lg:py-40 relative bg-bg-dark overflow-hidden">

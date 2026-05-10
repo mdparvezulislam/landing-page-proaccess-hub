@@ -1,6 +1,7 @@
+"use client";
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { useStore } from '../store/useStore';
 import { Lock, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -8,7 +9,7 @@ import { toast } from 'sonner';
 export const AdminAccess = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [key, setKey] = useState('');
-  const navigate = useNavigate();
+  const navigate = useRouter();
   const { setAdminStatus } = useStore();
 
   useEffect(() => {
@@ -29,7 +30,7 @@ export const AdminAccess = () => {
       setAdminStatus(true);
       setIsOpen(false);
       setKey('');
-      navigate('/admin-dashboard');
+      navigate.push('/admin/dashboard');
       toast.success('Access Granted');
     } else {
       toast.error('Invalid Access Key');
@@ -47,8 +48,8 @@ export const AdminAccess = () => {
             className="w-full max-w-md glass-card rounded-3xl p-8 premium-shadow relative overflow-hidden"
           >
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary" />
-            
-            <button 
+
+            <button
               onClick={() => setIsOpen(false)}
               className="absolute top-4 right-4 text-text-muted hover:text-text-primary transition-colors"
             >

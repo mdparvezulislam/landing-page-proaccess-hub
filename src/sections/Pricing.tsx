@@ -1,18 +1,20 @@
+"use client";
 import React from 'react';
-import { motion } from 'motion/react';
-import { useStore, ProductPlan } from '../store/useStore';
-import { Check, Zap, Shield, Crown, Sparkles, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { useStore } from '../store/useStore';
+import { Check, Zap, Shield, Crown, Sparkles, ArrowRight, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { trackAddToCart } from '../utils/facebookPixel';
 
-export const Pricing = () => {
-  const { language, products, setSelectedOrderContext } = useStore();
-  const navigate = useNavigate();
+export const Pricing = ({ data }: { data: any }) => {
+  const { language, setSelectedOrderContext } = useStore();
+  const products = data || [];
+  const router = useRouter();
 
-  const mainProduct = products.find(p => p.visible && p.plans.length === 3) || products.find(p => p.visible);
+  const mainProduct = products.find((p: any) => p.visible && p.plans.length === 3) || products.find((p: any) => p.visible);
   const t = (en: string, bn: string) => language === 'en' ? en : bn;
 
-  const handleJoin = (plan: ProductPlan) => {
+  const handleJoin = (plan: any) => {
     if (!mainProduct) return;
     setSelectedOrderContext({ product: mainProduct, plan });
     trackAddToCart({
@@ -20,7 +22,7 @@ export const Pricing = () => {
       value: plan.priceTk,
       currency: 'BDT'
     });
-    navigate('/checkout');
+    router.push('/checkout');
   };
 
   if (!mainProduct) return null;
@@ -63,7 +65,7 @@ export const Pricing = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-10 max-w-7xl mx-auto">
-          {mainProduct.plans.map((plan, i) => (
+          {mainProduct.plans.map((plan: any, i: number) => (
             <motion.div
               key={plan.id}
               initial={{ opacity: 0, y: 30 }}
@@ -98,17 +100,25 @@ export const Pricing = () => {
               </div>
 
               <div className="space-y-4 lg:space-y-6 mb-12 flex-1">
-                {(mainProduct.features || []).filter(f => f.visible && f.includedInPlanIds?.includes(plan.id)).map((feature) => (
-                  <div key={feature.id} className="flex items-start gap-4 group/item">
-                    <div className={`mt-1 flex-shrink-0 w-5 lg:w-6 h-5 lg:h-6 rounded-full flex items-center justify-center border transition-all ${i === 2 ? 'bg-primary/20 border-primary/40 text-primary' : 'bg-success/10 border-success/20 text-success'
+                {(mainProduct.features || []).filter((f: any) => f.visible).map((feature: any) => {
+                  const isIncluded = !feature.includedInPlanIds || feature.includedInPlanIds.length === 0 || feature.includedInPlanIds.includes(plan.id);
+                  return (
+                    <div key={feature.id} className="flex items-start gap-4 group/item">
+                      <div className={`mt-1 flex-shrink-0 w-5 lg:w-6 h-5 lg:h-6 rounded-full flex items-center justify-center border transition-all ${
+                        isIncluded 
+                          ? (i === 2 ? 'bg-primary/20 border-primary/40 text-primary' : 'bg-success/10 border-success/20 text-success')
+                          : 'bg-red-500/10 border-red-500/20 text-red-500 opacity-40'
+                        }`}>
+                        {isIncluded ? <Check className="w-3 lg:w-4 h-3 lg:h-4 stroke-[4]" /> : <X className="w-3 lg:w-4 h-3 lg:h-4 stroke-[4]" />}
+                      </div>
+                      <span className={`text-sm lg:text-lg font-black tracking-tight ${
+                        isIncluded ? (feature.highlighted ? 'text-text-primary' : 'text-text-secondary') : 'text-text-muted line-through opacity-50'
                       }`}>
-                      <Check className="w-3 lg:w-4 h-3 lg:h-4 stroke-[4]" />
+                        {t(feature.textEn, feature.textBn)}
+                      </span>
                     </div>
-                    <span className={`text-sm lg:text-lg font-black tracking-tight ${feature.highlighted ? 'text-text-primary' : 'text-text-secondary'}`}>
-                      {t(feature.textEn, feature.textBn)}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <button
