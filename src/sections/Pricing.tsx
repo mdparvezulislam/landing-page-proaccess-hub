@@ -37,7 +37,7 @@ export const Pricing = ({ data }: { data: any }) => {
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-primary/10 border border-primary/20 text-primary-light text-[10px] font-black tracking-[2px] lg:tracking-[3px] uppercase mb-6 lg:mb-8"
+            className="inline-flex items-center gap-2.5 px-2 py-2.5 rounded-full bg-primary/10 border border-primary/20 text-primary-light text-[10px] font-black tracking-[2px] lg:tracking-[3px] uppercase mb-6 lg:mb-8"
           >
             <Shield className="w-4 h-4" />
             {t('Fair & Transparent Pricing', 'সঠিক ও স্বচ্ছ প্রাইসিং')}
@@ -47,7 +47,7 @@ export const Pricing = ({ data }: { data: any }) => {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-4xl lg:text-8xl font-black mb-6 lg:mb-10 tracking-tighter leading-tight"
+            className="text-4xl lg:text-7xl font-black mb-2 lg:mb-4 tracking-tighter leading-tight"
           >
             {t('Unbeatable Value,', 'সেরা ভ্যালু,')}
             <span className="grad-text block mt-2 lg:mt-4">{t('Absolute Elite Access', 'এলিট মেম্বারশিপ')}</span>
@@ -104,16 +104,14 @@ export const Pricing = ({ data }: { data: any }) => {
                   const isIncluded = !feature.includedInPlanIds || feature.includedInPlanIds.length === 0 || feature.includedInPlanIds.includes(plan.id);
                   return (
                     <div key={feature.id} className="flex items-start gap-4 group/item">
-                      <div className={`mt-1 flex-shrink-0 w-5 lg:w-6 h-5 lg:h-6 rounded-full flex items-center justify-center border transition-all ${
-                        isIncluded 
-                          ? (i === 2 ? 'bg-primary/20 border-primary/40 text-primary' : 'bg-success/10 border-success/20 text-success')
-                          : 'bg-red-500/10 border-red-500/20 text-red-500 opacity-40'
+                      <div className={`mt-1 flex-shrink-0 w-5 lg:w-6 h-5 lg:h-6 rounded-full flex items-center justify-center border transition-all ${isIncluded
+                        ? (i === 2 ? 'bg-primary/20 border-primary/40 text-primary' : 'bg-success/10 border-success/20 text-success')
+                        : 'bg-red-500/10 border-red-500/20 text-red-500 opacity-40'
                         }`}>
                         {isIncluded ? <Check className="w-3 lg:w-4 h-3 lg:h-4 stroke-[4]" /> : <X className="w-3 lg:w-4 h-3 lg:h-4 stroke-[4]" />}
                       </div>
-                      <span className={`text-sm lg:text-lg font-black tracking-tight ${
-                        isIncluded ? (feature.highlighted ? 'text-text-primary' : 'text-text-secondary') : 'text-text-muted line-through opacity-50'
-                      }`}>
+                      <span className={`text-sm lg:text-lg font-black tracking-tight ${isIncluded ? (feature.highlighted ? 'text-text-primary' : 'text-text-secondary') : 'text-text-muted line-through opacity-50'
+                        }`}>
                         {t(feature.textEn, feature.textBn)}
                       </span>
                     </div>
