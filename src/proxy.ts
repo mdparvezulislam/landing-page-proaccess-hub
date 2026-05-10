@@ -1,9 +1,9 @@
 import { withAuth } from "next-auth/middleware";
 
 export default withAuth({
-  callbacks: {
-    authorized: ({ token }) => token?.email === "admin@proaccess.com",
-  },
+  // callbacks: {
+  //   authorized: ({ token }) => token?.role === "SuperAdmin" || token?.role === "Admin",
+  // },
 });
 
 export const config = {

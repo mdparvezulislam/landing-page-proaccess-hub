@@ -13,7 +13,7 @@ import Product from '@/models/Product';
 import Settings from '@/models/Settings';
 import Review from '@/models/Review';
 import FAQ from '@/models/FAQ';
-import { seedDatabase } from '@/lib/seed';
+import { seedDatabase } from '@/lib/seedDatabase';
 
 async function getData() {
   await connectDB();
@@ -54,6 +54,24 @@ export default async function Home() {
       <FAQSection data={data.faqs} settings={data.settings?.site} />
       <CountdownBanner data={data.settings?.countdown} />
       <TelegramCTA data={data.settings?.site} />
+
+      {/* SEO Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Pro Access VIP Hub",
+            "url": process.env.NEXT_PUBLIC_APP_URL || "https://lifetimevipunlimited.com",
+            "logo": `${process.env.NEXT_PUBLIC_APP_URL || "https://lifetimevipunlimited.com"}/logo.png`,
+            "description": "Bangladesh's #1 Premium Resource Platform for smart digital success.",
+            "sameAs": [
+              data.settings?.site?.telegramLink
+            ]
+          })
+        }}
+      />
     </div>
   );
 }

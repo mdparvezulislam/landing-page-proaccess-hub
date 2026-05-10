@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
 const HeroSchema = new Schema({
   badgeEn: String,
@@ -37,6 +37,7 @@ const SiteSchema = new Schema({
 
 const NavbarSchema = new Schema({
   items: [{
+    id: String,
     labelEn: String,
     labelBn: String,
     url: String,
@@ -100,6 +101,16 @@ const PaymentMethodSchema = new Schema({
   order: Number,
 });
 
+const PaymentSettingsSchema = new Schema({
+  instructionTitleEn: String,
+  instructionTitleBn: String,
+  instructionsEn: [String],
+  instructionsBn: [String],
+  warningTextEn: String,
+  warningTextBn: String,
+  methods: [PaymentMethodSchema],
+});
+
 const SettingsSchema = new Schema({
   hero: { type: HeroSchema },
   site: { type: SiteSchema },
@@ -108,15 +119,7 @@ const SettingsSchema = new Schema({
   countdown: { type: CountdownSchema },
   trustBadges: [TrustBadgeSchema],
   globalFeatures: [GlobalFeatureSchema],
-  paymentMethods: [PaymentMethodSchema],
-  paymentInstructions: {
-    titleEn: String,
-    titleBn: String,
-    instructionsEn: [String],
-    instructionsBn: [String],
-    warningEn: String,
-    warningBn: String,
-  }
+  paymentSettings: { type: PaymentSettingsSchema },
 }, { timestamps: true });
 
 export default mongoose.models.Settings || mongoose.model('Settings', SettingsSchema);

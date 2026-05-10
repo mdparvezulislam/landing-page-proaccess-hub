@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pro Access VIP Hub
 
-## Getting Started
+Premium Next.js 16 SaaS platform with dynamic MongoDB CMS, advanced payment manager, and a professional admin dashboard.
 
-First, run the development server:
+## 🚀 Technology Stack
+- **Framework**: Next.js 16 (App Router)
+- **Database**: MongoDB (Mongoose)
+- **Styling**: Tailwind CSS 4
+- **Animations**: Framer Motion
+- **State Management**: Zustand
+- **Authentication**: NextAuth.js
+- **Package Manager**: pnpm
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 📦 Getting Started
+
+### 1. Prerequisites
+- Node.js 18+
+- pnpm installed (`npm install -g pnpm`)
+- MongoDB instance (local or Atlas)
+
+### 2. Environment Setup
+Create a `.env.local` file in the root and add the following:
+```env
+MONGODB_URI=your_mongodb_uri
+NEXTAUTH_SECRET=your_nextauth_secret
+NEXTAUTH_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Installation
+```bash
+pnpm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. Run Development Server
+```bash
+pnpm dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 5. Production Build
+```bash
+pnpm build
+pnpm start
+```
 
-## Learn More
+## 🛠️ CMS Architecture
+The entire platform is powered by a dynamic CMS.
+- **Auto-Seeding**: The database initializes itself with professional default content on first load.
+- **Admin Dashboard**: Accessible via `/admin` (Default: `admin@proaccess.com` / `pro_access_23`).
+- **Payment Manager**: Fully configurable payment methods (bKash, Nagad, etc.) with per-method instructions.
 
-To learn more about Next.js, take a look at the following resources:
+## 📁 Folder Structure
+- `src/app`: Next.js pages and API routes.
+- `src/components`: Reusable UI components.
+- `src/sections`: Landing page modules.
+- `src/models`: Mongoose database schemas.
+- `src/services`: API data fetching layer.
+- `src/lib`: Shared utilities and database connection.
+- `src/seed`: Default platform data.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🔒 Security
+- Protected Admin routes via Next.js Middleware.
+- JWT-based authentication.
+- Password hashing with bcrypt.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+Built with ❤️ by Pro Access Hub Team.

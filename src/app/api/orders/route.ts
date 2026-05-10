@@ -6,7 +6,8 @@ import { getServerSession } from 'next-auth';
 export async function GET() {
   try {
     const session = await getServerSession();
-    if (!session || session.user?.email !== 'admin@proaccess.com') {
+    const isAdmin = session && ((session.user as any)?.role === 'SuperAdmin' || (session.user as any)?.role === 'Admin');
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     await connectDB();
@@ -17,8 +18,15 @@ export async function GET() {
   }
 }
 
+import { rateLimit } from '@/lib/rate-limit';
+
 export async function POST(req: Request) {
   try {
+    const ip = req.headers.get('x-forwarded-for') || 'anonymous';
+    if (!rateLimit(ip, 5)) { // Limit to 5 orders per minute per IP
+      return NextResponse.json({ error: 'Too many order attempts. Please try again later.' }, { status: 429 });
+    }
+
     await connectDB();
     const data = await req.json();
     const order = await Order.create(data);
@@ -31,7 +39,8 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const session = await getServerSession();
-    if (!session || session.user?.email !== 'admin@proaccess.com') {
+    const isAdmin = session && ((session.user as any)?.role === 'SuperAdmin' || (session.user as any)?.role === 'Admin');
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     await connectDB();
