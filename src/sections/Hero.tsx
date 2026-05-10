@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 
 export const Hero = () => {
   const { language, hero } = useStore();
-  const t = (en: string, bn: string) => language === 'en' ? en : bn;
+  const t = (en: string, bn: string) => language === 'en' ? (en || '') : (bn || '');
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -22,16 +22,15 @@ export const Hero = () => {
   };
 
   return (
-    <section className="relative min-h-[90vh] lg:min-h-screen flex items-center pt-20 lg:pt-32 pb-20 overflow-hidden mesh-gradient">
-      {/* Dynamic Background Elements */}
+    <section className="relative min-h-[90vh] lg:min-h-screen flex items-center pt-20 lg:pt-32 pb-20 overflow-hidden">
+      {/* Mesh Gradient Background */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-1/4 -left-20 w-[400px] lg:w-[600px] h-[400px] lg:h-[600px] bg-primary/10 blur-[150px] rounded-full animate-float" />
         <div className="absolute bottom-1/4 -right-20 w-[400px] lg:w-[600px] h-[400px] lg:h-[600px] bg-secondary/10 blur-[150px] rounded-full animate-float" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full radial-glow opacity-50" />
       </div>
 
-      <div className="container mx-auto px-6 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-20 items-center">
+      <div className="container mx-auto px-4 lg:px-6 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
           
           {/* Left Content */}
           <motion.div 
@@ -40,46 +39,46 @@ export const Hero = () => {
             animate="visible"
             className="lg:col-span-7"
           >
-            <motion.div variants={itemVariants} className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/[0.03] border border-white/10 backdrop-blur-xl mb-8 group hover:bg-white/[0.05] transition-all duration-500">
-              <div className="w-2.5 h-2.5 rounded-full bg-success animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
-              <span className="text-[11px] font-black uppercase tracking-[3px] text-text-primary">
-                {t(hero.badge, hero.badgeBn)}
+            <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-white/10 backdrop-blur-xl mb-6 lg:mb-8">
+              <div className="w-2 h-2 rounded-full bg-success animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+              <span className="text-[10px] lg:text-[11px] font-black uppercase tracking-[2px] text-text-primary">
+                {t(hero?.badgeEn, hero?.badgeBn)}
               </span>
-              <div className="h-4 w-px bg-white/10 mx-1" />
-              <div className="flex items-center gap-1.5 text-secondary">
-                 <Trophy className="w-3.5 h-3.5" />
-                 <span className="text-[10px] font-black uppercase tracking-widest">{t('2026 EDITION', '২০২৬ সংস্করণ')}</span>
+              <div className="h-3 w-px bg-white/10 mx-1" />
+              <div className="flex items-center gap-1 text-secondary">
+                 <Trophy className="w-3 h-3" />
+                 <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-widest">2026 EDITION</span>
               </div>
             </motion.div>
 
-            <motion.h1 variants={itemVariants} className="text-5xl lg:text-8xl font-black mb-8 tracking-tighter leading-[0.9] lg:leading-[0.85]">
-              {t(hero.title, hero.titleBn)}{' '}
-              <span className="premium-gradient-text block mt-4 lg:mt-6">
-                {t(hero.titleAccent, hero.titleAccentBn)}
+            <motion.h1 variants={itemVariants} className="text-4xl lg:text-8xl font-black mb-6 lg:mb-8 tracking-tighter leading-[1.1] lg:leading-[0.85]">
+              {t(hero?.titleEn, hero?.titleBn)}{' '}
+              <span className="grad-text block lg:mt-6">
+                {t(hero?.titleAccentEn, hero?.titleAccentBn)}
               </span>
             </motion.h1>
 
-            <motion.p variants={itemVariants} className="text-lg lg:text-2xl text-text-secondary max-w-2xl mb-12 font-medium leading-relaxed">
-              {t(hero.description, hero.descriptionBn)}
+            <motion.p variants={itemVariants} className="text-base lg:text-2xl text-text-secondary max-w-2xl mb-8 lg:mb-12 font-medium leading-relaxed">
+              {t(hero?.descriptionEn, hero?.descriptionBn)}
             </motion.p>
 
-            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-6 mb-16">
-              <Link to="/#pricing" className="group relative bg-primary hover:bg-primary-light text-white px-10 py-5 rounded-[24px] font-black text-sm lg:text-base transition-all glow-btn shadow-2xl shadow-primary/30 flex items-center justify-center gap-3">
-                {t(hero.cta1, hero.cta1Bn)}
+            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 lg:gap-6 mb-12 lg:mb-16">
+              <a href="#pricing" className="group relative bg-primary hover:bg-primary-light text-white px-8 lg:px-10 py-4 lg:py-5 rounded-2xl lg:rounded-[24px] font-black text-sm transition-all glow-btn shadow-2xl shadow-primary/30 flex items-center justify-center gap-3">
+                {t(hero?.cta1En, hero?.cta1Bn)}
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
-              </Link>
-              <Link to="/#products" className="group px-10 py-5 rounded-[24px] bg-white/[0.02] border border-white/10 text-text-primary font-black text-sm lg:text-base hover:bg-white/[0.05] hover:border-white/20 transition-all flex items-center justify-center gap-3 backdrop-blur-xl">
-                {t(hero.cta2, hero.cta2Bn)}
+              </a>
+              <a href="#products" className="group px-8 lg:px-10 py-4 lg:py-5 rounded-2xl lg:rounded-[24px] bg-white/[0.02] border border-white/10 text-text-primary font-black text-sm hover:bg-white/[0.05] hover:border-white/20 transition-all flex items-center justify-center gap-3 backdrop-blur-xl">
+                {t(hero?.cta2En, hero?.cta2Bn)}
                 <Zap className="w-4 h-4 text-primary group-hover:scale-125 transition-transform" />
-              </Link>
+              </a>
             </motion.div>
 
             {/* Live Stats */}
-            <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-4 gap-8 lg:gap-12 border-t border-white/5 pt-12">
-               {hero.stats?.map((stat, i) => (
-                 <div key={i} className="flex flex-col gap-2 group cursor-default">
-                    <span className="text-3xl lg:text-4xl font-black text-text-primary tracking-tighter group-hover:text-primary transition-colors duration-500">{t(stat.value, stat.valueBn)}</span>
-                    <span className="text-[10px] lg:text-[11px] font-black text-text-muted uppercase tracking-[2px]">{t(stat.label, stat.labelBn)}</span>
+            <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-4 gap-6 lg:gap-12 border-t border-white/5 pt-10 lg:pt-12">
+               {(hero?.stats || []).map((stat, i) => (
+                 <div key={i} className="flex flex-col gap-1 lg:gap-2 group">
+                    <span className="text-2xl lg:text-4xl font-black text-text-primary tracking-tighter">{t(stat.valueEn, stat.valueBn)}</span>
+                    <span className="text-[9px] lg:text-[11px] font-black text-text-muted uppercase tracking-[1px] lg:tracking-[2px]">{t(stat.labelEn, stat.labelBn)}</span>
                  </div>
                ))}
             </motion.div>

@@ -10,9 +10,9 @@ export const TrustBadges = () => {
   const visibleBadges = trustBadges.filter(b => b.visible).sort((a, b) => a.order - b.order);
 
   return (
-    <section className="py-20 bg-white/[0.01] border-y border-white/5 relative overflow-hidden">
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+    <section className="py-12 lg:py-20 bg-white/[0.01] border-y border-white/5 relative overflow-hidden">
+      <div className="container mx-auto px-4 lg:px-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-10">
           {visibleBadges.map((badge, i) => {
             const IconComponent = (LucideIcons as any)[badge.icon] || LucideIcons.ShieldCheck;
             return (
@@ -22,16 +22,16 @@ export const TrustBadges = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="flex items-center gap-6 p-8 rounded-[32px] glass-card border-white/5 hover:bg-white/[0.05] transition-all duration-500 group"
+                className="flex items-center gap-4 lg:gap-6 p-6 lg:p-8 rounded-[24px] lg:rounded-[32px] glass-card border-white/5 hover:bg-white/[0.05] transition-all duration-500 group shadow-xl"
               >
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
-                  <IconComponent className="w-8 h-8" />
+                <div className="w-12 lg:w-16 h-12 lg:h-16 rounded-xl lg:rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
+                  <IconComponent className="w-6 lg:w-8 h-6 lg:h-8" />
                 </div>
                 <div>
-                   <h4 className="text-xl font-black text-text-primary tracking-tight">
-                     {t(badge.text, badge.textBn)}
+                   <h4 className="text-lg lg:text-xl font-black text-text-primary tracking-tight">
+                     {t(badge.textEn, badge.textBn)}
                    </h4>
-                   <p className="text-xs font-black text-text-muted uppercase tracking-[2px] mt-1 opacity-70">
+                   <p className="text-[9px] lg:text-[10px] font-black text-text-muted uppercase tracking-[2px] mt-1 opacity-70">
                      {t('Verified System', 'ভেরিফাইড সিস্টেম')}
                    </p>
                 </div>
@@ -40,10 +40,6 @@ export const TrustBadges = () => {
           })}
         </div>
       </div>
-      
-      {/* Background Gradients */}
-      <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -z-10" />
-      <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-secondary/5 blur-[100px] rounded-full -z-10" />
     </section>
   );
 };

@@ -22,7 +22,7 @@ export const FloatingElements = () => {
   return (
     <>
       {/* Floating Telegram Support */}
-      <div className="fixed bottom-8 left-8 z-[150]">
+      <div className="fixed bottom-26 left-6 lg:left-8 z-[150]">
         <motion.a
           href={settings.telegramLink}
           target="_blank"
@@ -42,7 +42,7 @@ export const FloatingElements = () => {
       </div>
 
       {/* Floating Buy Button (Mobile Only) */}
-      <div className="fixed bottom-8 right-8 z-[150] lg:hidden">
+      {/* <div className="fixed bottom-32 right-6 lg:hidden">
         <motion.a
           href="#pricing"
           initial={{ scale: 0, opacity: 0 }}
@@ -53,7 +53,7 @@ export const FloatingElements = () => {
         >
           <Zap className="w-8 h-8 fill-white" />
         </motion.a>
-      </div>
+      </div> */}
 
       {/* Scroll to Top */}
       <AnimatePresence>

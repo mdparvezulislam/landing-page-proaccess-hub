@@ -8,13 +8,13 @@ export const TelegramCTA = () => {
   const t = (en: string, bn: string) => language === 'en' ? en : bn;
 
   return (
-    <section className="py-24 lg:py-40 relative overflow-hidden">
-      <div className="container mx-auto px-6 relative z-10">
+    <section className="py-20 lg:py-40 relative overflow-hidden">
+      <div className="container mx-auto px-4 lg:px-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="relative rounded-[60px] overflow-hidden p-12 lg:p-28 text-center shadow-2xl shadow-primary/30"
+          className="relative rounded-[40px] lg:rounded-[80px] overflow-hidden p-8 lg:p-28 text-center shadow-2xl shadow-primary/30"
         >
           {/* Animated Gradient Background */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary-light to-secondary opacity-100" />
@@ -29,37 +29,37 @@ export const TelegramCTA = () => {
           />
           
           <div className="relative z-10 flex flex-col items-center">
-            <div className="w-24 h-24 rounded-[32px] bg-white/20 backdrop-blur-xl flex items-center justify-center mb-10 shadow-2xl border border-white/30 group-hover:scale-110 transition-transform duration-500">
-              <Send className="w-12 h-12 text-white" />
+            <div className="w-16 lg:w-24 h-16 lg:h-24 rounded-2xl lg:rounded-[32px] bg-white/20 backdrop-blur-xl flex items-center justify-center mb-6 lg:mb-10 shadow-2xl border border-white/30 transition-transform duration-500">
+              <Send className="w-8 lg:w-12 h-8 lg:h-12 text-white" />
             </div>
             
-            <h2 className="text-4xl lg:text-7xl font-black text-white mb-8 tracking-tighter leading-[1.1]">
+            <h2 className="text-3xl lg:text-7xl font-black text-white mb-6 lg:mb-8 tracking-tighter leading-tight">
               {t('Need Direct ', 'সরাসরি ')}
               <span className="text-white/70">{t('Support', 'সাপোর্ট')}</span>
               {t('?', ' প্রয়োজন?')}
             </h2>
             
-            <p className="text-xl lg:text-2xl text-white/90 mb-14 max-w-2xl font-medium leading-relaxed">
+            <p className="text-base lg:text-2xl text-white/90 mb-10 lg:mb-14 max-w-2xl font-medium leading-relaxed">
               {t('Join our Telegram channel for exclusive resources or message us directly for personalized assistance.', 'বিশেষ রিসোর্সের জন্য আমাদের টেলিগ্রাম চ্যানেলে যোগ দিন অথবা ব্যক্তিগত সহায়তার জন্য সরাসরি মেসেজ করুন।')}
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-6">
+            <div className="flex flex-col sm:flex-row gap-4 lg:gap-6 w-full sm:w-auto">
               <a
                 href={settings.telegramLink}
                 target="_blank"
                 rel="noreferrer"
-                className="px-12 py-6 bg-white text-primary font-black rounded-3xl flex items-center justify-center gap-3 transition-all hover:scale-105 active:scale-95 shadow-2xl text-lg"
+                className="px-8 lg:px-12 py-4 lg:py-6 bg-white text-primary font-black rounded-2xl lg:rounded-3xl flex items-center justify-center gap-3 transition-all hover:scale-105 active:scale-95 shadow-2xl text-sm lg:text-lg"
               >
-                <MessageCircle className="w-6 h-6" />
+                <MessageCircle className="w-5 lg:w-6 h-5 lg:h-6" />
                 {t('Message on Telegram', 'টেলিগ্রামে মেসেজ করুন')}
               </a>
               <a
                 href={settings.telegramLink}
                 target="_blank"
                 rel="noreferrer"
-                className="px-12 py-6 bg-white/20 backdrop-blur-xl border border-white/30 text-white font-black rounded-3xl flex items-center justify-center gap-3 transition-all hover:bg-white/30 text-lg"
+                className="px-8 lg:px-12 py-4 lg:py-6 bg-white/20 backdrop-blur-xl border border-white/30 text-white font-black rounded-2xl lg:rounded-3xl flex items-center justify-center gap-3 transition-all hover:bg-white/30 text-sm lg:text-lg"
               >
-                <Sparkles className="w-6 h-6" />
+                <Sparkles className="w-5 lg:w-6 h-5 lg:h-6" />
                 {t('Join Community', 'কমিউনিটিতে যোগ দিন')}
               </a>
             </div>

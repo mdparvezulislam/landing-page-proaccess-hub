@@ -1,9 +1,12 @@
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { Hero } from './sections/Hero';
+import { Stats } from './sections/Stats';
 import { ProductShowcase } from './sections/ProductShowcase';
+import { Features } from './sections/Features';
+import { TrustBadges } from './sections/TrustBadges';
 import { Pricing } from './sections/Pricing';
 import { ReviewsSection } from './sections/ReviewsSection';
 import { FAQSection } from './sections/FAQSection';
@@ -48,7 +51,10 @@ const LandingPage = () => {
     <>
       {countdown.enabled && <CountdownBanner />}
       <Hero />
+      <Stats />
       <ProductShowcase />
+      <Features />
+      <TrustBadges />
       <Pricing />
       <ReviewsSection />
       <FAQSection />
