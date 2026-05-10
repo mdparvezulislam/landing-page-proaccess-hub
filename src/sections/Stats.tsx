@@ -1,12 +1,13 @@
 "use client";
-import React from 'react';
-import { motion } from 'framer-motion';
-import { useStore } from '../store/useStore';
+import React from "react";
+import { motion } from "framer-motion";
+import { useStore } from "../store/useStore";
 
 export const Stats = ({ data }: { data: any }) => {
   const { language } = useStore();
   const stats = data || [];
-  const t = (en: string, bn: string) => language === 'en' ? (en || '') : (bn || '');
+  const t = (en: string, bn: string) =>
+    language === "en" ? en || "" : bn || "";
 
   return (
     <section className="py-12 lg:py-20 border-y border-white/5 bg-white/[0.01] relative overflow-hidden">
@@ -14,7 +15,7 @@ export const Stats = ({ data }: { data: any }) => {
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-24">
           {(stats as any).map((stat: any, i: number) => (
             <motion.div
-              key={i}
+              key={stat.labelEn || i}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}

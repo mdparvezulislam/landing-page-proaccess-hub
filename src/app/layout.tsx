@@ -1,26 +1,31 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import QueryProvider from "@/providers/QueryProvider";
-import AuthProvider from "@/providers/AuthProvider";
-import { Toaster } from "sonner";
+import RootProviders from "@/providers/RootProviders";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { FloatingElements } from "@/components/FloatingElements";
-import GoogleAnalytics from "@/components/GoogleAnalytics";
-
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Pro Access VIP Hub | Bangladesh's #1 Premium Resource Platform",
-  description: "Join thousands of smart Bangladeshis accessing premium tools, methods, and courses at unbeatable prices. The ultimate vault for digital success.",
-  keywords: ["VIP Access", "Bangladesh Premium Tools", "Method Hub", "Digital Resources", "Pro Access Hub"],
+  description:
+    "Join thousands of smart Bangladeshis accessing premium tools, methods, and courses at unbeatable prices. The ultimate vault for digital success.",
+  keywords: [
+    "VIP Access",
+    "Bangladesh Premium Tools",
+    "Method Hub",
+    "Digital Resources",
+    "Pro Access Hub",
+  ],
   authors: [{ name: "Pro Access Team" }],
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://lifetimevipunlimited.com"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "https://lifetimevipunlimited.com",
+  ),
   openGraph: {
     title: "Pro Access VIP Hub - Unlock Your Digital Potential",
-    description: "Bangladesh's most trusted platform for premium digital resources and methods.",
+    description:
+      "Bangladesh's most trusted platform for premium digital resources and methods.",
     url: "https://proaccessvip.com",
     siteName: "Pro Access VIP Hub",
     images: [
@@ -74,18 +79,14 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={`${inter.className} bg-bg-dark text-text-primary antialiased`}>
-        <AuthProvider>
-          <QueryProvider>
-            <GoogleAnalytics ga_id={process.env.NEXT_PUBLIC_GA_ID || ""} />
-            <CommandPalette />
-            <Header data={settings} />
-            <main>{children}</main>
-            <Footer data={settings} />
-            <FloatingElements data={settings} />
-            <Toaster position="top-center" richColors />
-          </QueryProvider>
-        </AuthProvider>
+      <body
+        className={`${inter.className} bg-bg-dark text-text-primary antialiased`}
+      >
+        <RootProviders settings={settings}>
+          <Header data={settings} />
+          <main>{children}</main>
+          <Footer data={settings} />
+        </RootProviders>
       </body>
     </html>
   );
