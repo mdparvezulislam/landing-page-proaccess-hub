@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Coins, Save, RefreshCw, Check, AlertCircle, ToggleLeft, ToggleRight } from "lucide-react";
+import { Coins, Save, RefreshCw, AlertCircle, ToggleRight } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrencyStore } from "@/store/useCurrencyStore";
 

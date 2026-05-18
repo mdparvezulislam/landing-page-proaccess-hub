@@ -2,12 +2,9 @@ import { Hero } from "@/sections/Hero";
 import { ProductShowcase } from "@/sections/ProductShowcase";
 import { Features } from "@/sections/Features";
 import { TrustBadges } from "@/sections/TrustBadges";
-import { Pricing } from "@/sections/Pricing";
 import { ReviewsSection } from "@/sections/ReviewsSection";
 import { FAQSection } from "@/sections/FAQSection";
-import { CountdownBanner } from "@/sections/CountdownBanner";
 import { TelegramCTA } from "@/sections/TelegramCTA";
-import { FlashSaleBar } from "@/components/FlashSaleBar";
 import connectDB from "@/lib/mongodb";
 import Product from "@/models/Product";
 import Settings from "@/models/Settings";
@@ -61,11 +58,8 @@ export default async function Home() {
         section={data.settings?.featuresSection}
       />
       <TrustBadges data={data.settings?.trustBadges} />
-      <Pricing data={data.products} />
       <ReviewsSection data={data.reviews} />
       <FAQSection data={data.faqs} settings={data.settings?.site} />
-      <CountdownBanner data={data.settings?.countdown} />
-      <FlashSaleBar data={data.settings?.countdown} />
       <TelegramCTA data={data.settings?.site} />
 
       {/* SEO Structured Data */}

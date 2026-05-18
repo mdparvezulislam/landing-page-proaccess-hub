@@ -1,8 +1,7 @@
 "use client";
 import React from "react";
 import { useStore } from "../store/useStore";
-import { Send, Mail, Globe, ArrowRight } from "lucide-react";
-import NextLink from "next/link";
+import { Send, Mail, Globe } from "lucide-react";
 import Link from "next/link";
 
 export const Footer = ({ data }: { data: any }) => {
@@ -147,12 +146,12 @@ export const Footer = ({ data }: { data: any }) => {
             {t(footer.copyrightEn, footer.copyrightBn)}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 order-1 md:order-2">
-            <NextLink
+            <Link
               href="/admin"
               className="px-3 lg:px-4 py-1.5 lg:py-2 rounded-xl bg-white/5 border border-white/10 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-text-muted hover:text-text-primary hover:bg-white/10 transition-all"
             >
               Admin
-            </NextLink>
+            </Link>
             <div className="px-3 lg:px-4 py-1.5 lg:py-2 rounded-xl bg-white/5 border border-white/10 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-text-muted">
               v3.1.0
             </div>

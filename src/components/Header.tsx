@@ -1,12 +1,11 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useStore } from '../store/useStore';
-import { Menu, X, Globe, ArrowRight, Zap, ChevronRight, ShieldCheck, Crown } from 'lucide-react';
-import NextLink from 'next/link';
-import Link from 'next/link';
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useStore } from "../store/useStore";
+import { Menu, X, ArrowRight, Zap, ChevronRight, Crown } from "lucide-react";
+import Link from "next/link";
 
-import { CurrencyToggle } from './CurrencyToggle';
+import { CurrencyToggle } from "./CurrencyToggle";
 
 export const Header = ({ data }: { data: any }) => {
   const { language, setLanguage } = useStore();
@@ -17,30 +16,39 @@ export const Header = ({ data }: { data: any }) => {
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handler);
-    return () => window.removeEventListener('scroll', handler);
+    window.addEventListener("scroll", handler);
+    return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  const t = (en: string, bn: string) => language === 'en' ? (en || '') : (bn || '');
-  const navItems = [...(navbar.items || [])].sort((a: any, b: any) => a.order - b.order);
+  const t = (en: string, bn: string) =>
+    language === "en" ? en || "" : bn || "";
+  const navItems = [...(navbar.items || [])].sort(
+    (a: any, b: any) => a.order - b.order,
+  );
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-700 ${scrolled
-      ? "bg-[#020617]/70 backdrop-blur-2xl border-b border-white/5 py-3 lg:py-4 shadow-2xl"
-      : "bg-transparent py-6 lg:py-8"
-      }`}>
+    <nav
+      className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-700 ${
+        scrolled
+          ? "bg-[#020617]/70 backdrop-blur-2xl border-b border-white/5 py-3 lg:py-4 shadow-2xl"
+          : "bg-transparent py-6 lg:py-8"
+      }`}
+    >
       <div className="container mx-auto px-4 lg:px-6 flex items-center justify-between">
         {/* Logo Section */}
-        <Link href="/" className="flex items-center gap-2 lg:gap-3 group relative">
+        <Link
+          href="/"
+          className="flex items-center gap-2 lg:gap-3 group relative"
+        >
           <div className="w-9 h-9 lg:w-11 lg:h-11 rounded-xl lg:rounded-[14px] bg-primary flex items-center justify-center text-white font-black text-lg lg:text-xl shadow-xl shadow-primary/25 group-hover:scale-110 group-hover:rotate-[6deg] transition-all duration-500">
-            {(settings?.siteNameEn || 'V')[0]}
+            {(settings?.siteNameEn || "V")[0]}
           </div>
           <div className="flex flex-col">
             <span className="font-black text-lg lg:text-xl tracking-tighter text-text-primary leading-none">
               {t(settings?.siteNameEn, settings?.siteNameBn)}
             </span>
             <span className="text-[8px] lg:text-[9px] font-black uppercase tracking-[2px] text-primary mt-1 opacity-80">
-              {t('Elite Hub', 'এলিট হাব')}
+              {t("Elite Hub", "এলিট হাব")}
             </span>
           </div>
         </Link>
@@ -63,6 +71,12 @@ export const Header = ({ data }: { data: any }) => {
           >
             <Crown className="w-4 h-4" /> Dashboard
           </Link>
+          <Link
+            href="/#vip"
+            className="px-5 py-2 text-[13px] font-black bg-amber-500 text-white hover:bg-amber-600 rounded-xl transition-all relative group flex items-center gap-2 shadow-lg shadow-amber-500/20"
+          >
+            <Crown className="w-4 h-4" /> VIP Access
+          </Link>
         </div>
 
         {/* Action Buttons */}
@@ -75,20 +89,20 @@ export const Header = ({ data }: { data: any }) => {
           {/* Language Switcher */}
           <div className="hidden sm:flex bg-white/[0.03] p-1 rounded-xl border border-white/5 relative overflow-hidden group shadow-lg">
             <button
-              onClick={() => setLanguage('bn')}
-              className={`relative z-10 px-3 py-1 text-[9px] font-black transition-all duration-500 ${language === 'bn' ? 'text-black' : 'text-text-muted hover:text-text-primary'}`}
+              onClick={() => setLanguage("bn")}
+              className={`relative z-10 px-3 py-1 text-[9px] font-black transition-all duration-500 ${language === "bn" ? "text-black" : "text-text-muted hover:text-text-primary"}`}
             >
               বাংলা
             </button>
             <button
-              onClick={() => setLanguage('en')}
-              className={`relative z-10 px-3 py-1 text-[9px] font-black transition-all duration-500 ${language === 'en' ? 'text-black' : 'text-text-muted hover:text-text-primary'}`}
+              onClick={() => setLanguage("en")}
+              className={`relative z-10 px-3 py-1 text-[9px] font-black transition-all duration-500 ${language === "en" ? "text-black" : "text-text-muted hover:text-text-primary"}`}
             >
               EN
             </button>
             <motion.div
-              animate={{ x: language === 'bn' ? 0 : '100%' }}
-              transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+              animate={{ x: language === "bn" ? 0 : "100%" }}
+              transition={{ type: "spring", stiffness: 350, damping: 30 }}
               className="absolute top-1 left-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm"
             />
           </div>
@@ -105,7 +119,11 @@ export const Header = ({ data }: { data: any }) => {
             onClick={() => setMobileMenu(!mobileMenu)}
             className="lg:hidden p-2 text-text-primary hover:bg-white/5 rounded-xl transition-all border border-white/5"
           >
-            {mobileMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {mobileMenu ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
         </div>
       </div>
@@ -122,30 +140,47 @@ export const Header = ({ data }: { data: any }) => {
               className="fixed inset-0 bg-bg-dark/80 backdrop-blur-md z-[110] lg:hidden"
             />
             <motion.div
-              initial={{ x: '100%' }}
+              initial={{ x: "100%" }}
               animate={{ x: 0 }}
-              exit={{ x: '100%' }}
+              exit={{ x: "100%" }}
               className="fixed top-0 right-0 bottom-0 w-[80%] max-w-sm bg-[#05091D] border-l border-white/10 z-[120] lg:hidden shadow-2xl p-6 flex flex-col"
             >
               <div className="flex items-center justify-between mb-10">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-black">
-                    {(settings?.siteNameEn || 'V')[0]}
+                    {(settings?.siteNameEn || "V")[0]}
                   </div>
-                  <span className="font-black tracking-tighter text-lg">{t(settings?.siteNameEn, settings?.siteNameBn)}</span>
+                  <span className="font-black tracking-tighter text-lg">
+                    {t(settings?.siteNameEn, settings?.siteNameBn)}
+                  </span>
                 </div>
-                <button onClick={() => setMobileMenu(false)} className="p-2 bg-white/5 rounded-xl border border-white/10">
+                <button
+                  onClick={() => setMobileMenu(false)}
+                  className="p-2 bg-white/5 rounded-xl border border-white/10"
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               <div className="space-y-2 mb-auto">
                 <Link
+                  href="/#vip"
+                  onClick={() => setMobileMenu(false)}
+                  className="flex items-center justify-between px-6 py-4 rounded-xl bg-amber-500 border border-amber-500 text-base font-black text-white hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20"
+                >
+                  <span className="flex items-center gap-3">
+                    <Crown className="w-5 h-5" /> VIP Access
+                  </span>
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+                <Link
                   href="/dashboard"
                   onClick={() => setMobileMenu(false)}
                   className="flex items-center justify-between px-6 py-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-base font-black text-amber-500 hover:bg-amber-500/20 transition-all"
                 >
-                  <span className="flex items-center gap-3"><Crown className="w-5 h-5" /> Dashboard</span>
+                  <span className="flex items-center gap-3">
+                    <Crown className="w-5 h-5" /> Dashboard
+                  </span>
                   <ChevronRight className="w-4 h-4" />
                 </Link>
                 <div className="h-px bg-white/5 my-2" />
@@ -171,9 +206,22 @@ export const Header = ({ data }: { data: any }) => {
                 </div>
 
                 <div className="flex bg-white/[0.03] p-1 rounded-xl border border-white/5 relative overflow-hidden">
-                  <button onClick={() => setLanguage('bn')} className={`relative z-10 flex-1 py-3 text-[10px] font-black transition-all ${language === 'bn' ? 'text-black' : 'text-text-muted'}`}>বাংলা</button>
-                  <button onClick={() => setLanguage('en')} className={`relative z-10 flex-1 py-3 text-[10px] font-black transition-all ${language === 'en' ? 'text-black' : 'text-text-muted'}`}>ENGLISH</button>
-                  <motion.div animate={{ x: language === 'bn' ? 0 : '100%' }} className="absolute top-1 left-1 bottom-1 w-[calc(50%-2px)] bg-white rounded-lg shadow-lg" />
+                  <button
+                    onClick={() => setLanguage("bn")}
+                    className={`relative z-10 flex-1 py-3 text-[10px] font-black transition-all ${language === "bn" ? "text-black" : "text-text-muted"}`}
+                  >
+                    বাংলা
+                  </button>
+                  <button
+                    onClick={() => setLanguage("en")}
+                    className={`relative z-10 flex-1 py-3 text-[10px] font-black transition-all ${language === "en" ? "text-black" : "text-text-muted"}`}
+                  >
+                    ENGLISH
+                  </button>
+                  <motion.div
+                    animate={{ x: language === "bn" ? 0 : "100%" }}
+                    className="absolute top-1 left-1 bottom-1 w-[calc(50%-2px)] bg-white rounded-lg shadow-lg"
+                  />
                 </div>
 
                 <Link

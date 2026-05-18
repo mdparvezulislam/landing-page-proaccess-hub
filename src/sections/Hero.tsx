@@ -1,8 +1,17 @@
 "use client";
-import React from 'react';
-import { motion, Variants } from 'framer-motion';
-import { useStore } from '../store/useStore';
-import { Sparkles, ArrowRight, ShieldCheck, Zap, Star, Users, Globe, Trophy } from 'lucide-react';
+import React from "react";
+import { motion, Variants } from "framer-motion";
+import { useStore } from "../store/useStore";
+import {
+  Sparkles,
+  ArrowRight,
+  ShieldCheck,
+  Zap,
+  Star,
+  Users,
+  Globe,
+  Trophy,
+} from "lucide-react";
 
 interface HeroStat {
   valueEn: string;
@@ -30,32 +39,39 @@ interface HeroData {
 export const Hero = ({ data }: { data: HeroData }) => {
   const { language } = useStore();
   const hero = data || {};
-  const t = (en: string | undefined, bn: string | undefined) => language === 'en' ? (en || '') : (bn || '');
+  const t = (en: string | undefined, bn: string | undefined) =>
+    language === "en" ? en || "" : bn || "";
 
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.2, delayChildren: 0.3 }
-    }
+      transition: { staggerChildren: 0.2, delayChildren: 0.3 },
+    },
   };
 
   const itemVariants: Variants = {
     hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+    },
   };
 
   return (
-    <section className="relative min-h-[90vh] lg:min-h-screen flex items-center pt-20 lg:pt-32 pb-20 overflow-hidden">
+    <section className="relative min-h-screen lg:min-h-screen flex items-center pt-24 lg:pt-32 pb-16 lg:pb-20 overflow-hidden">
       {/* Mesh Gradient Background */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-1/4 -left-20 w-[400px] lg:w-[600px] h-[400px] lg:h-[600px] bg-primary/10 blur-[150px] rounded-full animate-float" />
-        <div className="absolute bottom-1/4 -right-20 w-[400px] lg:w-[600px] h-[400px] lg:h-[600px] bg-secondary/10 blur-[150px] rounded-full animate-float" style={{ animationDelay: '2s' }} />
+        <div
+          className="absolute bottom-1/4 -right-20 w-[400px] lg:w-[600px] h-[400px] lg:h-[600px] bg-secondary/10 blur-[150px] rounded-full animate-float"
+          style={{ animationDelay: "2s" }}
+        />
       </div>
 
       <div className="container mx-auto px-4 lg:px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
-
           {/* Left Content */}
           <motion.div
             variants={containerVariants}
@@ -63,46 +79,73 @@ export const Hero = ({ data }: { data: HeroData }) => {
             animate="visible"
             className="lg:col-span-7"
           >
-            <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-white/10 backdrop-blur-xl mb-6 lg:mb-8">
+            <motion.div
+              variants={itemVariants}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-white/10 backdrop-blur-xl mb-6 lg:mb-8"
+            >
               <div className="w-2 h-2 rounded-full bg-success animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
-              <span className="text-[10px] lg:text-[11px] font-black uppercase tracking-[2px] text-text-primary">
+              <span className="text-[9px] lg:text-[11px] font-black uppercase tracking-[2px] text-text-primary">
                 {t(hero?.badgeEn, hero?.badgeBn)}
               </span>
               <div className="h-3 w-px bg-white/10 mx-1" />
               <div className="flex items-center gap-1 text-secondary">
                 <Trophy className="w-3 h-3" />
-                <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-widest">2026 EDITION</span>
+                <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-widest">
+                  2026 EDITION
+                </span>
               </div>
             </motion.div>
 
-            <motion.h1 variants={itemVariants} className="text-4xl lg:text-8xl font-black mb-6 lg:mb-8 tracking-tighter leading-[1.1] lg:leading-[0.85]">
-              {t(hero?.titleEn, hero?.titleBn)}{' '}
+            <motion.h1
+              variants={itemVariants}
+              className="text-[2.2rem] lg:text-8xl font-black mb-4 lg:mb-8 tracking-tighter leading-[1.1] lg:leading-[0.85]"
+            >
+              {t(hero?.titleEn, hero?.titleBn)}{" "}
               <span className="grad-text block lg:mt-6">
                 {t(hero?.titleAccentEn, hero?.titleAccentBn)}
               </span>
             </motion.h1>
 
-            <motion.p variants={itemVariants} className="text-base lg:text-2xl text-text-secondary max-w-2xl mb-8 lg:mb-12 font-medium leading-relaxed">
+            <motion.p
+              variants={itemVariants}
+              className="text-sm lg:text-2xl text-text-secondary max-w-2xl mb-6 lg:mb-12 font-medium leading-relaxed"
+            >
               {t(hero?.descriptionEn, hero?.descriptionBn)}
             </motion.p>
 
-            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 lg:gap-6 mb-12 lg:mb-16">
-              <a href="#pricing" className="group relative bg-primary hover:bg-primary-light text-white px-8 lg:px-10 py-4 lg:py-5 rounded-2xl lg:rounded-[24px] font-black text-sm transition-all glow-btn shadow-2xl shadow-primary/30 flex items-center justify-center gap-3">
+            <motion.div
+              variants={itemVariants}
+              className="flex flex-col sm:flex-row gap-4 lg:gap-6 mb-12 lg:mb-16"
+            >
+              <a
+                href="#vip"
+                className="group relative bg-primary hover:bg-primary-light text-white px-6 lg:px-10 py-3.5 lg:py-5 rounded-2xl lg:rounded-[24px] font-black text-sm transition-all glow-btn shadow-2xl shadow-primary/30 flex items-center justify-center gap-3"
+              >
                 {t(hero?.cta1En, hero?.cta1Bn)}
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
               </a>
-              <a href="#products" className="group px-8 lg:px-10 py-4 lg:py-5 rounded-2xl lg:rounded-[24px] bg-white/[0.02] border border-white/10 text-text-primary font-black text-sm hover:bg-white/[0.05] hover:border-white/20 transition-all flex items-center justify-center gap-3 backdrop-blur-xl">
+              <a
+                href="#products"
+                className="group px-6 lg:px-10 py-3.5 lg:py-5 rounded-2xl lg:rounded-[24px] bg-white/[0.02] border border-white/10 text-text-primary font-black text-sm hover:bg-white/[0.05] hover:border-white/20 transition-all flex items-center justify-center gap-3 backdrop-blur-xl"
+              >
                 {t(hero?.cta2En, hero?.cta2Bn)}
                 <Zap className="w-4 h-4 text-primary group-hover:scale-125 transition-transform" />
               </a>
             </motion.div>
 
             {/* Live Stats */}
-            <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-4 gap-6 lg:gap-12 border-t border-white/5 pt-10 lg:pt-12">
+            <motion.div
+              variants={itemVariants}
+              className="grid grid-cols-2 sm:grid-cols-4 gap-4 lg:gap-12 border-t border-white/5 pt-6 lg:pt-12"
+            >
               {(hero?.stats || []).map((stat, i: number) => (
                 <div key={i} className="flex flex-col gap-1 lg:gap-2 group">
-                  <span className="text-2xl lg:text-4xl font-black text-text-primary tracking-tighter">{t(stat.valueEn, stat.valueBn)}</span>
-                  <span className="text-[9px] lg:text-[11px] font-black text-text-muted uppercase tracking-[1px] lg:tracking-[2px]">{t(stat.labelEn, stat.labelBn)}</span>
+                  <span className="text-xl lg:text-4xl font-black text-text-primary tracking-tighter">
+                    {t(stat.valueEn, stat.valueBn)}
+                  </span>
+                  <span className="text-[8px] lg:text-[11px] font-black text-text-muted uppercase tracking-[1px] lg:tracking-[2px]">
+                    {t(stat.labelEn, stat.labelBn)}
+                  </span>
                 </div>
               ))}
             </motion.div>
@@ -119,7 +162,11 @@ export const Hero = ({ data }: { data: HeroData }) => {
               {/* Main Card */}
               <motion.div
                 animate={{ y: [0, -20, 0] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                transition={{
+                  duration: 6,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
                 className="absolute inset-0 glass-card rounded-[48px] p-8 lg:p-12 border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 blur-[60px] rounded-full" />
@@ -136,9 +183,13 @@ export const Hero = ({ data }: { data: HeroData }) => {
                   <div className="space-y-6">
                     <div className="h-4 w-2/3 bg-white/5 rounded-full overflow-hidden">
                       <motion.div
-                        initial={{ x: '-100%' }}
-                        animate={{ x: '100%' }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                        initial={{ x: "-100%" }}
+                        animate={{ x: "100%" }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
                         className="h-full w-1/3 bg-primary"
                       />
                     </div>
@@ -152,12 +203,16 @@ export const Hero = ({ data }: { data: HeroData }) => {
                     <div className="p-5 rounded-3xl bg-white/5 border border-white/5 text-center">
                       <Users className="w-5 h-5 text-primary mx-auto mb-2" />
                       <span className="block text-xl font-black">12K+</span>
-                      <span className="text-[8px] font-black text-text-muted uppercase tracking-widest">MEMBERS</span>
+                      <span className="text-[8px] font-black text-text-muted uppercase tracking-widest">
+                        MEMBERS
+                      </span>
                     </div>
                     <div className="p-5 rounded-3xl bg-white/5 border border-white/5 text-center">
                       <Globe className="w-5 h-5 text-secondary mx-auto mb-2" />
                       <span className="block text-xl font-black">40+</span>
-                      <span className="text-[8px] font-black text-text-muted uppercase tracking-widest">COUNTRIES</span>
+                      <span className="text-[8px] font-black text-text-muted uppercase tracking-widest">
+                        COUNTRIES
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -166,7 +221,12 @@ export const Hero = ({ data }: { data: HeroData }) => {
               {/* Floating Small Cards */}
               <motion.div
                 animate={{ y: [0, 15, 0], x: [0, 10, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                transition={{
+                  duration: 5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 1,
+                }}
                 className="absolute -top-10 -right-10 glass-card p-5 rounded-2xl border-primary/20 shadow-xl backdrop-blur-3xl"
               >
                 <div className="flex items-center gap-3">
@@ -175,14 +235,21 @@ export const Hero = ({ data }: { data: HeroData }) => {
                   </div>
                   <div>
                     <span className="block text-xs font-black">Verified</span>
-                    <span className="block text-[8px] text-text-muted font-bold uppercase">SECURE NETWORK</span>
+                    <span className="block text-[8px] text-text-muted font-bold uppercase">
+                      SECURE NETWORK
+                    </span>
                   </div>
                 </div>
               </motion.div>
 
               <motion.div
                 animate={{ y: [0, -15, 0], x: [0, -10, 0] }}
-                transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                transition={{
+                  duration: 7,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.5,
+                }}
                 className="absolute -bottom-10 -left-10 glass-card p-5 rounded-2xl border-secondary/20 shadow-xl backdrop-blur-3xl"
               >
                 <div className="flex items-center gap-3">
@@ -191,7 +258,9 @@ export const Hero = ({ data }: { data: HeroData }) => {
                   </div>
                   <div>
                     <span className="block text-xs font-black">Top Rated</span>
-                    <span className="block text-[8px] text-text-muted font-bold uppercase">COMMUNITY CHOICE</span>
+                    <span className="block text-[8px] text-text-muted font-bold uppercase">
+                      COMMUNITY CHOICE
+                    </span>
                   </div>
                 </div>
               </motion.div>

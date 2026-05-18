@@ -25,7 +25,7 @@ export const ReviewsSection = ({ data }: { data: ReviewItem[] }) => {
   const visibleReviews = [...reviews].filter((r) => r.visible).sort((a, b) => a.order - b.order);
 
   return (
-    <section id="reviews" className="py-12 lg:py-24 relative bg-bg-dark overflow-hidden">
+    <section id="reviews" className="py-16 lg:py-24 relative bg-bg-dark overflow-hidden">
       {/* Background Atmosphere */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-secondary/5 blur-[120px] rounded-full pointer-events-none animate-float" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none animate-float" style={{ animationDelay: '2s' }} />
@@ -45,7 +45,7 @@ export const ReviewsSection = ({ data }: { data: ReviewItem[] }) => {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-4xl lg:text-7xl font-black mb-6 lg:mb-8 tracking-tighter leading-tight"
+            className="text-3xl lg:text-7xl font-black mb-4 lg:mb-8 tracking-tighter leading-tight"
           >
             {t('What Our Elite', 'আমাদের এলিট')}
             <span className="grad-text block mt-2 lg:mt-4">{t('Members Say', 'মেম্বারদের অভিজ্ঞতা')}</span>
@@ -55,7 +55,7 @@ export const ReviewsSection = ({ data }: { data: ReviewItem[] }) => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-text-secondary text-base lg:text-2xl font-medium max-w-2xl mx-auto leading-relaxed"
+            className="text-text-secondary text-sm lg:text-2xl font-medium max-w-2xl mx-auto leading-relaxed"
           >
             {t('Join thousands of satisfied users who have transformed their digital journey with Pro Access.', 'হাজার হাজার সফল মেম্বারদের সাথে যোগ দিন যারা প্রো অ্যাক্সেসের মাধ্যমে তাদের লক্ষ্য পূরণ করেছে।')}
           </motion.p>
@@ -69,7 +69,7 @@ export const ReviewsSection = ({ data }: { data: ReviewItem[] }) => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1, duration: 0.8 }}
-              className="glass-card rounded-[32px] lg:rounded-[40px] p-8 lg:p-12 relative group hover:bg-white/[0.04] transition-all duration-700 flex flex-col shadow-2xl"
+              className="glass-card rounded-[32px] lg:rounded-[40px] p-6 lg:p-12 relative group hover:bg-white/[0.04] transition-all duration-700 flex flex-col shadow-2xl"
             >
               <Quote className="absolute top-8 lg:top-12 right-8 lg:right-12 w-10 lg:w-16 h-10 lg:h-16 text-primary/5 group-hover:text-primary/10 transition-colors duration-700" />
               
@@ -82,7 +82,7 @@ export const ReviewsSection = ({ data }: { data: ReviewItem[] }) => {
                 ))}
               </div>
 
-              <p className="text-text-primary text-lg lg:text-2xl font-medium leading-relaxed italic mb-10 flex-1 relative z-10">
+              <p className="text-text-primary text-sm lg:text-2xl font-medium leading-relaxed italic mb-10 flex-1 relative z-10">
                 &ldquo;{t(review.reviewEn, review.reviewBn)}&rdquo;
               </p>
 

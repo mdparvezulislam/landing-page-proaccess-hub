@@ -10,10 +10,7 @@ import {
   XCircle,
   Star,
   Eye,
-  User,
-  Image as ImageIcon,
   Check,
-  ChevronDown,
   EyeOff,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";

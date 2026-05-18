@@ -31,14 +31,14 @@ export const Features = ({ data, section }: { data: FeatureItem[]; section: Feat
   const visibleFeatures = globalFeatures.filter((f) => f.visible).sort((a, b) => a.order - b.order);
 
   return (
-    <section id="features" className="py-12 lg:py-24 bg-white/[0.01] relative overflow-hidden">
+    <section id="features" className="py-16 lg:py-24 bg-white/[0.01] relative overflow-hidden">
       <div className="container mx-auto px-4 lg:px-6 relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-8 lg:mb-16">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-4xl lg:text-7xl font-black mb-6 lg:mb-10 tracking-tighter leading-tight"
+            className="text-3xl lg:text-7xl font-black mb-4 lg:mb-10 tracking-tighter leading-tight"
           >
             {t(featuresSection.titleEn, featuresSection.titleBn)}
           </motion.h2>
@@ -46,7 +46,7 @@ export const Features = ({ data, section }: { data: FeatureItem[]; section: Feat
              initial={{ opacity: 0, y: 20 }}
              whileInView={{ opacity: 1, y: 0 }}
              viewport={{ once: true }}
-             className="text-text-secondary text-base lg:text-2xl font-medium leading-relaxed"
+             className="text-text-secondary text-sm lg:text-2xl font-medium leading-relaxed"
           >
              {t(featuresSection.descriptionEn, featuresSection.descriptionBn)}
           </motion.p>
@@ -63,12 +63,12 @@ export const Features = ({ data, section }: { data: FeatureItem[]; section: Feat
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="p-8 lg:p-12 rounded-[32px] lg:rounded-[40px] glass-card hover:bg-white/[0.05] group transition-all duration-500 border-white/[0.05] flex flex-col shadow-xl"
+                className="p-6 lg:p-12 rounded-[32px] lg:rounded-[40px] glass-card hover:bg-white/[0.05] group transition-all duration-500 border-white/[0.05] flex flex-col shadow-xl"
               >
                 <div className="w-14 lg:w-16 h-14 lg:h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6 lg:mb-8 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
                   <IconComponent className="w-7 lg:w-8 h-7 lg:h-8" />
                 </div>
-                <h3 className="text-2xl lg:text-3xl font-black mb-4 text-text-primary tracking-tight">
+                <h3 className="text-xl lg:text-3xl font-black mb-3 text-text-primary tracking-tight">
                   {t(feature.titleEn, feature.titleBn)}
                 </h3>
                 <p className="text-text-secondary text-sm lg:text-lg leading-relaxed font-medium">

@@ -15,20 +15,11 @@ import {
   EyeOff,
   Sparkles,
   Layers,
-  Zap,
   Check,
-  X,
   Type,
   Info,
-  Link as LinkIcon,
-  Image as ImageIcon,
   ChevronRight,
   GripVertical,
-  Monitor,
-  Layout,
-  ExternalLink,
-  ChevronDown,
-
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";

@@ -11,12 +11,7 @@ import {
   MessageCircle,
   Hash,
   User,
-  CreditCard,
-  Calendar,
-  ChevronDown,
-  Filter,
   Search,
-  ArrowUpRight,
   TrendingUp,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";

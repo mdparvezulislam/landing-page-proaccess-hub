@@ -14,12 +14,7 @@ import {
   Zap,
   Clock,
   List,
-  ChevronDown,
-  ChevronUp,
-  Image as ImageIcon,
-  MessageSquare,
   AlertCircle,
-  ExternalLink,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from 'sonner';

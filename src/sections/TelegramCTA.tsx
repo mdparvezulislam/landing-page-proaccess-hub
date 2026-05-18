@@ -14,13 +14,13 @@ export const TelegramCTA = ({ data }: { data: TelegramSettings }) => {
   const t = (en: string, bn: string) => language === 'en' ? en : bn;
 
   return (
-    <section className="py-20 lg:py-40 relative overflow-hidden">
+    <section className="py-16 lg:py-32 relative overflow-hidden">
       <div className="container mx-auto px-4 lg:px-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="relative rounded-[40px] lg:rounded-[80px] overflow-hidden p-8 lg:p-28 text-center shadow-2xl shadow-primary/30"
+          className="relative rounded-[40px] lg:rounded-[80px] overflow-hidden p-6 lg:p-28 text-center shadow-2xl shadow-primary/30"
         >
           {/* Animated Gradient Background */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary-light to-secondary opacity-100" />
@@ -39,13 +39,13 @@ export const TelegramCTA = ({ data }: { data: TelegramSettings }) => {
               <Send className="w-8 lg:w-12 h-8 lg:h-12 text-white" />
             </div>
             
-            <h2 className="text-3xl lg:text-7xl font-black text-white mb-6 lg:mb-8 tracking-tighter leading-tight">
+            <h2 className="text-2xl lg:text-7xl font-black text-white mb-4 lg:mb-8 tracking-tighter leading-tight">
               {t('Need Direct ', 'সরাসরি ')}
               <span className="text-white/70">{t('Support', 'সাপোর্ট')}</span>
               {t('?', ' প্রয়োজন?')}
             </h2>
             
-            <p className="text-base lg:text-2xl text-white/90 mb-10 lg:mb-14 max-w-2xl font-medium leading-relaxed">
+            <p className="text-sm lg:text-2xl text-white/90 mb-8 lg:mb-14 max-w-2xl font-medium leading-relaxed">
               {t('Join our Telegram channel for exclusive resources or message us directly for personalized assistance.', 'বিশেষ রিসোর্সের জন্য আমাদের টেলিগ্রাম চ্যানেলে যোগ দিন অথবা ব্যক্তিগত সহায়তার জন্য সরাসরি মেসেজ করুন।')}
             </p>
             

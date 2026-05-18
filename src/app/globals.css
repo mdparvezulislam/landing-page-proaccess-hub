@@ -83,6 +83,8 @@
   animation: float 6s ease-in-out infinite;
 }
 
+
+
 @keyframes pulse-glow {
   0% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); }
   70% { box-shadow: 0 0 0 15px rgba(124, 58, 237, 0); }
