@@ -4,13 +4,31 @@ import { motion } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import * as LucideIcons from 'lucide-react';
 
-export const Features = ({ data, section }: { data: any[], section: any }) => {
+interface FeatureItem {
+  id: string;
+  visible: boolean;
+  order: number;
+  icon: string;
+  titleEn: string;
+  titleBn: string;
+  descriptionEn: string;
+  descriptionBn: string;
+}
+
+interface FeaturesSection {
+  titleEn: string;
+  titleBn: string;
+  descriptionEn: string;
+  descriptionBn: string;
+}
+
+export const Features = ({ data, section }: { data: FeatureItem[]; section: FeaturesSection }) => {
   const { language } = useStore();
   const globalFeatures = data || [];
   const featuresSection = section || { titleEn: 'Features', titleBn: 'ফিচারসমূহ' };
   const t = (en: string, bn: string) => language === 'en' ? en : bn;
 
-  const visibleFeatures = globalFeatures.filter((f: any) => f.visible).sort((a: any, b: any) => a.order - b.order);
+  const visibleFeatures = globalFeatures.filter((f) => f.visible).sort((a, b) => a.order - b.order);
 
   return (
     <section id="features" className="py-12 lg:py-24 bg-white/[0.01] relative overflow-hidden">
@@ -36,6 +54,7 @@ export const Features = ({ data, section }: { data: any[], section: any }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-10">
           {visibleFeatures.map((feature, i) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const IconComponent = (LucideIcons as any)[feature.icon] || LucideIcons.Zap;
             return (
               <motion.div

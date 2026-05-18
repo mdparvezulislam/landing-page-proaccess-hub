@@ -7,7 +7,30 @@ import { useRouter } from 'next/navigation';
 import { trackAddToCart } from '../utils/facebookPixel';
 import { useCurrencyStore } from '../store/useCurrencyStore';
 
-export const Pricing = ({ data }: { data: any }) => {
+interface PricingPlan {
+  id: string;
+  priceTk: number;
+  originalPriceTk?: number;
+  duration: string;
+  nameEn: string;
+  nameBn: string;
+  isPopular?: boolean;
+}
+
+interface PricingProduct {
+  id: string;
+  visible: boolean;
+  order: number;
+  titleEn: string;
+  titleBn: string;
+  plans: PricingPlan[];
+  features?: Array<{ id: string; visible: boolean; textEn: string; textBn: string; includedInPlanIds?: string[]; highlighted?: boolean }>;
+  buttonTextEn?: string;
+  buttonTextBn?: string;
+  telegramLink?: string;
+}
+
+export const Pricing = ({ data }: { data: PricingProduct[] }) => {
   const { language, setSelectedOrderContext } = useStore();
   const { convertPrice, currentCurrency } = useCurrencyStore();
   const [mounted, setMounted] = React.useState(false);
@@ -15,12 +38,13 @@ export const Pricing = ({ data }: { data: any }) => {
   const router = useRouter();
 
   React.useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const t = (en: string, bn: string) => language === 'en' ? en : bn;
 
-  const handleJoin = (product: any, plan: any) => {
+  const handleJoin = (product: PricingProduct, plan: PricingPlan) => {
     setSelectedOrderContext({ product, plan });
     trackAddToCart({
       content_name: product.titleEn,
@@ -30,7 +54,7 @@ export const Pricing = ({ data }: { data: any }) => {
     router.push('/checkout');
   };
 
-  const visibleProducts = products.filter((p: any) => p.visible).sort((a: any, b: any) => a.order - b.order);
+  const visibleProducts = products.filter((p) => p.visible).sort((a, b) => a.order - b.order);
 
   if (visibleProducts.length === 0) return null;
 
@@ -72,7 +96,7 @@ export const Pricing = ({ data }: { data: any }) => {
         </div>
 
         <div className="space-y-24 lg:space-y-32">
-          {visibleProducts.map((product: any, pIdx: number) => (
+          {visibleProducts.map((product) => (
             <div key={product.id} className="relative">
               {visibleProducts.length > 1 && (
                 <div className="mb-10 text-center">
@@ -87,7 +111,7 @@ export const Pricing = ({ data }: { data: any }) => {
                   product.plans.length === 2 ? 'md:grid-cols-2 max-w-4xl' :
                     'md:grid-cols-3'
                 }`}>
-                {product.plans.map((plan: any, i: number) => {
+                {product.plans.map((plan, i) => {
                   const isPopular = plan.isPopular || (product.plans.length === 3 && i === 1) || (product.plans.length === 1);
                   const { amount, currency } = mounted ? convertPrice(plan.priceTk) : { amount: plan.priceTk, currency: 'BDT' };
 
@@ -142,7 +166,7 @@ export const Pricing = ({ data }: { data: any }) => {
                       </div>
 
                       <div className="space-y-4 mb-10 flex-1">
-                        {(product.features || []).filter((f: any) => f.visible).map((feature: any) => {
+                        {(product.features || []).filter((f) => f.visible).map((feature) => {
                           const isIncluded = !feature.includedInPlanIds || feature.includedInPlanIds.length === 0 || feature.includedInPlanIds.includes(plan.id);
                           return (
                             <div key={feature.id} className="flex items-start gap-3 group/item">

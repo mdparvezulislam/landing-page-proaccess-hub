@@ -49,6 +49,11 @@ export interface IProduct extends Document {
   bulletPoints: IBulletPoint[];
   features: IFeature[];
   slug: string;
+  membershipPlans?: string[];
+  enableInstallments?: boolean;
+  enableMonthlyTracking?: boolean;
+  offerEndDate?: Date;
+  limitedSlots?: number;
 }
 
 const PlanSchema = new Schema({
@@ -101,6 +106,11 @@ const ProductSchema = new Schema<IProduct>({
   bulletPoints: { type: [BulletPointSchema], default: [] },
   features: { type: [FeatureSchema], default: [] },
   slug: { type: String, required: true, unique: true },
+  membershipPlans: { type: [String], default: [] },
+  enableInstallments: { type: Boolean, default: false },
+  enableMonthlyTracking: { type: Boolean, default: false },
+  offerEndDate: { type: Date },
+  limitedSlots: { type: Number },
 }, { timestamps: true });
 
 export default mongoose.models.Product || mongoose.model<IProduct>('Product', ProductSchema);

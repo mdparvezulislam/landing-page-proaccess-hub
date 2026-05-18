@@ -4,7 +4,11 @@ import { motion } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { Send, MessageCircle, Sparkles } from 'lucide-react';
 
-export const TelegramCTA = ({ data }: { data: any }) => {
+interface TelegramSettings {
+  telegramLink?: string;
+}
+
+export const TelegramCTA = ({ data }: { data: TelegramSettings }) => {
   const { language } = useStore();
   const settings = data || {};
   const t = (en: string, bn: string) => language === 'en' ? en : bn;

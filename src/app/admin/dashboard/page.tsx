@@ -14,7 +14,6 @@ import {
   Menu,
   X,
   User,
-  Bell,
   Search,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -26,8 +25,10 @@ import SettingsTab from "./tabs/SettingsTab";
 import ReviewsTab from "./tabs/ReviewsTab";
 import FAQTab from "./tabs/FAQTab";
 import CurrencyTab from "./tabs/CurrencyTab";
+import VIPPlansTab from "./tabs/VIPPlansTab";
+import VIPMembersTab from "./tabs/VIPMembersTab";
 import { Toaster } from "sonner";
-import { Coins } from "lucide-react";
+import { Coins, Users, Crown, Shield } from "lucide-react";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("orders");
@@ -37,6 +38,18 @@ export default function AdminDashboard() {
 
   const tabs = [
     { id: "orders", label: "Orders", icon: ShoppingBag, color: "text-primary" },
+    {
+      id: "vip-plans",
+      label: "VIP Plans",
+      icon: Crown,
+      color: "text-amber-500",
+    },
+    {
+      id: "vip-members",
+      label: "VIP Members",
+      icon: Shield,
+      color: "text-amber-500",
+    },
     {
       id: "products",
       label: "Products",
@@ -200,6 +213,8 @@ export default function AdminDashboard() {
               className="max-w-[1600px] mx-auto"
             >
               {activeTab === "orders" && <OrdersTab />}
+              {activeTab === "vip-plans" && <VIPPlansTab />}
+              {activeTab === "vip-members" && <VIPMembersTab />}
               {activeTab === "products" && <ProductsTab />}
               {activeTab === "currency" && <CurrencyTab />}
               {activeTab === "reviews" && <ReviewsTab />}

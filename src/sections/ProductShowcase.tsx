@@ -2,18 +2,46 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useStore } from '../store/useStore';
-import { Check, ArrowRight, Zap, Star, ShieldCheck, Sparkles, X } from 'lucide-react';
+import { Check, ArrowRight, Zap, Star, ShieldCheck, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { trackAddToCart } from '../utils/facebookPixel';
 
 import { useCurrencyStore } from '../store/useCurrencyStore';
 import { Send, ScrollText, ExternalLink } from 'lucide-react';
 
+interface ProductPlan {
+  id: string;
+  priceTk: number;
+  originalPriceTk?: number;
+  nameEn?: string;
+  nameBn?: string;
+}
+
+interface ProductItem {
+  id: string;
+  visible: boolean;
+  order: number;
+  image: string;
+  titleEn: string;
+  titleBn: string;
+  badgeEn?: string;
+  badgeBn?: string;
+  shortDescriptionEn?: string;
+  shortDescriptionBn?: string;
+  tgPostLink?: string;
+  telegramLink?: string;
+  plans: ProductPlan[];
+  bulletPoints?: Array<{ id: string; visible: boolean; order: number; textEn: string; textBn: string; highlighted?: boolean }>;
+  features?: Array<{ id: string; visible: boolean; textEn: string; textBn: string; includedInPlanIds?: string[] }>;
+  buttonTextEn?: string;
+  buttonTextBn?: string;
+}
+
 interface ProductCardProps {
-  product: any;
+  product: ProductItem;
   idx: number;
-  language: any;
-  handleJoin: (product: any, plan: any) => void;
+  language: string;
+  handleJoin: (product: ProductItem, plan: ProductPlan) => void;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, idx, language, handleJoin }) => {
@@ -22,13 +50,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, idx, language, handl
   const [mounted, setMounted] = useState(false);
   
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
-  const t = (en: string, bn: string) => language === 'en' ? (en || '') : (bn || '');
+  const t = (en: string | undefined, bn: string | undefined) => language === 'en' ? (en || '') : (bn || '');
 
-  const activePlan = product.plans.find((p: any) => p.id === activePlanId) || product.plans[0];
-  const hasMultiplePlans = product.plans.length > 1;
+  const activePlan = product.plans.find((p) => p.id === activePlanId) || product.plans[0];
 
   // Animation variants
   const containerVariants = {
@@ -122,7 +150,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, idx, language, handl
             viewport={{ once: true }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3 max-h-[300px] lg:max-h-[400px] overflow-y-auto pr-2 custom-scrollbar"
           >
-            {(product.bulletPoints || []).filter((b: any) => b.visible).sort((a: any, b: any) => a.order - b.order).map((bullet: any) => (
+            {(product.bulletPoints || []).filter((b) => b.visible).sort((a, b) => a.order - b.order).map((bullet) => (
               <motion.div
                 key={bullet.id}
                 variants={itemVariants}
@@ -152,7 +180,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, idx, language, handl
               product.plans.length === 2 ? 'grid-cols-2' :
                 'grid-cols-3'
             }`}>
-            {product.plans.map((plan: any, i: number) => {
+            {product.plans.map((plan) => {
               const isLifetime = plan.nameEn?.toLowerCase().includes('lifetime');
               const isYearly = plan.nameEn?.toLowerCase().includes('yearly');
               const { amount, currency } = mounted ? convertPrice(plan.priceTk) : { amount: plan.priceTk, currency: 'BDT' };
@@ -243,18 +271,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, idx, language, handl
   );
 };
 
-export const ProductShowcase = ({ data }: { data: any }) => {
+export const ProductShowcase = ({ data }: { data: ProductItem[] }) => {
   const { language, setSelectedOrderContext } = useStore();
   const products = data || [];
   const router = useRouter();
 
-  const handleJoin = (product: any, plan: any) => {
+  const handleJoin = (product: ProductItem, plan: ProductPlan) => {
     setSelectedOrderContext({ product, plan });
     trackAddToCart({ content_name: product.titleEn, value: plan.priceTk, currency: 'BDT' });
     router.push('/checkout');
   };
 
-  const visibleProducts = [...products].filter((p: any) => p.visible).sort((a: any, b: any) => a.order - b.order);
+  const visibleProducts = [...products].filter((p) => p.visible).sort((a, b) => a.order - b.order);
 
   return (
     <section id="products" className="py-10 lg:py-16 relative overflow-hidden bg-bg-dark">

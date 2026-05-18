@@ -4,7 +4,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { HelpCircle, ChevronDown, Sparkles, MessageSquare } from 'lucide-react';
 
-export const FAQSection = ({ data, settings: rawSettings }: { data: any, settings: any }) => {
+interface FAQItem {
+  _id: string;
+  id: string;
+  visible: boolean;
+  order: number;
+  qEn: string;
+  qBn: string;
+  aEn: string;
+  aBn: string;
+}
+
+interface FAQSettings {
+  telegramLink?: string;
+}
+
+export const FAQSection = ({ data, settings: rawSettings }: { data: FAQItem[]; settings: FAQSettings }) => {
   const { language } = useStore();
   const settings = rawSettings || {};
   const faqs = data || [];
@@ -12,7 +27,7 @@ export const FAQSection = ({ data, settings: rawSettings }: { data: any, setting
 
   const t = (en: string, bn: string) => language === 'en' ? en : bn;
 
-  const visibleFaqs = [...faqs].filter((f: any) => f.visible).sort((a: any, b: any) => a.order - b.order);
+  const visibleFaqs = [...faqs].filter((f) => f.visible).sort((a, b) => a.order - b.order);
 
   return (
     <section id="faq" className="py-12 lg:py-24 relative bg-bg-dark overflow-hidden">

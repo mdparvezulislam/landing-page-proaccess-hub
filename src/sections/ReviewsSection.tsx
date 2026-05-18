@@ -4,12 +4,25 @@ import { motion } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { Star, Quote, Sparkles, CheckCircle2 } from 'lucide-react';
 
-export const ReviewsSection = ({ data }: { data: any }) => {
+interface ReviewItem {
+  _id: string;
+  visible: boolean;
+  order: number;
+  rating: number;
+  reviewEn: string;
+  reviewBn: string;
+  image: string;
+  name: string;
+  roleEn: string;
+  roleBn: string;
+}
+
+export const ReviewsSection = ({ data }: { data: ReviewItem[] }) => {
   const { language } = useStore();
   const reviews = data || [];
   const t = (en: string, bn: string) => language === 'en' ? en : bn;
 
-  const visibleReviews = [...reviews].filter((r: any) => r.visible).sort((a: any, b: any) => a.order - b.order);
+  const visibleReviews = [...reviews].filter((r) => r.visible).sort((a, b) => a.order - b.order);
 
   return (
     <section id="reviews" className="py-12 lg:py-24 relative bg-bg-dark overflow-hidden">
@@ -70,7 +83,7 @@ export const ReviewsSection = ({ data }: { data: any }) => {
               </div>
 
               <p className="text-text-primary text-lg lg:text-2xl font-medium leading-relaxed italic mb-10 flex-1 relative z-10">
-                "{t(review.reviewEn, review.reviewBn)}"
+                &ldquo;{t(review.reviewEn, review.reviewBn)}&rdquo;
               </p>
 
               <div className="flex items-center gap-4 lg:gap-6 pt-8 border-t border-white/5">

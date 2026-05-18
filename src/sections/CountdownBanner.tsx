@@ -1,21 +1,31 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { Clock, Zap, Sparkles } from 'lucide-react';
 
-export const CountdownBanner = ({ data }: { data: any }) => {
+interface CountdownData {
+  enabled?: boolean;
+  targetDate?: string;
+  titleEn?: string;
+  titleBn?: string;
+  subtitleEn?: string;
+  subtitleBn?: string;
+}
+
+export const CountdownBanner = ({ data }: { data: CountdownData }) => {
   const { language } = useStore();
-  const countdown = data || { enabled: false };
+  const countdown = React.useMemo(() => data || { enabled: false }, [data]);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
 
-  const t = (en: string, bn: string) => language === 'en' ? en : bn;
+  const t = (en: string | undefined, bn: string | undefined) => language === 'en' ? (en || '') : (bn || '');
 
   useEffect(() => {
-    if (!countdown.enabled) return;
+    if (!countdown.enabled || !countdown.targetDate) return;
+    const targetDate = countdown.targetDate;
 
     const timer = setInterval(() => {
-      const target = new Date(countdown.targetDate).getTime();
+      const target = new Date(targetDate).getTime();
       const now = new Date().getTime();
       const diff = target - now;
 

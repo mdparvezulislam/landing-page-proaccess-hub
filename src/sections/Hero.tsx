@@ -3,12 +3,34 @@ import React from 'react';
 import { motion, Variants } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { Sparkles, ArrowRight, ShieldCheck, Zap, Star, Users, Globe, Trophy } from 'lucide-react';
-import Link from 'next/navigation';
 
-export const Hero = ({ data }: { data: any }) => {
+interface HeroStat {
+  valueEn: string;
+  valueBn: string;
+  labelEn: string;
+  labelBn: string;
+}
+
+interface HeroData {
+  badgeEn?: string;
+  badgeBn?: string;
+  titleEn?: string;
+  titleBn?: string;
+  titleAccentEn?: string;
+  titleAccentBn?: string;
+  descriptionEn?: string;
+  descriptionBn?: string;
+  cta1En?: string;
+  cta1Bn?: string;
+  cta2En?: string;
+  cta2Bn?: string;
+  stats?: HeroStat[];
+}
+
+export const Hero = ({ data }: { data: HeroData }) => {
   const { language } = useStore();
   const hero = data || {};
-  const t = (en: string, bn: string) => language === 'en' ? (en || '') : (bn || '');
+  const t = (en: string | undefined, bn: string | undefined) => language === 'en' ? (en || '') : (bn || '');
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -77,7 +99,7 @@ export const Hero = ({ data }: { data: any }) => {
 
             {/* Live Stats */}
             <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-4 gap-6 lg:gap-12 border-t border-white/5 pt-10 lg:pt-12">
-              {(hero?.stats || []).map((stat: any, i: number) => (
+              {(hero?.stats || []).map((stat, i: number) => (
                 <div key={i} className="flex flex-col gap-1 lg:gap-2 group">
                   <span className="text-2xl lg:text-4xl font-black text-text-primary tracking-tighter">{t(stat.valueEn, stat.valueBn)}</span>
                   <span className="text-[9px] lg:text-[11px] font-black text-text-muted uppercase tracking-[1px] lg:tracking-[2px]">{t(stat.labelEn, stat.labelBn)}</span>

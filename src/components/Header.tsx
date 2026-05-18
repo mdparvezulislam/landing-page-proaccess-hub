@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
-import { Menu, X, Globe, ArrowRight, Zap, ChevronRight, ShieldCheck } from 'lucide-react';
+import { Menu, X, Globe, ArrowRight, Zap, ChevronRight, ShieldCheck, Crown } from 'lucide-react';
 import NextLink from 'next/link';
 import Link from 'next/link';
 
@@ -57,6 +57,12 @@ export const Header = ({ data }: { data: any }) => {
               <div className="absolute bottom-1.5 left-5 right-5 h-0.5 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
             </a>
           ))}
+          <Link
+            href="/dashboard"
+            className="px-5 py-2 text-[13px] font-black text-amber-500 hover:text-white hover:bg-amber-500/20 rounded-xl transition-all relative group flex items-center gap-2"
+          >
+            <Crown className="w-4 h-4" /> Dashboard
+          </Link>
         </div>
 
         {/* Action Buttons */}
@@ -134,6 +140,15 @@ export const Header = ({ data }: { data: any }) => {
               </div>
 
               <div className="space-y-2 mb-auto">
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMobileMenu(false)}
+                  className="flex items-center justify-between px-6 py-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-base font-black text-amber-500 hover:bg-amber-500/20 transition-all"
+                >
+                  <span className="flex items-center gap-3"><Crown className="w-5 h-5" /> Dashboard</span>
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+                <div className="h-px bg-white/5 my-2" />
                 {navItems.map((item, i) => (
                   <motion.a
                     key={item.id}

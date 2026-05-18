@@ -28,6 +28,7 @@ import {
   Layout,
   ExternalLink,
   ChevronDown,
+
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -439,6 +440,7 @@ function ProductEditor({ product, activeTab, setActiveTab, setProduct, onClose, 
                 {activeTab === "plans" && <PlansEditor product={product} onChange={updateProduct} />}
                 {activeTab === "bullets" && <BulletsEditor product={product} onChange={updateProduct} />}
                 {activeTab === "features" && <FeaturesEditor product={product} onChange={updateProduct} />}
+
               </motion.div>
             </AnimatePresence>
           </div>

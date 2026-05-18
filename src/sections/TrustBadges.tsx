@@ -4,18 +4,28 @@ import { motion } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import * as LucideIcons from 'lucide-react';
 
-export const TrustBadges = ({ data }: { data: any[] }) => {
+interface TrustBadgeItem {
+  id: string;
+  visible: boolean;
+  order: number;
+  icon: string;
+  textEn: string;
+  textBn: string;
+}
+
+export const TrustBadges = ({ data }: { data: TrustBadgeItem[] }) => {
   const { language } = useStore();
   const trustBadges = data || [];
   const t = (en: string, bn: string) => language === 'en' ? en : bn;
 
-  const visibleBadges = trustBadges.filter((b: any) => b.visible).sort((a: any, b: any) => a.order - b.order);
+  const visibleBadges = trustBadges.filter((b) => b.visible).sort((a, b) => a.order - b.order);
 
   return (
     <section className="py-12 lg:py-20 bg-white/[0.01] border-y border-white/5 relative overflow-hidden">
       <div className="container mx-auto px-4 lg:px-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-10">
           {visibleBadges.map((badge, i) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const IconComponent = (LucideIcons as any)[badge.icon] || LucideIcons.ShieldCheck;
             return (
               <motion.div
