@@ -245,12 +245,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 ? "from-amber-400 to-orange-600"
                 : isYearly
                   ? "from-purple-500 to-indigo-600"
-                  : "from-blue-500 to-cyan-600";
+                  : "from-amber-500 to-yellow-600";
               const planBorder = isLifetime
                 ? "hover:border-amber-500/50 shadow-amber-500/5"
                 : isYearly
                   ? "hover:border-purple-500/50 shadow-purple-500/5"
-                  : "hover:border-blue-500/50 shadow-blue-500/5";
+                  : "hover:border-amber-500/50 shadow-amber-500/5";
 
               return (
                 <button
@@ -285,7 +285,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                         ? "text-amber-400"
                         : isYearly
                           ? "text-purple-400"
-                          : "text-blue-400"
+                          : "text-amber-400"
                     }`}
                   >
                     {t(plan.nameEn, plan.nameBn)}

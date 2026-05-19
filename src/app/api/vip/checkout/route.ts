@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   try {
     await connectDB();
     const body = await req.json();
-    const { userName, phoneNumber, telegramUsername, telegramId, transactionId, screenshot, note, pricingTrack } = body;
+    const { userName, phoneNumber, telegramUsername, telegramId, transactionId, screenshot, note, pricingTrack, paymentMethod, paymentMethodId } = body;
 
     if (!userName) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
@@ -26,6 +26,10 @@ export async function POST(req: Request) {
 
     if (!phoneNumber) {
       return NextResponse.json({ error: 'Phone number is required' }, { status: 400 });
+    }
+
+    if (!transactionId) {
+      return NextResponse.json({ error: 'Transaction ID is required' }, { status: 400 });
     }
 
     const bannedWithPhone = await VIPMembershipUser.findOne({ phoneNumber, banned: true });
@@ -80,7 +84,8 @@ export async function POST(req: Request) {
       membershipUserId: member._id,
       amountBDT: starterBDT,
       amountUSDT: starterUSDT,
-      paymentMethod: 'manual',
+      paymentMethod: paymentMethod || 'manual',
+      paymentMethodId: paymentMethodId || '',
       transactionId: transactionId || `MANUAL-${Date.now()}`,
       screenshot: screenshot || '',
       note: note || 'Initial joining payment',

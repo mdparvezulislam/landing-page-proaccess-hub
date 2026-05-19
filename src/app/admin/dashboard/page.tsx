@@ -27,8 +27,9 @@ import FAQTab from "./tabs/FAQTab";
 import CurrencyTab from "./tabs/CurrencyTab";
 import VIPPlansTab from "./tabs/VIPPlansTab";
 import VIPMembersTab from "./tabs/VIPMembersTab";
+import FlashOffersTab from "./tabs/FlashOffersTab";
 import { Toaster } from "sonner";
-import { Coins, Crown, Shield } from "lucide-react";
+import { Coins, Crown, Shield, Clock } from "lucide-react";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("orders");
@@ -46,6 +47,7 @@ export default function AdminDashboard() {
     { id: "vip-plans", label: "VIP Plans", icon: Crown, color: "text-amber-500" },
     { id: "vip-members", label: "VIP Members", icon: Shield, color: "text-amber-500" },
     { id: "products", label: "Products", icon: Package, color: "text-secondary" },
+    { id: "flash-offers", label: "Flash Offers", icon: Clock, color: "text-amber-400" },
     { id: "currency", label: "Currency", icon: Coins, color: "text-amber-500" },
     { id: "reviews", label: "Reviews", icon: MessageSquare, color: "text-success" },
     { id: "faq", label: "FAQ", icon: HelpCircle, color: "text-warning" },
@@ -154,6 +156,7 @@ export default function AdminDashboard() {
               {activeTab === "vip-plans" && <VIPPlansTab />}
               {activeTab === "vip-members" && <VIPMembersTab />}
               {activeTab === "products" && <ProductsTab />}
+              {activeTab === "flash-offers" && <FlashOffersTab />}
               {activeTab === "currency" && <CurrencyTab />}
               {activeTab === "reviews" && <ReviewsTab />}
               {activeTab === "faq" && <FAQTab />}

@@ -6,9 +6,10 @@ import {
   Shield, Users, Search, Ban, UserCheck, UserX, Clock,
   DollarSign, Calendar, TrendingUp, Eye, X, Check,
   BadgeCheck, Hourglass, Lock, Unlock, Plus, Activity,
-  CreditCard, AlertTriangle, Bell, Trash2, Crown, RefreshCw
+  CreditCard, AlertTriangle, Bell, Trash2, Crown, RefreshCw,
+  CheckSquare, Square,
 } from 'lucide-react';
-import { useVIPMembers, useUpdateVIPMember, useDeleteVIPMember, useVIPPayments, useVerifyVIPPayment, useVIPStats, useVIPPlans, useVIPReminders, useCreateVIPReminder, useVIPNotifications, useCreateVIPNotification } from '@/hooks/useVIP';
+import { useVIPMembers, useUpdateVIPMember, useDeleteVIPMember, useBulkDeleteVIPMembers, useVIPPayments, useVerifyVIPPayment, useVIPStats, useVIPPlans, useVIPReminders, useCreateVIPReminder, useVIPNotifications, useCreateVIPNotification } from '@/hooks/useVIP';
 import { toast } from 'sonner';
 import { useCurrencyStore } from '@/store/useCurrencyStore';
 
@@ -38,10 +39,13 @@ export default function VIPMembersTab() {
   const { data: notifications } = useVIPNotifications();
   const updateMember = useUpdateVIPMember();
   const deleteMember = useDeleteVIPMember();
+  const bulkDelete = useBulkDeleteVIPMembers();
   const verifyPayment = useVerifyVIPPayment();
   const createReminder = useCreateVIPReminder();
   const createNotification = useCreateVIPNotification();
   const { currentCurrency, convertPrice } = useCurrencyStore();
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
 
   const allMembers = members || [];
   const allPlans = plans || [];
@@ -179,6 +183,30 @@ export default function VIPMembersTab() {
     } catch { toast.error('Failed to record payment'); }
   };
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filtered.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filtered.map((m: any) => m._id)));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    const ids = Array.from(selectedIds);
+    ids.forEach((id) => deleteMember.mutate(id));
+    setSelectedIds(new Set());
+    setShowBulkDeleteConfirm(false);
+  };
+
   const statusColors: Record<string, string> = {
     active: 'bg-success/10 text-success border-success/20',
     pending: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
@@ -250,6 +278,28 @@ export default function VIPMembersTab() {
               </div>
             </div>
 
+            {/* Batch Actions */}
+            <div className="flex items-center justify-between gap-4">
+              <button onClick={toggleSelectAll}
+                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-text-muted hover:text-primary transition-colors">
+                {selectedIds.size === filtered.length ? (
+                  <CheckSquare className="w-4 h-5" />
+                ) : (
+                  <Square className="w-4 h-5" />
+                )}
+                {selectedIds.size === filtered.length ? "Deselect All" : "Select All"}
+              </button>
+              {selectedIds.size > 0 && (
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] font-bold text-text-muted">{selectedIds.size} selected</span>
+                  <button onClick={() => setShowBulkDeleteConfirm(true)}
+                    className="px-4 py-2 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 text-[9px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all flex items-center gap-2">
+                    <Trash2 className="w-3.5 h-3.5" /> Delete Selected
+                  </button>
+                </div>
+              )}
+            </div>
+
             <div className="space-y-4">
               {filtered.map((member: any, idx: number) => (
                 <motion.div key={member._id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.03 }}
@@ -257,6 +307,10 @@ export default function VIPMembersTab() {
                   onClick={() => { setSelectedMember(member); setShowDetail(true); }}
                 >
                   <div className="flex items-center gap-6">
+                    <button onClick={(e) => { e.stopPropagation(); toggleSelect(member._id); }}
+                      className="flex-shrink-0 text-text-muted hover:text-primary transition-colors">
+                      {selectedIds.has(member._id) ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
+                    </button>
                     <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-600/20 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
                       <span className="text-xl font-black text-amber-500">{member.userName?.charAt(0)?.toUpperCase() || '?'}</span>
                     </div>
@@ -431,6 +485,25 @@ export default function VIPMembersTab() {
             setCustomAmountBDT={setCustomAmountBDT}
             setCustomAmountUSDT={setCustomAmountUSDT}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Bulk Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showBulkDeleteConfirm && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }}
+              className="bg-[#020617] border border-red-500/20 rounded-[32px] p-8 max-w-md w-full shadow-2xl">
+              <h3 className="text-2xl font-black tracking-tighter mb-2 text-red-500 flex items-center gap-3"><Trash2 className="w-6 h-6" /> Delete Members</h3>
+              <p className="text-text-muted mb-2">This will permanently delete {selectedIds.size} member(s) and their data from the database.</p>
+              <p className="text-red-400 font-bold text-sm mb-6">This action cannot be undone.</p>
+              <div className="flex gap-4">
+                <button onClick={() => setShowBulkDeleteConfirm(false)} className="flex-1 py-4 rounded-2xl bg-white/5 text-white font-black uppercase text-xs tracking-widest hover:bg-white/10 transition-all">Cancel</button>
+                <button onClick={handleBulkDelete} className="flex-1 py-4 rounded-2xl bg-red-500 text-white font-black uppercase text-xs tracking-widest hover:bg-red-600 transition-all">Delete All</button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 

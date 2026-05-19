@@ -2,6 +2,7 @@ import connectDB from './mongodb';
 import Settings from '@/models/Settings';
 import Product from '@/models/Product';
 import VIPPlan from '@/models/VIPPlan';
+import FlashOffer from '@/models/FlashOffer';
 
 import FAQ from '@/models/FAQ';
 import Review from '@/models/Review';
@@ -149,5 +150,40 @@ export async function seedDatabase() {
     });
   }
 
-console.log('Database Seeding Completed Successfully!');
+  // 7. Seed Flash Offers
+  const flashOfferCount = await FlashOffer.countDocuments();
+  if (flashOfferCount === 0) {
+    console.log('Seeding Flash Offers...');
+    const now = new Date();
+    const endDate = new Date(now);
+    endDate.setDate(endDate.getDate() + 7);
+
+    await FlashOffer.create({
+      titleEn: '🔥 Flash Sale: 30% OFF on All Plans',
+      titleBn: '🔥 ফ্ল্যাশ সেল: সব প্ল্যানে ৩০% ছাড়',
+      subtitleEn: 'Limited time offer. Grab your premium access now!',
+      subtitleBn: 'সীমিত সময়ের অফার। এখনই আপনার প্রিমিয়াম অ্যাক্সেস নিন!',
+      descriptionEn: 'Exclusive flash sale for new members. Get lifetime access at the best price.',
+      descriptionBn: 'নতুন সদস্যদের জন্য এক্সক্লুসিভ ফ্ল্যাশ সেল। সেরা মূল্যে লাইফটাইম অ্যাক্সেস পান।',
+      buttonTextEn: 'Claim 30% OFF',
+      buttonTextBn: '৩০% ছাড় নিন',
+      redirectLink: '#vip',
+      badgeTextEn: '🔥 Limited Time Offer',
+      badgeTextBn: '🔥 সীমিত সময়ের অফার',
+      visible: true,
+      featured: true,
+      startDate: now,
+      endDate: endDate,
+      countdownEnabled: true,
+      showOnHomepage: true,
+      selectedSection: '#homepage',
+      order: 1,
+      slotSystemEnabled: true,
+      totalSlots: 20,
+      remainingSlots: 18,
+      stickyEnabled: true,
+    });
+  }
+
+  console.log('Database Seeding Completed Successfully!');
 }

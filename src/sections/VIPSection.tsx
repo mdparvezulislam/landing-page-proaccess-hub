@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Crown,
@@ -18,9 +18,12 @@ import {
   Star,
   Percent,
   Rocket,
+  AlertTriangle,
+  Copy,
 } from "lucide-react";
 import { useCurrencyStore } from "@/store/useCurrencyStore";
 import { useVIPPlans, useVIPStats } from "@/hooks/useVIP";
+import { toast } from "sonner";
 
 export default function VIPSection() {
   const { data: plans } = useVIPPlans() as any;
@@ -101,10 +104,10 @@ export default function VIPSection() {
   return (
     <>
       <section id="vip" className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-500/10 via-transparent to-transparent" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] bg-blue-500/10 blur-[250px] rounded-full pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-amber-500/10 via-transparent to-transparent" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] bg-amber-500/10 blur-[250px] rounded-full pointer-events-none" />
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 blur-[150px] rounded-full pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/5 blur-[180px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-amber-500/5 blur-[180px] rounded-full pointer-events-none" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
           <motion.div
@@ -112,8 +115,8 @@ export default function VIPSection() {
             animate={{ opacity: 1, y: 0 }}
             className="flex justify-center mb-6"
           >
-            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-blue-500/20 to-indigo-600/20 border border-blue-500/30 shadow-lg shadow-blue-500/10">
-              <Crown className="w-5 h-5 text-blue-400" />
+            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500/20 to-yellow-600/20 border border-amber-500/30 shadow-lg shadow-amber-500/10">
+              <Crown className="w-5 h-5 text-amber-400" />
               <span className="text-white font-black uppercase text-[10px] tracking-[3px]">
                 {plan.badgeEn || "VIP MEMBERSHIP"}
               </span>
@@ -144,7 +147,7 @@ export default function VIPSection() {
               className="flex justify-center gap-8 mb-8"
             >
               <div className="text-center">
-                <p className="text-3xl font-black text-blue-500">
+                <p className="text-3xl font-black text-amber-500">
                   {stats.activeMembers}+
                 </p>
                 <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">
@@ -152,7 +155,7 @@ export default function VIPSection() {
                 </p>
               </div>
               <div className="text-center">
-                <p className="text-3xl font-black text-blue-500">
+                <p className="text-3xl font-black text-amber-500">
                   {stats.totalPayments}
                 </p>
                 <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">
@@ -172,13 +175,13 @@ export default function VIPSection() {
             <div className="inline-flex p-1 bg-white/5 rounded-2xl border border-white/10">
               <button
                 onClick={() => setPricingTrack("official")}
-                className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${pricingTrack === "official" ? "bg-blue-500 text-white shadow-lg" : "text-text-muted hover:text-white"}`}
+                className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${pricingTrack === "official" ? "bg-amber-500 text-white shadow-lg" : "text-text-muted hover:text-white"}`}
               >
                 <Crown className="w-4 h-4" /> Official Plan
               </button>
               <button
                 onClick={() => setPricingTrack("starter")}
-                className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${pricingTrack === "starter" ? "bg-blue-500 text-white shadow-lg" : "text-text-muted hover:text-white"}`}
+                className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${pricingTrack === "starter" ? "bg-amber-500 text-white shadow-lg" : "text-text-muted hover:text-white"}`}
               >
                 <Rocket className="w-4 h-4" /> Starter Plan
               </button>
@@ -193,10 +196,10 @@ export default function VIPSection() {
             className="max-w-lg mx-auto mb-12"
           >
             <div
-              className={`p-8 rounded-[40px] border-2 transition-all duration-500 relative ${isOfficial ? "bg-gradient-to-b from-blue-500/10 to-transparent border-blue-500/40 shadow-2xl shadow-blue-500/10" : "bg-white/[0.03] border-white/10"}`}
+              className={`p-8 rounded-[40px] border-2 transition-all duration-500 relative ${isOfficial ? "bg-gradient-to-b from-amber-500/10 to-transparent border-amber-500/40 shadow-2xl shadow-amber-500/10" : "bg-white/[0.03] border-white/10"}`}
             >
               {isOfficial && hasDiscount && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-[9px] font-black uppercase tracking-widest shadow-lg whitespace-nowrap flex items-center gap-1.5">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-600 text-white text-[9px] font-black uppercase tracking-widest shadow-lg whitespace-nowrap flex items-center gap-1.5">
                   <Percent className="w-3.5 h-3.5" /> {plan.discountPercent}%
                   OFF
                 </div>
@@ -206,13 +209,13 @@ export default function VIPSection() {
                 {/* Official Section */}
                 {isOfficial && (
                   <>
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 mb-3">
-                      <span className="text-sm font-bold text-blue-500 flex items-center gap-2">
+                    <div className="flex items-center justify-between p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 mb-3">
+                      <span className="text-sm font-bold text-amber-500 flex items-center gap-2">
                         <Crown className="w-4 h-4" /> Official Price
                       </span>
                       <span className="text-3xl font-black text-white">
                         {prices.official.price?.toLocaleString()}{" "}
-                        <span className="text-base text-blue-500">
+                        <span className="text-base text-amber-500">
                           {symbol}
                         </span>
                       </span>
@@ -220,7 +223,7 @@ export default function VIPSection() {
 
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5 mb-3">
                       <span className="text-sm font-bold text-text-muted flex items-center gap-2">
-                        <Star className="w-4 h-4 text-blue-500" /> Start With
+                        <Star className="w-4 h-4 text-amber-500" /> Start With
                       </span>
                       <span className="text-xl font-black text-white">
                         {prices.official.starter?.toLocaleString()} {symbol}
@@ -230,7 +233,7 @@ export default function VIPSection() {
                     {plan.enableInstallments && (
                       <div className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5 mb-3">
                         <span className="text-sm font-bold text-text-muted flex items-center gap-2">
-                          <Gem className="w-4 h-4 text-blue-500" /> Then
+                          <Gem className="w-4 h-4 text-amber-500" /> Then
                           Monthly
                         </span>
                         <span className="text-xl font-black text-white">
@@ -241,12 +244,12 @@ export default function VIPSection() {
 
                     {hasDiscount && (
                       <>
-                        <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-blue-500/10 to-indigo-600/10 border border-blue-500/30 mb-3">
-                          <span className="text-sm font-bold text-blue-500 flex items-center gap-2">
+                        <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 to-yellow-600/10 border border-amber-500/30 mb-3">
+                          <span className="text-sm font-bold text-amber-500 flex items-center gap-2">
                             <Zap className="w-4 h-4" /> Current{" "}
                             {plan.discountPercent}% OFF
                           </span>
-                          <span className="text-2xl font-black text-blue-500">
+                          <span className="text-2xl font-black text-amber-500">
                             {prices.official.discount?.toLocaleString()}{" "}
                             {symbol}
                           </span>
@@ -284,7 +287,7 @@ export default function VIPSection() {
                     </div>
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.03] border border-white/10 mb-3">
                       <span className="text-sm font-bold text-text-muted flex items-center gap-2">
-                        <Rocket className="w-4 h-4 text-blue-500" /> Starter
+                        <Rocket className="w-4 h-4 text-amber-500" /> Starter
                         Price
                       </span>
                       <span className="text-3xl font-black text-white">
@@ -298,7 +301,7 @@ export default function VIPSection() {
                     {plan.enableInstallments && (
                       <div className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5 mb-3">
                         <span className="text-sm font-bold text-text-muted flex items-center gap-2">
-                          <Gem className="w-4 h-4 text-blue-500" /> Then
+                          <Gem className="w-4 h-4 text-amber-500" /> Then
                           Monthly
                         </span>
                         <span className="text-xl font-black text-white">
@@ -309,12 +312,12 @@ export default function VIPSection() {
 
                     {starterHasDiscount && (
                       <>
-                        <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-blue-500/10 to-indigo-600/10 border border-blue-500/30 mb-3">
-                          <span className="text-sm font-bold text-blue-500 flex items-center gap-2">
+                        <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 to-yellow-600/10 border border-amber-500/30 mb-3">
+                          <span className="text-sm font-bold text-amber-500 flex items-center gap-2">
                             <Zap className="w-4 h-4" /> Current{" "}
                             {plan.starterDiscountPercent}% OFF
                           </span>
-                          <span className="text-2xl font-black text-blue-500">
+                          <span className="text-2xl font-black text-amber-500">
                             {prices.starter.discount?.toLocaleString()} {symbol}
                           </span>
                         </div>
@@ -336,7 +339,7 @@ export default function VIPSection() {
 
               <button
                 onClick={() => setShowCheckout(true)}
-                className="w-full py-5 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-black uppercase text-xs tracking-widest hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3 group"
+                className="w-full py-5 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-600 text-white font-black uppercase text-xs tracking-widest hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 shadow-xl shadow-amber-500/20 flex items-center justify-center gap-3 group"
               >
                 {plan.buttonTextEn || "Get VIP Access"}{" "}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -356,7 +359,7 @@ export default function VIPSection() {
             <div className="flex flex-wrap justify-center gap-3 mb-4">
               {visibleNotices.map((notice: any, i) => {
                 const colors: Record<string, string> = {
-                  offer: "bg-blue-500/10 border-blue-500/20 text-blue-500",
+                  offer: "bg-amber-500/10 border-amber-500/20 text-amber-500",
                   info: "bg-info/10 border-info/20 text-info",
                   warning: "bg-red-500/10 border-red-500/20 text-red-500",
                 };
@@ -398,7 +401,7 @@ export default function VIPSection() {
                   key={h.id}
                   className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/[0.03] border border-white/5"
                 >
-                  <BadgeCheck className="w-5 h-5 text-blue-500" />
+                  <BadgeCheck className="w-5 h-5 text-amber-500" />
                   <span className="text-sm font-bold text-white">
                     {h.textEn}
                   </span>
@@ -419,7 +422,7 @@ export default function VIPSection() {
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
-                  className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-500 text-xs font-black tracking-[3px] uppercase mb-6 shadow-xl"
+                  className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-black tracking-[3px] uppercase mb-6 shadow-xl"
                 >
                   <Sparkles className="w-4 h-4" />
                   VIP Membership
@@ -431,7 +434,7 @@ export default function VIPSection() {
                   className="text-3xl sm:text-5xl lg:text-6xl font-black mb-4 tracking-tighter leading-tight px-4"
                 >
                   Everything You&apos;ll Ever Need
-                  <span className="block mt-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500 bg-clip-text text-transparent">
+                  <span className="block mt-2 bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 bg-clip-text text-transparent">
                     All in One Place.
                   </span>
                 </motion.h2>
@@ -448,8 +451,8 @@ export default function VIPSection() {
               </div>
 
               <div className="max-w-5xl mx-auto px-1 sm:px-3">
-                <div className="relative overflow-hidden rounded-[22px] bg-gradient-to-b from-white/[0.03] to-transparent border border-white/5 shadow-2xl shadow-blue-500/5">
-                  <div className="absolute -top-40 -left-40 w-80 h-80 bg-blue-500/5 blur-[120px] rounded-full pointer-events-none" />
+                <div className="relative overflow-hidden rounded-[22px] bg-gradient-to-b from-white/[0.03] to-transparent border border-white/5 shadow-2xl shadow-amber-500/5">
+                  <div className="absolute -top-40 -left-40 w-80 h-80 bg-amber-500/5 blur-[120px] rounded-full pointer-events-none" />
                   <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none" />
                   <div className="absolute top-0 left-0 right-0 h-14 bg-gradient-to-b from-[#020617] to-transparent z-10 pointer-events-none" />
                   <div className="absolute bottom-0 left-0 right-0 h-14 bg-gradient-to-t from-[#020617] to-transparent z-10 pointer-events-none" />
@@ -461,16 +464,16 @@ export default function VIPSection() {
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: idx * 0.05 }}
-                        className={`p-1 sm:p-3 rounded-2xl sm:rounded-[20px] flex items-start gap-4 transition-all duration-300 ${bullet.highlighted ? "bg-gradient-to-r from-blue-500/10 to-transparent border border-blue-500/30 shadow-lg shadow-blue-500/5" : "bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] hover:border-white/10 hover:shadow-lg hover:shadow-white/5"}`}
+                        className={`p-1 sm:p-3 rounded-2xl sm:rounded-[20px] flex items-start gap-4 transition-all duration-300 ${bullet.highlighted ? "bg-gradient-to-r from-amber-500/10 to-transparent border border-amber-500/30 shadow-lg shadow-amber-500/5" : "bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] hover:border-white/10 hover:shadow-lg hover:shadow-white/5"}`}
                       >
                         <div
-                          className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0 mt-0.5 ${bullet.highlighted ? "bg-blue-500/20 text-blue-500 shadow-lg shadow-blue-500/10" : "bg-white/5 text-white/40"}`}
+                          className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0 mt-0.5 ${bullet.highlighted ? "bg-amber-500/20 text-amber-500 shadow-lg shadow-amber-500/10" : "bg-white/5 text-white/40"}`}
                         >
                           <CheckCircle2 className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p
-                            className={`text-sm sm:text-base lg:text-lg font-bold leading-snug ${bullet.highlighted ? "text-blue-500" : "text-white"}`}
+                            className={`text-sm sm:text-base lg:text-lg font-bold leading-snug ${bullet.highlighted ? "text-yellow-600" : "text-white"}`}
                           >
                             {bullet.textEn}
                           </p>
@@ -609,7 +612,10 @@ function VIPCheckoutModal({
     userName: "",
     phoneNumber: "",
     telegramUsername: "",
+    transactionId: "",
+    paymentMethodId: "",
   });
+  const [paymentSettings, setPaymentSettings] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [redirectCountdown, setRedirectCountdown] = useState(5);
@@ -644,18 +650,37 @@ function VIPCheckoutModal({
           : (plan.starterOfficialUSDT ?? plan.officialPriceUSDT ?? 0);
   const symbol = currentCurrency === "BDT" ? "BDT" : "USDT";
 
+  const activeMethods = paymentSettings?.methods?.filter((m: any) => m.enabled) || [];
+  const selectedMethod = activeMethods.find((m: any) => m.id === form.paymentMethodId);
+
+  useEffect(() => {
+    fetch("/api/payment-settings")
+      .then((res) => res.json())
+      .then((data) => setPaymentSettings(data))
+      .catch(() => {});
+  }, []);
+
   const handleSubmit = async () => {
     if (!form.userName || !form.phoneNumber) return;
+    if (!form.paymentMethodId) { alert("Please select a payment method"); return; }
+    if (!form.transactionId) { alert("Please enter your transaction ID"); return; }
     setSubmitting(true);
     try {
+      const payload: any = {
+        userName: form.userName,
+        phoneNumber: form.phoneNumber,
+        telegramUsername: form.telegramUsername,
+        transactionId: form.transactionId,
+        paymentMethod: selectedMethod?.name || "manual",
+        paymentMethodId: form.paymentMethodId,
+        pricingTrack,
+        note: `Payment via ${selectedMethod?.name || "manual"} — ${selectedMethod?.number || ""}`,
+      };
+
       const res = await fetch("/api/vip/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          pricingTrack,
-          transactionId: `MANUAL-${Date.now()}`,
-        }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Checkout failed");
@@ -692,140 +717,253 @@ function VIPCheckoutModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl">
+    <div className="fixed inset-0 z-[200] flex items-start sm:items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-xl overflow-y-auto" onClick={onClose}>
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-lg bg-[#020617] rounded-[48px] border border-white/10 p-8 shadow-2xl max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-2xl bg-[#020617] rounded-[32px] sm:rounded-[48px] border border-white/10 p-4 sm:p-8 shadow-2xl my-4"
       >
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <Crown className="w-8 h-8 text-blue-500" />
-            <div>
-              <h3 className="text-2xl font-black tracking-tight">VIP Access</h3>
-              <p className="text-xs text-text-muted font-bold uppercase tracking-widest">
-                {isOfficial ? "Official Plan" : "Starter Plan"}
-              </p>
+          <div className="flex items-center justify-between mb-6 sm:mb-8">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
+                <Crown className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-lg sm:text-2xl font-black tracking-tight text-white">VIP Access</h3>
+                <p className="text-[10px] sm:text-xs text-white/50 font-bold uppercase tracking-widest">
+                  {isOfficial ? "Official Plan" : "Starter Plan"}
+                </p>
+              </div>
             </div>
-          </div>
           <button
             onClick={onClose}
-            className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted hover:text-white"
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white hover:text-amber-400 hover:border-amber-400/50 hover:bg-amber-500/10 shrink-0 transition-all"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
         {step === "form" && (
-          <div className="space-y-6">
-            <div className="p-5 rounded-2xl bg-blue-500/10 border border-blue-500/20">
-              <p className="text-blue-500 font-bold text-center text-2xl">
-                {startPrice?.toLocaleString()} {symbol}
-              </p>
+          <div className="space-y-5 sm:space-y-6">
+            {/* Price Card */}
+            <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-500/5 border border-amber-500/30 shadow-lg shadow-amber-500/10">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-white/60 text-xs font-black uppercase tracking-[2px]">To Pay</span>
+                <span className="text-2xl sm:text-3xl font-black text-white">
+                  {startPrice?.toLocaleString()} <span className="text-amber-400 text-base">{symbol}</span>
+                </span>
+              </div>
               {plan.enableInstallments && (
-                <p className="text-center text-xs text-text-muted mt-1">
-                  Start from {startPrice?.toLocaleString()} {symbol} + monthly
-                  installments
-                </p>
+                <div className="flex items-center justify-between py-3 border-t border-amber-500/10 text-[11px] text-white/60">
+                  <span>Start from</span>
+                  <span className="text-white font-bold">{startPrice?.toLocaleString()} {symbol}</span>
+                </div>
               )}
-              <div className="mt-3 pt-3 border-t border-blue-500/20 text-center">
-                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">
-                  Total Plan Price
-                </p>
-                <p className="text-lg font-black text-white">
+              <div className="flex items-center justify-between pt-3 border-t border-amber-500/10">
+                <span className="text-[9px] font-black uppercase tracking-widest text-white/40">Total Plan</span>
+                <span className="text-base font-black text-white">
                   {totalPrice?.toLocaleString()} {symbol}
-                </p>
+                </span>
               </div>
             </div>
 
-            <input
-              type="text"
-              value={form.userName}
-              onChange={(e) => setForm({ ...form, userName: e.target.value })}
-              placeholder="Your Name *"
-              className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white text-sm"
-            />
-            <input
-              type="tel"
-              value={form.phoneNumber}
-              onChange={(e) =>
-                setForm({ ...form, phoneNumber: e.target.value })
-              }
-              placeholder="Phone Number *"
-              className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white text-sm"
-            />
-            <input
-              type="text"
-              value={form.telegramUsername}
-              onChange={(e) =>
-                setForm({ ...form, telegramUsername: e.target.value })
-              }
-              placeholder="Telegram Username"
-              className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white text-sm"
-            />
+            {/* Personal Info */}
+            <div className="space-y-3 sm:space-y-4">
+              <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-white/40">
+                Your Details
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <input type="text" value={form.userName} onChange={(e) => setForm({ ...form, userName: e.target.value })} placeholder="Your Name *"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-3.5 sm:p-4 text-white text-sm placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all" />
+                <input type="tel" value={form.phoneNumber} onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })} placeholder="Phone Number *"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-3.5 sm:p-4 text-white text-sm placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all" />
+              </div>
+              <input type="text" value={form.telegramUsername} onChange={(e) => setForm({ ...form, telegramUsername: e.target.value })} placeholder="Telegram Username (optional)"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl p-3.5 sm:p-4 text-white text-sm placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all" />
+            </div>
 
-            <div className="p-4 rounded-2xl bg-info/10 border border-info/20">
-              <p className="text-info text-xs font-bold flex items-center gap-2">
-                <Globe className="w-4 h-4" />
-                After submitting, you will get dashboard access to track your
-                membership.
+            {/* Payment Methods */}
+            <div>
+              <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-white/40 mb-3">
+                Select Payment Method *
+              </p>
+              {activeMethods.length === 0 ? (
+                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-center">
+                  <p className="text-amber-400 text-xs font-bold">No payment methods available. Contact admin.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {activeMethods.map((method: any) => {
+                    const isSelected = form.paymentMethodId === method.id;
+                    return (
+                      <button
+                        key={method.id}
+                        onClick={() => setForm({ ...form, paymentMethodId: method.id })}
+                        className={`relative text-left p-3.5 sm:p-4 rounded-2xl border-2 transition-all ${isSelected
+                          ? "border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/10"
+                          : "border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/20"
+                          }`}
+                      >
+                        {isSelected && (
+                          <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center">
+                            <CheckCircle2 className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black ${isSelected ? "bg-amber-500 text-white" : "bg-white/10 text-white/60"}`}>
+                            {method.name?.charAt(0) || "?"}
+                          </div>
+                          <div>
+                            <p className="text-sm font-black text-white">{method.name}</p>
+                            {method.accountTypeEn && (
+                              <p className="text-[9px] text-white/50 uppercase tracking-wider">{method.accountTypeEn}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-base font-mono font-black text-amber-400 tracking-wider break-all">{method.number}</p>
+                          <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(method.number); toast.success("Copied!"); }}
+                            className="shrink-0 w-7 h-7 rounded-lg bg-white/5 hover:bg-amber-500 hover:text-white flex items-center justify-center text-white/40 hover:text-white transition-all border border-white/10"
+                            title="Copy number">
+                            <Copy className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        {method.accountHolder && (
+                          <p className="text-[10px] text-white/50 mt-1">{method.accountHolder}</p>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Payment Info from Settings */}
+            {selectedMethod && (
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
+                {selectedMethod.instructionsEn && (
+                  <p className="text-xs text-white/70 leading-relaxed">{selectedMethod.instructionsEn}</p>
+                )}
+                {selectedMethod.warningTextEn && (
+                  <p className="text-[10px] text-red-400 font-bold flex items-center gap-1.5">
+                    <AlertTriangle className="w-3 h-3 shrink-0" /> {selectedMethod.warningTextEn}
+                  </p>
+                )}
+                {selectedMethod.qrCode && (
+                  <img src={selectedMethod.qrCode} alt="QR Code" className="w-24 h-24 mx-auto rounded-xl mt-2" />
+                )}
+              </div>
+            )}
+
+            {/* TRX ID */}
+            <div>
+              <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-white/40 mb-2">
+                Transaction / TRX ID *
+              </p>
+              <input type="text" value={form.transactionId} onChange={(e) => setForm({ ...form, transactionId: e.target.value })}
+                placeholder="Enter your transaction ID"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl p-3.5 sm:p-4 text-white text-sm placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all" />
+            </div>
+
+            {/* Global payment instructions */}
+            {paymentSettings?.instructionsEn && paymentSettings.instructionsEn.length > 0 && (
+              <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10">
+                <p className="text-[9px] text-amber-400 font-black uppercase tracking-widest mb-2">
+                  {paymentSettings.instructionTitleEn || "Payment Instructions"}
+                </p>
+                <ol className="space-y-1">
+                  {paymentSettings.instructionsEn.map((inst: string, i: number) => (
+                    <li key={i} className="text-[11px] text-white/60 flex items-start gap-2">
+                      <span className="text-amber-400 font-black mt-0.5">{i + 1}.</span>
+                      {inst}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
+
+            {paymentSettings?.warningTextEn && (
+              <div className="p-4 rounded-2xl bg-red-500/5 border border-red-500/10">
+                <p className="text-[10px] text-red-400 font-bold flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5 shrink-0" /> {paymentSettings.warningTextEn}
+                </p>
+              </div>
+            )}
+
+            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+              <p className="text-white text-[11px] sm:text-xs font-bold flex items-center gap-2">
+                <Globe className="w-4 h-4 shrink-0 text-amber-400" />
+                After submitting, you will get dashboard access to track your membership.
               </p>
             </div>
 
-            <button
-              onClick={handleSubmit}
-              disabled={submitting}
-              className="w-full py-5 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-black uppercase text-xs tracking-widest hover:from-blue-600 hover:to-indigo-700 transition-all shadow-xl shadow-blue-500/20 disabled:opacity-50"
-            >
-              {submitting
-                ? "Processing..."
-                : `Get VIP Access — ${startPrice?.toLocaleString()} ${symbol}`}
+            <button onClick={handleSubmit} disabled={submitting}
+              className="w-full py-4 sm:py-5 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-600 text-white font-black uppercase text-[10px] sm:text-xs tracking-widest hover:from-amber-600 hover:to-yellow-700 hover:scale-[1.02] transition-all duration-300 shadow-xl shadow-amber-500/20 disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-3 group">
+              {submitting ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Processing...
+                </span>
+              ) : (
+                <>
+                  <span>{selectedMethod ? `Pay ${startPrice?.toLocaleString()} ${symbol}` : `Get VIP Access — ${startPrice?.toLocaleString()} ${symbol}`}</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </>
+              )}
             </button>
           </div>
         )}
 
         {step === "instructions" && result && (
-          <div className="space-y-6">
-            <div className="p-6 rounded-2xl bg-success/10 border border-success/20 text-center">
-              <CheckCircle2 className="w-12 h-12 text-success mx-auto mb-3" />
-              <h4 className="text-xl font-black text-success mb-1">
-                Membership Created!
-              </h4>
-              <p className="text-sm text-text-muted">
+          <div className="space-y-5 sm:space-y-6">
+            <div className="p-5 sm:p-6 rounded-2xl bg-success/10 border border-success/20 text-center">
+              <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12 text-success mx-auto mb-3" />
+              <h4 className="text-lg sm:text-xl font-black text-success mb-1">Membership Created!</h4>
+              <p className="text-xs sm:text-sm text-white/70">
                 Your membership ID:{" "}
-                <span className="text-blue-500 font-black">
-                  {result.membershipId}
-                </span>
+                <span className="text-amber-500 font-black">{result.membershipId}</span>
               </p>
-              <p className="text-xs text-text-muted mt-1">
+              <p className="text-[10px] sm:text-xs text-white/70 mt-1">
                 Save your Access Code:{" "}
-                <span className="text-blue-500 font-black">
-                  {result.accessCode}
-                </span>
+                <span className="text-amber-500 font-black">{result.accessCode}</span>
               </p>
             </div>
-            <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20">
-              <p className="text-[10px] font-black uppercase tracking-widest text-blue-500 mb-2">
+            <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-500/5 border border-amber-500/30 shadow-lg shadow-amber-500/10">
+              <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-amber-400 mb-3 border-b border-amber-500/10 pb-3">
                 Payment Required
               </p>
-              <p className="text-sm text-white font-bold mb-3">
-                Send {startPrice?.toLocaleString()} {symbol} to activate
+              {selectedMethod && (
+                <div className="mb-4 p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
+                  <p className="text-[11px] text-white/60">Send to: <span className="text-white font-bold">{selectedMethod.name}</span></p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-mono font-black text-amber-400">{selectedMethod.number}</p>
+                    <button onClick={() => { navigator.clipboard.writeText(selectedMethod.number); toast.success("Copied!"); }}
+                      className="shrink-0 w-7 h-7 rounded-lg bg-white/5 hover:bg-amber-500 hover:text-white flex items-center justify-center text-white/40 hover:text-white transition-all border border-white/10"
+                      title="Copy number">
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  {selectedMethod.accountHolder && (
+                    <p className="text-[10px] text-white/60">A/C: {selectedMethod.accountHolder}</p>
+                  )}
+                </div>
+              )}
+              <p className="text-xs sm:text-sm text-white font-bold mb-4">
+                Send <span className="text-amber-400">{startPrice?.toLocaleString()} {symbol}</span> to activate your membership
               </p>
               {plan.telegramLink && (
-                <a
-                  href={plan.telegramLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#0088cc]/10 border border-[#0088cc]/30 text-[#0088cc] text-xs font-bold hover:bg-[#0088cc] hover:text-white transition-all"
-                >
+                <a href={plan.telegramLink} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#0088cc]/10 border border-[#0088cc]/30 text-[#0088cc] text-[10px] sm:text-xs font-bold hover:bg-[#0088cc] hover:text-white transition-all">
                   <SendIcon /> Contact Admin on Telegram
                 </a>
               )}
             </div>
-            <a
-              href="/dashboard"
-              className="block w-full py-4 rounded-2xl bg-white text-bg-dark font-black uppercase text-xs tracking-widest hover:bg-blue-500 hover:text-white transition-all text-center"
-            >
+            <a href="/dashboard"
+              className="block w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-600 text-white font-black uppercase text-[10px] sm:text-xs tracking-widest hover:from-amber-600 hover:to-yellow-700 transition-all shadow-lg shadow-amber-500/20 text-center">
               Go to Dashboard ({redirectCountdown}s)
             </a>
           </div>
