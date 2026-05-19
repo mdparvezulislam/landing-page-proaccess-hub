@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   try {
     await connectDB();
     const body = await req.json();
-    const { userName, phoneNumber, telegramUsername, telegramId, transactionId, screenshot, note, pricingMode } = body;
+    const { userName, phoneNumber, telegramUsername, telegramId, transactionId, screenshot, note, pricingTrack } = body;
 
     if (!userName) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
@@ -38,13 +38,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No active VIP plan found' }, { status: 404 });
     }
 
-    const isStarter = pricingMode === 'starter';
-    const starterBDT = isStarter ? plan.starterPaymentBDT : plan.premiumStartBDT || plan.discountPriceBDT;
-    const starterUSDT = isStarter ? plan.starterPaymentUSDT : plan.premiumStartUSDT || plan.discountPriceUSDT;
-    const monthlyBDT = isStarter ? plan.starterMonthlyBDT : plan.premiumMonthlyBDT;
-    const monthlyUSDT = isStarter ? plan.starterMonthlyUSDT : plan.premiumMonthlyUSDT;
-    const totalBDT = isStarter ? plan.starterPaymentBDT + (plan.starterMonthlyBDT * 12) : plan.totalPaymentBDT || plan.discountPriceBDT;
-    const totalUSDT = isStarter ? plan.starterPaymentUSDT + (plan.starterMonthlyUSDT * 12) : plan.totalPaymentUSDT || plan.discountPriceUSDT;
+    const isOfficial = pricingTrack === 'official';
+
+    const starterBDT = isOfficial ? plan.officialStarterBDT : plan.starterPriceBDT;
+    const starterUSDT = isOfficial ? plan.officialStarterUSDT : plan.starterPriceUSDT;
+    const monthlyBDT = isOfficial ? plan.officialMonthlyBDT : plan.starterMonthlyBDT;
+    const monthlyUSDT = isOfficial ? plan.officialMonthlyUSDT : plan.starterMonthlyUSDT;
+    const totalBDT = starterBDT + (monthlyBDT * 12);
+    const totalUSDT = starterUSDT + (monthlyUSDT * 12);
 
     const now = new Date();
     const nextDueDate = new Date(now);
@@ -59,7 +60,7 @@ export async function POST(req: Request) {
       telegramId: telegramId || '',
       accessCode,
       selectedVIPPlanId: plan._id,
-      membershipType: isStarter ? 'starter' : 'premium',
+      membershipType: isOfficial ? 'premium' : 'starter',
       totalPaidBDT: 0,
       totalPaidUSDT: 0,
       remainingAmountBDT: totalBDT,

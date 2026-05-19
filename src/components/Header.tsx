@@ -108,7 +108,7 @@ export const Header = ({ data }: { data: any }) => {
           </div>
 
           <Link
-            href="/#pricing"
+            href="/#vip"
             className="hidden md:flex items-center gap-2 bg-primary hover:bg-primary-light text-white px-6 py-2.5 rounded-xl font-black text-xs transition-all glow-btn"
           >
             {t(settings?.floatingCTAEn, settings?.floatingCTABn)}

@@ -10,10 +10,14 @@ import {
   Sparkles,
   Zap,
   ArrowRight,
-  Gem,
   BadgeCheck,
   Globe,
   X,
+  Tag,
+  Gem,
+  Star,
+  Percent,
+  Rocket,
 } from "lucide-react";
 import { useCurrencyStore } from "@/store/useCurrencyStore";
 import { useVIPPlans, useVIPStats } from "@/hooks/useVIP";
@@ -28,58 +32,64 @@ export default function VIPSection() {
   ) as any;
 
   const [showCheckout, setShowCheckout] = useState(false);
-  const [pricingMode, setPricingMode] = useState<"starter" | "premium">(
-    "premium",
+  const [pricingTrack, setPricingTrack] = useState<"official" | "starter">(
+    "official",
   );
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null);
 
   if (!plan) return null;
 
-  const priceBDT =
-    pricingMode === "starter" ? plan.starterPaymentBDT : plan.discountPriceBDT;
-  const priceUSDT =
-    pricingMode === "starter"
-      ? plan.starterPaymentUSDT
-      : plan.discountPriceUSDT;
-  const monthlyBDT =
-    pricingMode === "starter" ? plan.starterMonthlyBDT : plan.premiumMonthlyBDT;
-  const monthlyUSDT =
-    pricingMode === "starter"
-      ? plan.starterMonthlyUSDT
-      : plan.premiumMonthlyUSDT;
-  const startBDT =
-    pricingMode === "starter" ? plan.starterPaymentBDT : plan.premiumStartBDT;
-  const startUSDT =
-    pricingMode === "starter" ? plan.starterPaymentUSDT : plan.premiumStartUSDT;
-  const originalPriceBDT =
-    pricingMode === "starter" ? plan.officialPriceBDT : plan.regularPriceBDT;
-  const originalPriceUSDT =
-    pricingMode === "starter" ? plan.officialPriceUSDT : plan.regularPriceUSDT;
-  const isLimitedOffer =
-    plan.limitedOfferEnabled &&
-    plan.limitedOfferSlots > 0 &&
-    plan.limitedOfferExpireDate &&
-    new Date(plan.limitedOfferExpireDate) > new Date();
-
-  const displayPrice = currentCurrency === "BDT" ? priceBDT : priceUSDT;
-  const displayMonthly = currentCurrency === "BDT" ? monthlyBDT : monthlyUSDT;
-  const displayStart = currentCurrency === "BDT" ? startBDT : startUSDT;
-  const displayOriginal =
-    currentCurrency === "BDT" ? originalPriceBDT : originalPriceUSDT;
-  const displayLimitedPrice =
-    currentCurrency === "BDT"
-      ? plan.limitedOfferPriceBDT
-      : plan.limitedOfferPriceUSDT;
   const symbol = currentCurrency === "BDT" ? "BDT" : "USDT";
+  const hasDiscount = plan.enableDiscount && plan.discountPercent > 0;
+  const starterHasDiscount =
+    plan.starterEnableDiscount && (plan.starterDiscountPercent ?? 0) > 0;
+
+  const prices = {
+    official: {
+      price:
+        currentCurrency === "BDT"
+          ? plan.officialPriceBDT
+          : plan.officialPriceUSDT,
+      starter:
+        currentCurrency === "BDT"
+          ? plan.officialStarterBDT
+          : plan.officialStarterUSDT,
+      monthly:
+        currentCurrency === "BDT"
+          ? plan.officialMonthlyBDT
+          : plan.officialMonthlyUSDT,
+      discount:
+        currentCurrency === "BDT"
+          ? plan.discountPriceBDT
+          : plan.discountPriceUSDT,
+    },
+    starter: {
+      official:
+        currentCurrency === "BDT"
+          ? (plan.starterOfficialBDT ?? plan.officialPriceBDT)
+          : (plan.starterOfficialUSDT ?? plan.officialPriceUSDT),
+      price:
+        currentCurrency === "BDT"
+          ? (plan.starterPriceBDT ?? plan.starterMonthlyBDT)
+          : (plan.starterPriceUSDT ?? plan.starterMonthlyUSDT),
+      monthly:
+        currentCurrency === "BDT"
+          ? (plan.starterMonthlyBDT ?? 399)
+          : (plan.starterMonthlyUSDT ?? 3),
+      discount:
+        currentCurrency === "BDT"
+          ? (plan.starterDiscountPriceBDT ?? plan.discountPriceBDT)
+          : (plan.starterDiscountPriceUSDT ?? plan.discountPriceUSDT),
+    },
+  };
+
+  const isOfficial = pricingTrack === "official";
 
   const visibleBullets = ((plan.bulletPoints || []) as any[])
     .filter((b: any) => b.visible)
     .sort((a: any, b: any) => a.order - b.order);
   const visibleHighlights = ((plan.keyHighlights || []) as any[])
     .filter((h: any) => h.visible)
-    .sort((a: any, b: any) => a.order - b.order);
-  const visibleFeatures = ((plan.featureList || []) as any[])
-    .filter((f: any) => f.visible)
     .sort((a: any, b: any) => a.order - b.order);
   const visibleNotices = ((plan.notices || []) as any[]).filter(
     (n: any) => n.visible,
@@ -90,29 +100,26 @@ export default function VIPSection() {
 
   return (
     <>
-      {/* ===== PREMIUM VIP HERO ===== */}
       <section id="vip" className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-amber-500/10 via-transparent to-transparent" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] bg-amber-500/10 blur-[250px] rounded-full pointer-events-none" />
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-orange-500/10 blur-[150px] rounded-full pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-amber-500/5 blur-[180px] rounded-full pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-500/10 via-transparent to-transparent" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] bg-blue-500/10 blur-[250px] rounded-full pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 blur-[150px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/5 blur-[180px] rounded-full pointer-events-none" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
-          {/* VIP Badge */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex justify-center mb-6"
           >
-            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-600/20 border border-amber-500/30 shadow-lg shadow-amber-500/10">
-              <Crown className="w-5 h-5 text-amber-500" />
-              <span className="text-amber-500 font-black uppercase text-[10px] tracking-[3px]">
+            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-blue-500/20 to-indigo-600/20 border border-blue-500/30 shadow-lg shadow-blue-500/10">
+              <Crown className="w-5 h-5 text-blue-400" />
+              <span className="text-white font-black uppercase text-[10px] tracking-[3px]">
                 {plan.badgeEn || "VIP MEMBERSHIP"}
               </span>
             </div>
           </motion.div>
 
-          {/* Title */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -129,7 +136,6 @@ export default function VIPSection() {
             )}
           </motion.div>
 
-          {/* Stats */}
           {stats && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -138,16 +144,15 @@ export default function VIPSection() {
               className="flex justify-center gap-8 mb-8"
             >
               <div className="text-center">
-                <p className="text-3xl font-black text-amber-500">
+                <p className="text-3xl font-black text-blue-500">
                   {stats.activeMembers}+
                 </p>
                 <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">
                   Active Members
                 </p>
               </div>
-
               <div className="text-center">
-                <p className="text-3xl font-black text-amber-500">
+                <p className="text-3xl font-black text-blue-500">
                   {stats.totalPayments}
                 </p>
                 <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">
@@ -157,32 +162,30 @@ export default function VIPSection() {
             </motion.div>
           )}
 
-          {/* Pricing Mode Toggle */}
-          {plan.enableInstallments && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="flex justify-center mb-4"
-            >
-              <div className="inline-flex p-1 bg-white/5 rounded-2xl border border-white/10">
-                <button
-                  onClick={() => setPricingMode("starter")}
-                  className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${pricingMode === "starter" ? "bg-amber-500 text-white shadow-lg" : "text-text-muted hover:text-white"}`}
-                >
-                  Starter Plan
-                </button>
-                <button
-                  onClick={() => setPricingMode("premium")}
-                  className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${pricingMode === "premium" ? "bg-amber-500 text-white shadow-lg" : "text-text-muted hover:text-white"}`}
-                >
-                  Premium Discount Plan
-                </button>
-              </div>
-            </motion.div>
-          )}
+          {/* Track Toggle */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex justify-center mb-8"
+          >
+            <div className="inline-flex p-1 bg-white/5 rounded-2xl border border-white/10">
+              <button
+                onClick={() => setPricingTrack("official")}
+                className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${pricingTrack === "official" ? "bg-blue-500 text-white shadow-lg" : "text-text-muted hover:text-white"}`}
+              >
+                <Crown className="w-4 h-4" /> Official Plan
+              </button>
+              <button
+                onClick={() => setPricingTrack("starter")}
+                className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${pricingTrack === "starter" ? "bg-blue-500 text-white shadow-lg" : "text-text-muted hover:text-white"}`}
+              >
+                <Rocket className="w-4 h-4" /> Starter Plan
+              </button>
+            </div>
+          </motion.div>
 
-          {/* Main Pricing Card */}
+          {/* Pricing Card */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -190,95 +193,156 @@ export default function VIPSection() {
             className="max-w-lg mx-auto mb-12"
           >
             <div
-              className={`p-8 rounded-[40px] border-2 transition-all duration-500 relative ${pricingMode === "premium" ? "bg-gradient-to-b from-amber-500/10 to-transparent border-amber-500/40 shadow-2xl shadow-amber-500/10" : "bg-white/[0.03] border-white/10"}`}
+              className={`p-8 rounded-[40px] border-2 transition-all duration-500 relative ${isOfficial ? "bg-gradient-to-b from-blue-500/10 to-transparent border-blue-500/40 shadow-2xl shadow-blue-500/10" : "bg-white/[0.03] border-white/10"}`}
             >
-              {isLimitedOffer && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-600 text-white text-[9px] font-black uppercase tracking-widest shadow-lg whitespace-nowrap flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5" /> Limited Offer
+              {isOfficial && hasDiscount && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-[9px] font-black uppercase tracking-widest shadow-lg whitespace-nowrap flex items-center gap-1.5">
+                  <Percent className="w-3.5 h-3.5" /> {plan.discountPercent}%
+                  OFF
                 </div>
               )}
 
               <div className="text-center mb-6">
-                <h3 className="text-xl font-black text-white mb-1">
-                  {pricingMode === "starter"
-                    ? "🔥 Starter Plan"
-                    : "🔥 Premium Discount Plan"}
-                </h3>
-                <div className="flex items-baseline justify-center gap-2">
-                  {isLimitedOffer ? (
-                    <>
-                      <span className="text-5xl md:text-6xl font-black text-white">
-                        {displayLimitedPrice?.toLocaleString()}
+                {/* Official Section */}
+                {isOfficial && (
+                  <>
+                    <div className="flex items-center justify-between p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 mb-3">
+                      <span className="text-sm font-bold text-blue-500 flex items-center gap-2">
+                        <Crown className="w-4 h-4" /> Official Price
                       </span>
-                      <span className="text-text-muted font-bold text-sm">
-                        {symbol}
+                      <span className="text-3xl font-black text-white">
+                        {prices.official.price?.toLocaleString()}{" "}
+                        <span className="text-base text-blue-500">
+                          {symbol}
+                        </span>
                       </span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-5xl md:text-6xl font-black text-white">
-                        {displayPrice?.toLocaleString()}
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5 mb-3">
+                      <span className="text-sm font-bold text-text-muted flex items-center gap-2">
+                        <Star className="w-4 h-4 text-blue-500" /> Start With
                       </span>
-                      <span className="text-text-muted font-bold text-sm">
-                        {symbol}
+                      <span className="text-xl font-black text-white">
+                        {prices.official.starter?.toLocaleString()} {symbol}
                       </span>
-                    </>
-                  )}
-                </div>
-                {displayOriginal > 0 && (
-                  <div className="flex items-center justify-center gap-3 mt-2">
-                    <span className="text-lg text-text-muted line-through">
-                      {displayOriginal?.toLocaleString()} {symbol}
-                    </span>
-                    <span className="px-3 py-0.5 rounded-full bg-amber-500/10 text-amber-500 text-[9px] font-black uppercase tracking-wider">
-                      Save {plan.discountPercent}%
-                    </span>
-                  </div>
+                    </div>
+
+                    {plan.enableInstallments && (
+                      <div className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5 mb-3">
+                        <span className="text-sm font-bold text-text-muted flex items-center gap-2">
+                          <Gem className="w-4 h-4 text-blue-500" /> Then
+                          Monthly
+                        </span>
+                        <span className="text-xl font-black text-white">
+                          {prices.official.monthly?.toLocaleString()} {symbol}
+                        </span>
+                      </div>
+                    )}
+
+                    {hasDiscount && (
+                      <>
+                        <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-blue-500/10 to-indigo-600/10 border border-blue-500/30 mb-3">
+                          <span className="text-sm font-bold text-blue-500 flex items-center gap-2">
+                            <Zap className="w-4 h-4" /> Current{" "}
+                            {plan.discountPercent}% OFF
+                          </span>
+                          <span className="text-2xl font-black text-blue-500">
+                            {prices.official.discount?.toLocaleString()}{" "}
+                            {symbol}
+                          </span>
+                        </div>
+
+                        {prices.official.discount && (
+                          <div className="p-3 rounded-2xl bg-success/10 border border-success/20">
+                            <p className="text-success text-xs font-bold flex items-center justify-center gap-2">
+                              <Sparkles className="w-4 h-4" />
+                              You Save{" "}
+                              {(
+                                prices.official.price - prices.official.discount
+                              )?.toLocaleString()}{" "}
+                              {symbol}
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </>
+                )}
+
+                {/* Starter Section */}
+                {!isOfficial && (
+                  <>
+                    <div className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.03] border border-white/10 mb-3">
+                      <span className="text-sm font-bold text-white/60 flex items-center gap-2">
+                        <Crown className="w-4 h-4 text-white/40" /> Official
+                        Price
+                      </span>
+                      <span className="text-2xl font-black text-white">
+                        {prices.starter.official?.toLocaleString()}{" "}
+                        <span className="text-sm text-white/40">{symbol}</span>
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.03] border border-white/10 mb-3">
+                      <span className="text-sm font-bold text-text-muted flex items-center gap-2">
+                        <Rocket className="w-4 h-4 text-blue-500" /> Starter
+                        Price
+                      </span>
+                      <span className="text-3xl font-black text-white">
+                        {prices.starter.price?.toLocaleString()}{" "}
+                        <span className="text-base text-white/40">
+                          {symbol}
+                        </span>
+                      </span>
+                    </div>
+
+                    {plan.enableInstallments && (
+                      <div className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5 mb-3">
+                        <span className="text-sm font-bold text-text-muted flex items-center gap-2">
+                          <Gem className="w-4 h-4 text-blue-500" /> Then
+                          Monthly
+                        </span>
+                        <span className="text-xl font-black text-white">
+                          {prices.starter.monthly?.toLocaleString()} {symbol}
+                        </span>
+                      </div>
+                    )}
+
+                    {starterHasDiscount && (
+                      <>
+                        <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-blue-500/10 to-indigo-600/10 border border-blue-500/30 mb-3">
+                          <span className="text-sm font-bold text-blue-500 flex items-center gap-2">
+                            <Zap className="w-4 h-4" /> Current{" "}
+                            {plan.starterDiscountPercent}% OFF
+                          </span>
+                          <span className="text-2xl font-black text-blue-500">
+                            {prices.starter.discount?.toLocaleString()} {symbol}
+                          </span>
+                        </div>
+                        <div className="p-3 rounded-2xl bg-success/10 border border-success/20">
+                          <p className="text-success text-xs font-bold flex items-center justify-center gap-2">
+                            <Sparkles className="w-4 h-4" />
+                            You Save{" "}
+                            {(
+                              prices.starter.official - prices.starter.discount
+                            )?.toLocaleString()}{" "}
+                            {symbol}
+                          </p>
+                        </div>
+                      </>
+                    )}
+                  </>
                 )}
               </div>
 
-              {/* Installment Breakdown */}
-              {plan.enableInstallments && (
-                <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 mb-6">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Gem className="w-4 h-4 text-amber-500" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">
-                      Flexible Installment
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 text-center">
-                    <div className="p-3 rounded-xl bg-white/[0.02]">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-text-muted">
-                        Start From
-                      </p>
-                      <p className="text-xl font-black text-white">
-                        {displayStart?.toLocaleString()} {symbol}
-                      </p>
-                    </div>
-                    <div className="p-3 rounded-xl bg-white/[0.02]">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-text-muted">
-                        Then Monthly
-                      </p>
-                      <p className="text-xl font-black text-white">
-                        {displayMonthly?.toLocaleString()} {symbol}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-center text-[10px] text-white mt-3">
-                    Due every {plan.dueEveryDays} days •{" "}
-                    {pricingMode === "starter" ? "12 months" : "24 months"}
-                  </p>
-                </div>
-              )}
-
               <button
                 onClick={() => setShowCheckout(true)}
-                className="w-full py-5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-black uppercase text-xs tracking-widest hover:from-amber-600 hover:to-orange-700 transition-all duration-300 shadow-xl shadow-amber-500/20 flex items-center justify-center gap-3 group"
+                className="w-full py-5 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-black uppercase text-xs tracking-widest hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3 group"
               >
                 {plan.buttonTextEn || "Get VIP Access"}{" "}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
-              <a href="#vip-features"
+              <a
+                href="#vip-features"
                 className="mt-3 w-full py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-black uppercase text-xs tracking-widest hover:bg-white/10 hover:border-white/20 transition-all duration-300 flex items-center justify-center gap-2 group"
               >
                 Get Full Details
@@ -292,7 +356,7 @@ export default function VIPSection() {
             <div className="flex flex-wrap justify-center gap-3 mb-4">
               {visibleNotices.map((notice: any, i) => {
                 const colors: Record<string, string> = {
-                  offer: "bg-amber-500/10 border-amber-500/20 text-amber-500",
+                  offer: "bg-blue-500/10 border-blue-500/20 text-blue-500",
                   info: "bg-info/10 border-info/20 text-info",
                   warning: "bg-red-500/10 border-red-500/20 text-red-500",
                 };
@@ -319,10 +383,9 @@ export default function VIPSection() {
         </div>
       </section>
 
-      {/* ===== VIP DETAILS SECTION ===== */}
+      {/* VIP Details */}
       <section className="relative">
         <div className="max-w-7xl mx-auto px-1 sm:px-2 lg:px-4 pb-20 space-y-12">
-          {/* Highlights */}
           {visibleHighlights.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -335,7 +398,7 @@ export default function VIPSection() {
                   key={h.id}
                   className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/[0.03] border border-white/5"
                 >
-                  <BadgeCheck className="w-5 h-5 text-amber-500" />
+                  <BadgeCheck className="w-5 h-5 text-blue-500" />
                   <span className="text-sm font-bold text-white">
                     {h.textEn}
                   </span>
@@ -344,9 +407,9 @@ export default function VIPSection() {
             </motion.div>
           )}
 
-          {/* Everything You Get - Scrollable Premium List */}
           {visibleBullets.length > 0 && (
-            <motion.div id="vip-features"
+            <motion.div
+              id="vip-features"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -356,7 +419,7 @@ export default function VIPSection() {
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
-                  className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-black tracking-[3px] uppercase mb-6 shadow-xl"
+                  className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-500 text-xs font-black tracking-[3px] uppercase mb-6 shadow-xl"
                 >
                   <Sparkles className="w-4 h-4" />
                   VIP Membership
@@ -368,7 +431,7 @@ export default function VIPSection() {
                   className="text-3xl sm:text-5xl lg:text-6xl font-black mb-4 tracking-tighter leading-tight px-4"
                 >
                   Everything You&apos;ll Ever Need
-                  <span className="block mt-2 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 bg-clip-text text-transparent">
+                  <span className="block mt-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500 bg-clip-text text-transparent">
                     All in One Place.
                   </span>
                 </motion.h2>
@@ -385,9 +448,9 @@ export default function VIPSection() {
               </div>
 
               <div className="max-w-5xl mx-auto px-1 sm:px-3">
-                <div className="relative overflow-hidden rounded-[22px] bg-gradient-to-b from-white/[0.03] to-transparent border border-white/5 shadow-2xl shadow-amber-500/5">
-                  <div className="absolute -top-40 -left-40 w-80 h-80 bg-amber-500/5 blur-[120px] rounded-full pointer-events-none" />
-                  <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-orange-500/5 blur-[120px] rounded-full pointer-events-none" />
+                <div className="relative overflow-hidden rounded-[22px] bg-gradient-to-b from-white/[0.03] to-transparent border border-white/5 shadow-2xl shadow-blue-500/5">
+                  <div className="absolute -top-40 -left-40 w-80 h-80 bg-blue-500/5 blur-[120px] rounded-full pointer-events-none" />
+                  <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none" />
                   <div className="absolute top-0 left-0 right-0 h-14 bg-gradient-to-b from-[#020617] to-transparent z-10 pointer-events-none" />
                   <div className="absolute bottom-0 left-0 right-0 h-14 bg-gradient-to-t from-[#020617] to-transparent z-10 pointer-events-none" />
                   <div className="h-[420px] sm:h-[520px] lg:h-[620px] overflow-y-auto premium-scrollbar p-5 sm:p-7 lg:p-9 space-y-3 sm:space-y-4">
@@ -398,16 +461,16 @@ export default function VIPSection() {
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: idx * 0.05 }}
-                        className={`p-5 sm:p-6 rounded-2xl sm:rounded-[20px] flex items-start gap-4 transition-all duration-300 ${bullet.highlighted ? "bg-gradient-to-r from-amber-500/10 to-transparent border border-amber-500/30 shadow-lg shadow-amber-500/5" : "bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] hover:border-white/10 hover:shadow-lg hover:shadow-white/5"}`}
+                        className={`p-1 sm:p-3 rounded-2xl sm:rounded-[20px] flex items-start gap-4 transition-all duration-300 ${bullet.highlighted ? "bg-gradient-to-r from-blue-500/10 to-transparent border border-blue-500/30 shadow-lg shadow-blue-500/5" : "bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] hover:border-white/10 hover:shadow-lg hover:shadow-white/5"}`}
                       >
                         <div
-                          className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0 mt-0.5 ${bullet.highlighted ? "bg-amber-500/20 text-amber-500 shadow-lg shadow-amber-500/10" : "bg-white/5 text-white/40"}`}
+                          className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0 mt-0.5 ${bullet.highlighted ? "bg-blue-500/20 text-blue-500 shadow-lg shadow-blue-500/10" : "bg-white/5 text-white/40"}`}
                         >
                           <CheckCircle2 className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p
-                            className={`text-sm sm:text-base lg:text-lg font-bold leading-snug ${bullet.highlighted ? "text-amber-500" : "text-white"}`}
+                            className={`text-sm sm:text-base lg:text-lg font-bold leading-snug ${bullet.highlighted ? "text-blue-500" : "text-white"}`}
                           >
                             {bullet.textEn}
                           </p>
@@ -421,23 +484,10 @@ export default function VIPSection() {
                     ))}
                   </div>
                 </div>
-                <p className="text-center text-xs text-text-muted font-bold uppercase tracking-widest mt-5 flex items-center justify-center gap-2">
-                  <svg
-                    className="w-4 h-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
-                  Scroll to explore all features
-                </p>
               </div>
             </motion.div>
           )}
 
-          {/* FAQs */}
           {visibleFAQs.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -487,7 +537,6 @@ export default function VIPSection() {
             </motion.div>
           )}
 
-          {/* Telegram CTA */}
           {plan.telegramLink && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -508,12 +557,11 @@ export default function VIPSection() {
         </div>
       </section>
 
-      {/* Checkout Modal */}
       <AnimatePresence>
         {showCheckout && (
           <VIPCheckoutModal
             plan={plan}
-            pricingMode={pricingMode}
+            pricingTrack={pricingTrack}
             onClose={() => setShowCheckout(false)}
           />
         )}
@@ -548,11 +596,11 @@ function SendIcon() {
 
 function VIPCheckoutModal({
   plan,
-  pricingMode,
+  pricingTrack,
   onClose,
 }: {
   plan: any;
-  pricingMode: string;
+  pricingTrack: string;
   onClose: () => void;
 }) {
   const { currentCurrency } = useCurrencyStore();
@@ -566,14 +614,34 @@ function VIPCheckoutModal({
   const [result, setResult] = useState<any>(null);
   const [redirectCountdown, setRedirectCountdown] = useState(5);
 
+  const isOfficial = pricingTrack === "official";
   const startPrice =
     currentCurrency === "BDT"
-      ? pricingMode === "starter"
-        ? plan.starterPaymentBDT
-        : plan.premiumStartBDT
-      : pricingMode === "starter"
-        ? plan.starterPaymentUSDT
-        : plan.premiumStartUSDT;
+      ? isOfficial
+        ? plan.officialStarterBDT
+        : plan.starterPriceBDT
+      : isOfficial
+        ? plan.officialStarterUSDT
+        : plan.starterPriceUSDT;
+  const hasDisc = isOfficial
+    ? plan.enableDiscount && (plan.discountPercent ?? 0) > 0
+    : plan.starterEnableDiscount && (plan.starterDiscountPercent ?? 0) > 0;
+  const totalPrice =
+    currentCurrency === "BDT"
+      ? hasDisc
+        ? isOfficial
+          ? (plan.discountPriceBDT ?? plan.officialPriceBDT)
+          : (plan.starterDiscountPriceBDT ?? plan.starterOfficialBDT)
+        : isOfficial
+          ? (plan.officialPriceBDT ?? 0)
+          : (plan.starterOfficialBDT ?? plan.officialPriceBDT ?? 0)
+      : hasDisc
+        ? isOfficial
+          ? (plan.discountPriceUSDT ?? plan.officialPriceUSDT)
+          : (plan.starterDiscountPriceUSDT ?? plan.starterOfficialUSDT)
+        : isOfficial
+          ? (plan.officialPriceUSDT ?? 0)
+          : (plan.starterOfficialUSDT ?? plan.officialPriceUSDT ?? 0);
   const symbol = currentCurrency === "BDT" ? "BDT" : "USDT";
 
   const handleSubmit = async () => {
@@ -585,7 +653,7 @@ function VIPCheckoutModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          pricingMode,
+          pricingTrack,
           transactionId: `MANUAL-${Date.now()}`,
         }),
       });
@@ -632,13 +700,11 @@ function VIPCheckoutModal({
       >
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <Crown className="w-8 h-8 text-amber-500" />
+            <Crown className="w-8 h-8 text-blue-500" />
             <div>
               <h3 className="text-2xl font-black tracking-tight">VIP Access</h3>
               <p className="text-xs text-text-muted font-bold uppercase tracking-widest">
-                {pricingMode === "starter"
-                  ? "Starter Plan"
-                  : "Premium Discount Plan"}
+                {isOfficial ? "Official Plan" : "Starter Plan"}
               </p>
             </div>
           </div>
@@ -652,8 +718,8 @@ function VIPCheckoutModal({
 
         {step === "form" && (
           <div className="space-y-6">
-            <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/20">
-              <p className="text-amber-500 font-bold text-center text-2xl">
+            <div className="p-5 rounded-2xl bg-blue-500/10 border border-blue-500/20">
+              <p className="text-blue-500 font-bold text-center text-2xl">
                 {startPrice?.toLocaleString()} {symbol}
               </p>
               {plan.enableInstallments && (
@@ -662,6 +728,14 @@ function VIPCheckoutModal({
                   installments
                 </p>
               )}
+              <div className="mt-3 pt-3 border-t border-blue-500/20 text-center">
+                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">
+                  Total Plan Price
+                </p>
+                <p className="text-lg font-black text-white">
+                  {totalPrice?.toLocaleString()} {symbol}
+                </p>
+              </div>
             </div>
 
             <input
@@ -701,7 +775,7 @@ function VIPCheckoutModal({
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="w-full py-5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-black uppercase text-xs tracking-widest hover:from-amber-600 hover:to-orange-700 transition-all shadow-xl shadow-amber-500/20 disabled:opacity-50"
+              className="w-full py-5 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-black uppercase text-xs tracking-widest hover:from-blue-600 hover:to-indigo-700 transition-all shadow-xl shadow-blue-500/20 disabled:opacity-50"
             >
               {submitting
                 ? "Processing..."
@@ -719,19 +793,19 @@ function VIPCheckoutModal({
               </h4>
               <p className="text-sm text-text-muted">
                 Your membership ID:{" "}
-                <span className="text-amber-500 font-black">
+                <span className="text-blue-500 font-black">
                   {result.membershipId}
                 </span>
               </p>
               <p className="text-xs text-text-muted mt-1">
                 Save your Access Code:{" "}
-                <span className="text-amber-500 font-black">
+                <span className="text-blue-500 font-black">
                   {result.accessCode}
                 </span>
               </p>
             </div>
-            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20">
-              <p className="text-[10px] font-black uppercase tracking-widest text-amber-500 mb-2">
+            <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20">
+              <p className="text-[10px] font-black uppercase tracking-widest text-blue-500 mb-2">
                 Payment Required
               </p>
               <p className="text-sm text-white font-bold mb-3">
@@ -750,7 +824,7 @@ function VIPCheckoutModal({
             </div>
             <a
               href="/dashboard"
-              className="block w-full py-4 rounded-2xl bg-white text-bg-dark font-black uppercase text-xs tracking-widest hover:bg-amber-500 hover:text-white transition-all text-center"
+              className="block w-full py-4 rounded-2xl bg-white text-bg-dark font-black uppercase text-xs tracking-widest hover:bg-blue-500 hover:text-white transition-all text-center"
             >
               Go to Dashboard ({redirectCountdown}s)
             </a>

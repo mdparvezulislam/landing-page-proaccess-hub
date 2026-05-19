@@ -45,7 +45,6 @@ export interface IVIPFAQ {
 }
 
 export interface IVIPPlan extends Document {
-  // Content
   titleEn: string;
   titleBn: string;
   subtitleEn: string;
@@ -63,45 +62,42 @@ export interface IVIPPlan extends Document {
   visible: boolean;
   order: number;
 
-  // Pricing (all inline — no separate pricing model)
-  regularPriceBDT: number;
-  regularPriceUSDT: number;
+  // ─── Official Track (Premium) ───
   officialPriceBDT: number;
   officialPriceUSDT: number;
-  discountPriceBDT: number;
-  discountPriceUSDT: number;
-  starterPaymentBDT: number;
-  starterPaymentUSDT: number;
+  officialStarterBDT: number;
+  officialStarterUSDT: number;
+  officialMonthlyBDT: number;
+  officialMonthlyUSDT: number;
+
+  // ─── Starter Track ───
+  starterOfficialBDT: number;
+  starterOfficialUSDT: number;
+  starterPriceBDT: number;
+  starterPriceUSDT: number;
   starterMonthlyBDT: number;
   starterMonthlyUSDT: number;
-  premiumStartBDT: number;
-  premiumStartUSDT: number;
-  premiumMonthlyBDT: number;
-  premiumMonthlyUSDT: number;
-  totalPaymentBDT: number;
-  totalPaymentUSDT: number;
-  discountPercent: number;
+  starterEnableDiscount: boolean;
+  starterDiscountPercent: number;
+  starterDiscountPriceBDT: number;
+  starterDiscountPriceUSDT: number;
 
-  // Installment settings
+  // ─── Optional Discount (applies to Official Track) ───
+  enableDiscount: boolean;
+  discountPercent: number;
+  discountPriceBDT: number;
+  discountPriceUSDT: number;
+
   dueEveryDays: number;
   reminderBeforeDays: number;
   autoReminderEnabled: boolean;
   enableInstallments: boolean;
 
-  // Limited offer
-  limitedOfferEnabled: boolean;
-  limitedOfferPriceBDT: number;
-  limitedOfferPriceUSDT: number;
-  limitedOfferSlots: number;
-  limitedOfferExpireDate: Date | null;
-
-  // Membership settings
   enableMembershipTracking: boolean;
   enableBanSystem: boolean;
   enableReminderSystem: boolean;
   enableNotifications: boolean;
 
-  // Content arrays
   bulletPoints: IVIPBulletPoint[];
   keyHighlights: IVIPKeyHighlight[];
   featureList: IVIPFeature[];
@@ -127,45 +123,42 @@ const VIPPlanSchema = new Schema<IVIPPlan>({
   visible: { type: Boolean, default: true },
   order: { type: Number, default: 0 },
 
-  // Pricing
-  regularPriceBDT: { type: Number, default: 20000 },
-  regularPriceUSDT: { type: Number, default: 160 },
+  // Official Track
   officialPriceBDT: { type: Number, default: 15000 },
   officialPriceUSDT: { type: Number, default: 120 },
+  officialStarterBDT: { type: Number, default: 5000 },
+  officialStarterUSDT: { type: Number, default: 40 },
+  officialMonthlyBDT: { type: Number, default: 500 },
+  officialMonthlyUSDT: { type: Number, default: 4 },
+
+  // Starter Track
+  starterOfficialBDT: { type: Number, default: 15000 },
+  starterOfficialUSDT: { type: Number, default: 120 },
+  starterPriceBDT: { type: Number, default: 3000 },
+  starterPriceUSDT: { type: Number, default: 24 },
+  starterMonthlyBDT: { type: Number, default: 399 },
+  starterMonthlyUSDT: { type: Number, default: 3 },
+  starterEnableDiscount: { type: Boolean, default: false },
+  starterDiscountPercent: { type: Number, default: 30 },
+  starterDiscountPriceBDT: { type: Number, default: 11199 },
+  starterDiscountPriceUSDT: { type: Number, default: 90 },
+
+  // Discount
+  discountPercent: { type: Number, default: 30 },
+  enableDiscount: { type: Boolean, default: false },
   discountPriceBDT: { type: Number, default: 11199 },
   discountPriceUSDT: { type: Number, default: 90 },
-  starterPaymentBDT: { type: Number, default: 5000 },
-  starterPaymentUSDT: { type: Number, default: 40 },
-  starterMonthlyBDT: { type: Number, default: 500 },
-  starterMonthlyUSDT: { type: Number, default: 4 },
-  premiumStartBDT: { type: Number, default: 3000 },
-  premiumStartUSDT: { type: Number, default: 24 },
-  premiumMonthlyBDT: { type: Number, default: 399 },
-  premiumMonthlyUSDT: { type: Number, default: 3 },
-  totalPaymentBDT: { type: Number, default: 12576 },
-  totalPaymentUSDT: { type: Number, default: 100 },
-  discountPercent: { type: Number, default: 30 },
 
-  // Installment
   dueEveryDays: { type: Number, default: 30 },
   reminderBeforeDays: { type: Number, default: 3 },
   autoReminderEnabled: { type: Boolean, default: false },
   enableInstallments: { type: Boolean, default: true },
 
-  // Limited offer
-  limitedOfferEnabled: { type: Boolean, default: false },
-  limitedOfferPriceBDT: { type: Number, default: 9999 },
-  limitedOfferPriceUSDT: { type: Number, default: 80 },
-  limitedOfferSlots: { type: Number, default: 0 },
-  limitedOfferExpireDate: { type: Date, default: null },
-
-  // Membership settings
   enableMembershipTracking: { type: Boolean, default: true },
   enableBanSystem: { type: Boolean, default: true },
   enableReminderSystem: { type: Boolean, default: true },
   enableNotifications: { type: Boolean, default: true },
 
-  // Content arrays
   bulletPoints: [{
     id: { type: String, required: true },
     textEn: { type: String, default: '' },

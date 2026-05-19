@@ -109,7 +109,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: idx * 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-      className="glass-card rounded-[32px] lg:rounded-[40px] p-5 lg:p-10 relative group hover:bg-white/[0.04] transition-all duration-700 border-white/[0.05] flex flex-col shadow-2xl overflow-hidden"
+      className="glass-card rounded-[22px] lg:rounded-[40px] p-1 lg:p-6 relative group hover:bg-white/[0.04] transition-all duration-700 border-white/[0.05] flex flex-col shadow-2xl overflow-hidden"
     >
       <div className="absolute top-0 right-0 w-48 lg:w-96 h-48 lg:h-96 bg-primary/10 blur-[80px] lg:blur-[120px] rounded-full pointer-events-none group-hover:bg-primary/20 transition-colors duration-700" />
       <div className="absolute bottom-0 left-0 w-48 lg:w-96 h-48 lg:h-96 bg-secondary/10 blur-[80px] lg:blur-[120px] rounded-full pointer-events-none group-hover:bg-secondary/20 transition-colors duration-700" />
@@ -177,13 +177,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </span>
         </div>
 
-        <div className="bg-white/[0.02] border border-white/5 rounded-[24px] p-2 lg:p-4">
+        <div className="bg-white/[0.02] border border-white/5 rounded-[14px] p-2 lg:p-4">
           <motion.div
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3 max-h-[260px] lg:max-h-[400px] overflow-y-auto pr-2 custom-scrollbar"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3 max-h-[400px] lg:max-h-[400px] overflow-y-auto pr-2 custom-scrollbar"
           >
             {(product.bulletPoints || [])
               .filter((b) => b.visible)
@@ -208,7 +208,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     <Check className="w-3.5 h-3.5 stroke-[3]" />
                   </div>
                   <span
-                    className={`text-[10px] lg:text-[13px] font-bold leading-tight tracking-tight ${
+                    className={`text-[12px] lg:text-[13px] font-bold leading-tight tracking-tight ${
                       bullet.highlighted ? "text-white" : "text-white/80"
                     }`}
                   >
@@ -431,7 +431,7 @@ export const ProductShowcase = ({ data }: { data: ProductItem[] }) => {
           </motion.p>
         </div>
 
-        <div className="flex flex-col gap-10 lg:gap-16">
+        <div className="flex flex-col gap-4 lg:gap-12">
           {visibleProducts.map((product, idx) => (
             <div key={product.id} className="w-full">
               <ProductCard

@@ -80,68 +80,55 @@ export default function AdminLogin() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md p-8 relative z-10"
+        className="w-full max-w-md p-4 lg:p-8 relative z-10"
       >
-        <div className="glass-card p-10 rounded-[40px] border-white/10 shadow-2xl">
-          <div className="text-center mb-10">
-            <div className="w-20 h-20 bg-primary/20 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-primary/30">
-              <ShieldCheck className="w-10 h-10 text-primary" />
+        <div className="glass-card p-6 lg:p-10 rounded-[32px] lg:rounded-[40px] border-white/10 shadow-2xl">
+          <div className="text-center mb-6 lg:mb-10">
+            <div className="w-14 h-14 lg:w-20 lg:h-20 bg-primary/20 rounded-2xl lg:rounded-3xl flex items-center justify-center mx-auto mb-4 lg:mb-6 border border-primary/30">
+              <ShieldCheck className="w-7 h-7 lg:w-10 lg:h-10 text-primary" />
             </div>
-            <h1 className="text-3xl font-black tracking-tighter mb-2">
+            <h1 className="text-xl lg:text-3xl font-black tracking-tighter mb-1 lg:mb-2">
               Admin Access
             </h1>
-            <p className="text-[10px] font-black text-text-muted uppercase tracking-[3px]">
+            <p className="text-[9px] lg:text-[10px] font-black text-text-muted uppercase tracking-[2px] lg:tracking-[3px]">
               Secure Portal Only
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] ml-1">
+          <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6">
+            <div className="space-y-1.5 lg:space-y-2">
+              <label className="text-[9px] lg:text-[10px] font-black text-text-muted uppercase tracking-[1px] lg:tracking-[2px] ml-1">
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                <Mail className="absolute left-4 lg:left-6 top-1/2 -translate-y-1/2 w-3.5 h-3.5 lg:w-4 lg:h-4 text-text-muted" />
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@proaccess.com"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-primary font-bold transition-all"
-                  required
-                />
+                  className="w-full bg-white/5 border border-white/10 rounded-xl lg:rounded-2xl pl-11 lg:pl-14 pr-4 lg:pr-6 py-3 lg:py-4 text-[11px] lg:text-sm focus:outline-none focus:ring-1 focus:ring-primary font-bold transition-all" required />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-text-muted uppercase tracking-[2px] ml-1">
+            <div className="space-y-1.5 lg:space-y-2">
+              <label className="text-[9px] lg:text-[10px] font-black text-text-muted uppercase tracking-[1px] lg:tracking-[2px] ml-1">
                 Secure Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                <Lock className="absolute left-4 lg:left-6 top-1/2 -translate-y-1/2 w-3.5 h-3.5 lg:w-4 lg:h-4 text-text-muted" />
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-primary font-bold transition-all"
-                  required
-                />
+                  className="w-full bg-white/5 border border-white/10 rounded-xl lg:rounded-2xl pl-11 lg:pl-14 pr-4 lg:pr-6 py-3 lg:py-4 text-[11px] lg:text-sm focus:outline-none focus:ring-1 focus:ring-primary font-bold transition-all" required />
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-primary hover:bg-primary-light text-white py-5 rounded-2xl font-black text-sm transition-all glow-btn shadow-xl shadow-primary/20 flex items-center justify-center gap-3 mt-4"
-            >
+            <button type="submit" disabled={loading}
+              className="w-full bg-primary hover:bg-primary-light text-white py-4 lg:py-5 rounded-xl lg:rounded-2xl font-black text-[11px] lg:text-sm transition-all glow-btn shadow-xl shadow-primary/20 flex items-center justify-center gap-2 lg:gap-3 mt-3 lg:mt-4">
               {loading ? "Verifying..." : "Access Dashboard"}
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-4 h-4 lg:w-5 lg:h-5" />
             </button>
           </form>
         </div>
 
-        <p className="text-center mt-8 text-[10px] font-black text-text-muted uppercase tracking-widest">
+        <p className="text-center mt-6 text-[9px] lg:mt-8 lg:text-[10px] font-black text-text-muted uppercase tracking-widest">
           Authorized Personnel Only
         </p>
       </motion.div>

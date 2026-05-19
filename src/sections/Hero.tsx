@@ -60,7 +60,7 @@ export const Hero = ({ data }: { data: HeroData }) => {
   };
 
   return (
-    <section className="relative min-h-screen lg:min-h-screen flex items-center pt-24 lg:pt-32 pb-16 lg:pb-20 overflow-hidden">
+    <section className="relative min-h-screen lg:min-h-screen flex items-center  lg:pt-32 pb-16 lg:pb-20 overflow-hidden">
       {/* Mesh Gradient Background */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-1/4 -left-20 w-[400px] lg:w-[600px] h-[400px] lg:h-[600px] bg-primary/10 blur-[150px] rounded-full animate-float" />
