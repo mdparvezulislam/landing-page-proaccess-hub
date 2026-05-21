@@ -84,7 +84,7 @@ export default async function RootLayout({
       >
         <RootProviders settings={settings}>
           <Header data={settings} />
-          <main>{children}</main>
+          <main className="pb-16 lg:pb-0">{children}</main>
           <Footer data={settings} />
         </RootProviders>
       </body>

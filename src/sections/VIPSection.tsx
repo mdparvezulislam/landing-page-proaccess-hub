@@ -614,11 +614,14 @@ function VIPCheckoutModal({
     telegramUsername: "",
     transactionId: "",
     paymentMethodId: "",
+    couponCode: "",
   });
   const [paymentSettings, setPaymentSettings] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [redirectCountdown, setRedirectCountdown] = useState(5);
+  const [couponValid, setCouponValid] = useState<any>(null);
+  const [couponChecking, setCouponChecking] = useState(false);
 
   const isOfficial = pricingTrack === "official";
   const startPrice =
@@ -666,6 +669,7 @@ function VIPCheckoutModal({
     if (!form.transactionId) { alert("Please enter your transaction ID"); return; }
     setSubmitting(true);
     try {
+      const affiliateRef = typeof window !== 'undefined' ? (document.cookie.replace(/(?:(?:^|.*;\s*)affiliate_ref\s*\=\s*([^;]*).*$)|^.*$/, "$1") || localStorage.getItem('affiliate_ref') || '') : '';
       const payload: any = {
         userName: form.userName,
         phoneNumber: form.phoneNumber,
@@ -675,6 +679,8 @@ function VIPCheckoutModal({
         paymentMethodId: form.paymentMethodId,
         pricingTrack,
         note: `Payment via ${selectedMethod?.name || "manual"} — ${selectedMethod?.number || ""}`,
+        couponCode: form.couponCode || '',
+        affiliateCode: affiliateRef || '',
       };
 
       const res = await fetch("/api/vip/checkout", {
@@ -855,6 +861,39 @@ function VIPCheckoutModal({
                 )}
               </div>
             )}
+
+            {/* Coupon Code */}
+            <div>
+              <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-white/40 mb-2">
+                Coupon Code (optional)
+              </p>
+              <div className="flex gap-2">
+                <input type="text" value={form.couponCode} onChange={(e) => { setForm({ ...form, couponCode: e.target.value }); setCouponValid(null); }}
+                  placeholder="Enter coupon code"
+                  className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-3.5 sm:p-4 text-white text-sm placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all uppercase" />
+                <button onClick={async () => {
+                  if (!form.couponCode) return;
+                  setCouponChecking(true);
+                  try {
+                    const res = await fetch(`/api/affiliate/coupons/validate?code=${form.couponCode}`);
+                    if (res.ok) {
+                      const data = await res.json();
+                      if (data.valid) { setCouponValid(data.coupon); toast.success(`${data.coupon.discountPercent}% discount applied!`); }
+                      else { setCouponValid(null); toast.error('Invalid coupon'); }
+                    } else { setCouponValid(null); toast.error('Invalid coupon'); }
+                  } catch { setCouponValid(null); toast.error('Failed to validate'); }
+                  finally { setCouponChecking(false); }
+                }} disabled={!form.couponCode || couponChecking}
+                  className="px-5 py-3.5 sm:py-4 rounded-2xl bg-amber-500 text-white text-xs font-black uppercase tracking-widest hover:bg-amber-600 transition-all disabled:opacity-50">
+                  {couponChecking ? '...' : 'Apply'}
+                </button>
+              </div>
+              {couponValid && (
+                <div className="mt-2 p-3 rounded-xl bg-success/10 border border-success/20">
+                  <p className="text-xs text-success font-bold">{couponValid.discountPercent}% discount from {couponValid.affiliateName}</p>
+                </div>
+              )}
+            </div>
 
             {/* TRX ID */}
             <div>

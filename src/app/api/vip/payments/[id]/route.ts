@@ -2,6 +2,64 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import VIPMembershipPayment from '@/models/VIPMembershipPayment';
 import VIPMembershipUser from '@/models/VIPMembershipUser';
+import AffiliateReferral from '@/models/AffiliateReferral';
+import AffiliateUser from '@/models/AffiliateUser';
+import AffiliateWallet from '@/models/AffiliateWallet';
+import AffiliateTransaction from '@/models/AffiliateTransaction';
+import AffiliateNotification from '@/models/AffiliateNotification';
+
+async function processCommissionForVIPPayment(payment: any, member: any) {
+  try {
+    const orderId = member.membershipId;
+    const referral = await AffiliateReferral.findOne({ orderId });
+    if (!referral) return;
+
+    if (referral.commissionStatus !== 'pending') return;
+
+    referral.orderStatus = 'completed';
+    referral.paymentId = payment._id.toString();
+    referral.commissionStatus = 'pending';
+    await referral.save();
+
+    const wallet = await AffiliateWallet.findOne({ affiliateId: referral.affiliateId });
+    if (wallet) {
+      wallet.pendingBalance += referral.commissionAmount;
+      wallet.lifetimeEarnings += referral.commissionAmount;
+      wallet.lastUpdated = new Date();
+      await wallet.save();
+    } else {
+      await AffiliateWallet.create({
+        affiliateId: referral.affiliateId,
+        pendingBalance: referral.commissionAmount,
+        lifetimeEarnings: referral.commissionAmount,
+      });
+    }
+
+    await AffiliateUser.findByIdAndUpdate(referral.affiliateId, {
+      $inc: { totalSales: 1, totalCommission: referral.commissionAmount, pendingBalance: referral.commissionAmount, lifetimeEarnings: referral.commissionAmount },
+    });
+
+    await AffiliateTransaction.create({
+      affiliateId: referral.affiliateId,
+      type: 'referral_commission',
+      amount: referral.commissionAmount,
+      balanceBefore: wallet ? wallet.availableBalance : 0,
+      balanceAfter: wallet ? wallet.availableBalance : 0,
+      source: { referralId: referral._id.toString(), note: 'Commission from VIP payment approval' },
+      status: 'pending',
+      description: `Commission for ${referral.productName}`,
+    });
+
+    await AffiliateNotification.create({
+      affiliateId: referral.affiliateId,
+      type: 'new_commission',
+      title: 'New Commission!',
+      message: `VIP sale completed! You earned $${referral.commissionAmount.toFixed(2)} commission. It's pending admin approval.`,
+    });
+  } catch (err) {
+    console.error('Commission processing error:', err);
+  }
+}
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -47,6 +105,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             lastPaymentDate: now,
           },
         });
+
+        await processCommissionForVIPPayment(payment, member);
       }
     }
 

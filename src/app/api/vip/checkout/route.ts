@@ -4,6 +4,12 @@ import VIPPlan from '@/models/VIPPlan';
 import VIPMembershipUser from '@/models/VIPMembershipUser';
 import VIPMembershipPayment from '@/models/VIPMembershipPayment';
 import VIPMembershipNotification from '@/models/VIPMembershipNotification';
+import AffiliateReferral from '@/models/AffiliateReferral';
+import AffiliateUser from '@/models/AffiliateUser';
+import AffiliateCoupon from '@/models/AffiliateCoupon';
+import AffiliateWallet from '@/models/AffiliateWallet';
+import AffiliateTransaction from '@/models/AffiliateTransaction';
+import AffiliateNotification from '@/models/AffiliateNotification';
 
 function generateAccessCode(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -14,11 +20,88 @@ function generateAccessCode(): string {
   return code;
 }
 
+async function processAffiliateReferral(body: any, orderId: string, paymentId: string, orderAmount: number, currency: string) {
+  const { buyerName, buyerPhone, buyerTelegram, couponCode, affiliateCode, source, productId, productName, planName } = body;
+  
+  let foundAffiliateId: string | null = null;
+  let discountPercent = 0;
+  let commissionPercent = 20;
+  let usedCouponCode = '';
+
+  if (couponCode) {
+    const coupon = await AffiliateCoupon.findOne({ couponCode: couponCode.toUpperCase(), active: true });
+    if (coupon) {
+      const affiliate = await AffiliateUser.findById(coupon.affiliateId);
+      if (affiliate && !affiliate.banned && affiliate.status === 'active') {
+        foundAffiliateId = affiliate._id.toString();
+        discountPercent = coupon.discountPercent;
+        commissionPercent = coupon.commissionPercent;
+        usedCouponCode = coupon.couponCode;
+        coupon.totalUsed += 1;
+        await coupon.save();
+      }
+    }
+  }
+
+  if (!foundAffiliateId && affiliateCode) {
+    const affiliate = await AffiliateUser.findOne({ affiliateCode, banned: false, status: 'active' });
+    if (affiliate) {
+      foundAffiliateId = affiliate._id.toString();
+      discountPercent = 5;
+      commissionPercent = 20;
+    }
+  }
+
+  if (!foundAffiliateId) return;
+
+  const affiliate = await AffiliateUser.findById(foundAffiliateId);
+  if (!affiliate) return;
+  if (buyerPhone && affiliate.telegramUsername && buyerPhone === affiliate.telegramUsername) return;
+  if (buyerTelegram && affiliate.telegramUsername && buyerTelegram.replace('@', '') === affiliate.telegramUsername.replace('@', '')) return;
+
+  const discountAmount = (orderAmount * discountPercent) / 100;
+  const commissionAmount = (orderAmount * commissionPercent) / 100;
+
+  const existing = await AffiliateReferral.findOne({ orderId });
+  if (existing) return;
+
+  await AffiliateReferral.create({
+    buyerName: buyerName || '',
+    buyerPhone: buyerPhone || '',
+    buyerTelegram: buyerTelegram || '',
+    affiliateId: foundAffiliateId,
+    couponCode: usedCouponCode,
+    discountPercent,
+    commissionPercent,
+    source,
+    productId: productId || '',
+    productName: productName || '',
+    planName: planName || '',
+    orderAmount,
+    discountAmount,
+    commissionAmount,
+    currency,
+    orderId,
+    paymentId,
+    orderStatus: 'pending',
+    commissionStatus: 'pending',
+  });
+
+  await AffiliateUser.findByIdAndUpdate(foundAffiliateId, { $inc: { totalReferrals: 1 } });
+
+  await AffiliateNotification.create({
+    affiliateId: foundAffiliateId,
+    type: 'referral_converted',
+    title: 'New Referral!',
+    message: `Someone purchased ${productName} using your referral link. Commission: $${commissionAmount.toFixed(2)} (pending).`,
+  });
+}
+
 export async function POST(req: Request) {
   try {
     await connectDB();
     const body = await req.json();
-    const { userName, phoneNumber, telegramUsername, telegramId, transactionId, screenshot, note, pricingTrack, paymentMethod, paymentMethodId } = body;
+    const { userName, phoneNumber, telegramUsername, telegramId, transactionId, screenshot, note, pricingTrack, paymentMethod, paymentMethodId, couponCode, affiliateCode } = body;
 
     if (!userName) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
@@ -80,7 +163,7 @@ export async function POST(req: Request) {
       dashboardEnabled: true,
     });
 
-    await VIPMembershipPayment.create({
+    const payment = await VIPMembershipPayment.create({
       membershipUserId: member._id,
       amountBDT: starterBDT,
       amountUSDT: starterUSDT,
@@ -101,6 +184,14 @@ export async function POST(req: Request) {
       messageEn: `Your VIP membership has been created. Your membership ID is ${member.membershipId}. Admin will verify your payment shortly.`,
       messageBn: `আপনার ভিআইপি মেম্বারশিপ তৈরি হয়েছে। আপনার মেম্বারশিপ আইডি ${member.membershipId}। অ্যাডমিন শীঘ্রই আপনার পেমেন্ট ভেরিফাই করবে।`,
     });
+
+    await processAffiliateReferral(
+      { ...body, buyerName: userName, buyerPhone: phoneNumber, buyerTelegram: telegramUsername, source: 'vip_plan', productId: plan._id.toString(), productName: plan.titleEn, planName: isOfficial ? 'Official' : 'Starter' },
+      member.membershipId,
+      payment._id.toString(),
+      starterBDT,
+      'BDT'
+    );
 
     return NextResponse.json({
       success: true,

@@ -58,8 +58,11 @@ export default function CheckoutPage() {
     name: '',
     telegram: '',
     transactionId: '',
-    screenshot: ''
+    screenshot: '',
+    couponCode: '',
   });
+  const [couponValid, setCouponValid] = useState<any>(null);
+  const [couponChecking, setCouponChecking] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -118,6 +121,7 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
 
     try {
+      const affiliateRef = typeof window !== 'undefined' ? (document.cookie.replace(/(?:(?:^|.*;\s*)affiliate_ref\s*\=\s*([^;]*).*$)|^.*$/, "$1") || localStorage.getItem('affiliate_ref') || '') : '';
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -131,6 +135,9 @@ export default function CheckoutPage() {
           transactionId: formData.transactionId,
           screenshotUrl: formData.screenshot || '',
           status: 'Pending',
+          couponCode: formData.couponCode || '',
+          affiliateCode: affiliateRef || '',
+          source: 'product',
         }),
       });
 
@@ -371,6 +378,33 @@ export default function CheckoutPage() {
                       placeholder="username"
                     />
                   </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[9px] lg:text-[10px] font-black text-text-muted uppercase tracking-[2px] ml-1">{t('Coupon Code (optional)', 'কুপন কোড')}</label>
+                  <div className="flex gap-2">
+                    <input type="text" value={formData.couponCode} onChange={(e) => { setFormData({ ...formData, couponCode: e.target.value }); setCouponValid(null); }}
+                      className="flex-1 bg-white/[0.03] border border-white/10 rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-5 text-text-primary focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-black uppercase text-sm lg:text-base tracking-[1px]"
+                      placeholder="PARVEZ5" />
+                    <button onClick={async () => {
+                      if (!formData.couponCode) return;
+                      setCouponChecking(true);
+                      try {
+                        const res = await fetch(`/api/affiliate/coupons/validate?code=${formData.couponCode}`);
+                        if (res.ok) { const d = await res.json(); if (d.valid) { setCouponValid(d.coupon); toast.success(`${d.coupon.discountPercent}% discount!`); } else { setCouponValid(null); toast.error('Invalid coupon'); } }
+                        else { setCouponValid(null); toast.error('Invalid coupon'); }
+                      } catch { setCouponValid(null); toast.error('Failed'); }
+                      finally { setCouponChecking(false); }
+                    }} disabled={!formData.couponCode || couponChecking}
+                      className="px-5 lg:px-8 py-3 lg:py-5 rounded-xl lg:rounded-2xl bg-primary text-white text-xs font-black uppercase tracking-widest hover:bg-primary/80 transition-all disabled:opacity-50">
+                      {couponChecking ? '...' : 'Apply'}
+                    </button>
+                  </div>
+                  {couponValid && (
+                    <div className="mt-2 p-3 rounded-xl bg-success/10 border border-success/20">
+                      <p className="text-xs text-success font-bold">{couponValid.discountPercent}% discount from {couponValid.affiliateName}</p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-1.5">
