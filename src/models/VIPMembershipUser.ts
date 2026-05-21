@@ -15,6 +15,8 @@ export interface IVIPMembershipUser extends Document {
   totalPaidUSDT: number;
   remainingAmountBDT: number;
   remainingAmountUSDT: number;
+  monthlyBDT: number;
+  monthlyUSDT: number;
   nextDueAmountBDT: number;
   nextDueAmountUSDT: number;
   nextDueDate: Date;
@@ -28,6 +30,9 @@ export interface IVIPMembershipUser extends Document {
   lastPaymentDate: Date | null;
   dashboardEnabled: boolean;
   adminNote: string;
+  couponCode: string;
+  discountPercent: number;
+  discountAmount: number;
 }
 
 function generateAccessCode(): string {
@@ -58,6 +63,8 @@ const VIPMembershipUserSchema = new Schema<IVIPMembershipUser>({
   totalPaidUSDT: { type: Number, default: 0 },
   remainingAmountBDT: { type: Number, default: 0 },
   remainingAmountUSDT: { type: Number, default: 0 },
+  monthlyBDT: { type: Number, default: 0 },
+  monthlyUSDT: { type: Number, default: 0 },
   nextDueAmountBDT: { type: Number, default: 0 },
   nextDueAmountUSDT: { type: Number, default: 0 },
   nextDueDate: { type: Date, required: true },
@@ -75,6 +82,9 @@ const VIPMembershipUserSchema = new Schema<IVIPMembershipUser>({
   lastPaymentDate: { type: Date, default: null },
   dashboardEnabled: { type: Boolean, default: true },
   adminNote: { type: String, default: '' },
+  couponCode: { type: String, default: '' },
+  discountPercent: { type: Number, default: 0 },
+  discountAmount: { type: Number, default: 0 },
 }, { timestamps: true });
 
 export default mongoose.models.VIPMembershipUser || mongoose.model<IVIPMembershipUser>('VIPMembershipUser', VIPMembershipUserSchema);

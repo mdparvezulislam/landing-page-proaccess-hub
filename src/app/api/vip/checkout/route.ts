@@ -127,12 +127,32 @@ export async function POST(req: Request) {
 
     const isOfficial = pricingTrack === 'official';
 
-    const starterBDT = isOfficial ? plan.officialStarterBDT : plan.starterPriceBDT;
-    const starterUSDT = isOfficial ? plan.officialStarterUSDT : plan.starterPriceUSDT;
+    let starterBDT = isOfficial ? plan.officialStarterBDT : plan.starterPriceBDT;
+    let starterUSDT = isOfficial ? plan.officialStarterUSDT : plan.starterPriceUSDT;
     const monthlyBDT = isOfficial ? plan.officialMonthlyBDT : plan.starterMonthlyBDT;
     const monthlyUSDT = isOfficial ? plan.officialMonthlyUSDT : plan.starterMonthlyUSDT;
     const totalBDT = starterBDT + (monthlyBDT * 12);
     const totalUSDT = starterUSDT + (monthlyUSDT * 12);
+
+    let couponDiscountPercent = 0;
+    let couponDiscountBDT = 0;
+    let couponDiscountUSDT = 0;
+    let usedCouponCode = '';
+
+    if (couponCode) {
+      const coupon = await AffiliateCoupon.findOne({ couponCode: couponCode.toUpperCase(), active: true });
+      if (coupon && (!coupon.expireDate || new Date() <= coupon.expireDate) && (coupon.usageLimit === 0 || coupon.totalUsed < coupon.usageLimit)) {
+        const affiliate = await AffiliateUser.findById(coupon.affiliateId);
+        if (affiliate && !affiliate.banned && affiliate.status === 'active') {
+          couponDiscountPercent = coupon.discountPercent;
+          couponDiscountBDT = Math.round(starterBDT * couponDiscountPercent / 100);
+          couponDiscountUSDT = Math.round(starterUSDT * couponDiscountPercent / 100);
+          starterBDT -= couponDiscountBDT;
+          starterUSDT -= couponDiscountUSDT;
+          usedCouponCode = coupon.couponCode.toUpperCase();
+        }
+      }
+    }
 
     const now = new Date();
     const nextDueDate = new Date(now);
@@ -150,8 +170,10 @@ export async function POST(req: Request) {
       membershipType: isOfficial ? 'premium' : 'starter',
       totalPaidBDT: 0,
       totalPaidUSDT: 0,
-      remainingAmountBDT: totalBDT,
-      remainingAmountUSDT: totalUSDT,
+      remainingAmountBDT: totalBDT - couponDiscountBDT,
+      remainingAmountUSDT: totalUSDT - couponDiscountUSDT,
+      monthlyBDT,
+      monthlyUSDT,
       nextDueAmountBDT: starterBDT,
       nextDueAmountUSDT: starterUSDT,
       nextDueDate,
@@ -161,6 +183,9 @@ export async function POST(req: Request) {
       status: 'pending',
       lastPaymentDate: new Date(),
       dashboardEnabled: true,
+      couponCode: usedCouponCode,
+      discountPercent: couponDiscountPercent,
+      discountAmount: couponDiscountBDT,
     });
 
     const payment = await VIPMembershipPayment.create({
@@ -185,11 +210,12 @@ export async function POST(req: Request) {
       messageBn: `আপনার ভিআইপি মেম্বারশিপ তৈরি হয়েছে। আপনার মেম্বারশিপ আইডি ${member.membershipId}। অ্যাডমিন শীঘ্রই আপনার পেমেন্ট ভেরিফাই করবে।`,
     });
 
+    const affiliateOrderAmount = starterBDT + couponDiscountBDT;
     await processAffiliateReferral(
       { ...body, buyerName: userName, buyerPhone: phoneNumber, buyerTelegram: telegramUsername, source: 'vip_plan', productId: plan._id.toString(), productName: plan.titleEn, planName: isOfficial ? 'Official' : 'Starter' },
       member.membershipId,
       payment._id.toString(),
-      starterBDT,
+      affiliateOrderAmount,
       'BDT'
     );
 

@@ -624,33 +624,37 @@ function VIPCheckoutModal({
   const [couponChecking, setCouponChecking] = useState(false);
 
   const isOfficial = pricingTrack === "official";
+  const rawStarterBDT = isOfficial ? plan.officialStarterBDT : plan.starterPriceBDT;
+  const rawStarterUSDT = isOfficial ? plan.officialStarterUSDT : plan.starterPriceUSDT;
+  const couponDiscountPct = couponValid?.discountPercent || 0;
+  const discountBDT = Math.round(rawStarterBDT * couponDiscountPct / 100);
+  const discountUSDT = Math.round(rawStarterUSDT * couponDiscountPct / 100);
+  const finalStarterBDT = rawStarterBDT - discountBDT;
+  const finalStarterUSDT = rawStarterUSDT - discountUSDT;
   const startPrice =
     currentCurrency === "BDT"
-      ? isOfficial
-        ? plan.officialStarterBDT
-        : plan.starterPriceBDT
-      : isOfficial
-        ? plan.officialStarterUSDT
-        : plan.starterPriceUSDT;
+      ? (couponValid ? finalStarterBDT : rawStarterBDT)
+      : (couponValid ? finalStarterUSDT : rawStarterUSDT);
   const hasDisc = isOfficial
     ? plan.enableDiscount && (plan.discountPercent ?? 0) > 0
     : plan.starterEnableDiscount && (plan.starterDiscountPercent ?? 0) > 0;
-  const totalPrice =
-    currentCurrency === "BDT"
-      ? hasDisc
-        ? isOfficial
-          ? (plan.discountPriceBDT ?? plan.officialPriceBDT)
-          : (plan.starterDiscountPriceBDT ?? plan.starterOfficialBDT)
-        : isOfficial
-          ? (plan.officialPriceBDT ?? 0)
-          : (plan.starterOfficialBDT ?? plan.officialPriceBDT ?? 0)
-      : hasDisc
-        ? isOfficial
-          ? (plan.discountPriceUSDT ?? plan.officialPriceUSDT)
-          : (plan.starterDiscountPriceUSDT ?? plan.starterOfficialUSDT)
-        : isOfficial
-          ? (plan.officialPriceUSDT ?? 0)
-          : (plan.starterOfficialUSDT ?? plan.officialPriceUSDT ?? 0);
+  const rawTotalBDT = hasDisc
+    ? isOfficial
+      ? (plan.discountPriceBDT ?? plan.officialPriceBDT)
+      : (plan.starterDiscountPriceBDT ?? plan.starterOfficialBDT)
+    : isOfficial
+      ? (plan.officialPriceBDT ?? 0)
+      : (plan.starterOfficialBDT ?? plan.officialPriceBDT ?? 0);
+  const rawTotalUSDT = hasDisc
+    ? isOfficial
+      ? (plan.discountPriceUSDT ?? plan.officialPriceUSDT)
+      : (plan.starterDiscountPriceUSDT ?? plan.starterOfficialUSDT)
+    : isOfficial
+      ? (plan.officialPriceUSDT ?? 0)
+      : (plan.starterOfficialUSDT ?? plan.officialPriceUSDT ?? 0);
+  const totalBDT = rawTotalBDT - discountBDT;
+  const totalUSDT = rawTotalUSDT - discountUSDT;
+  const totalPrice = currentCurrency === "BDT" ? totalBDT : totalUSDT;
   const symbol = currentCurrency === "BDT" ? "BDT" : "USDT";
 
   const activeMethods = paymentSettings?.methods?.filter((m: any) => m.enabled) || [];
@@ -754,17 +758,39 @@ function VIPCheckoutModal({
           <div className="space-y-5 sm:space-y-6">
             {/* Price Card */}
             <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-500/5 border border-amber-500/30 shadow-lg shadow-amber-500/10">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-white/60 text-xs font-black uppercase tracking-[2px]">To Pay</span>
-                <span className="text-2xl sm:text-3xl font-black text-white">
-                  {startPrice?.toLocaleString()} <span className="text-amber-400 text-base">{symbol}</span>
-                </span>
-              </div>
-              {plan.enableInstallments && (
-                <div className="flex items-center justify-between py-3 border-t border-amber-500/10 text-[11px] text-white/60">
-                  <span>Start from</span>
-                  <span className="text-white font-bold">{startPrice?.toLocaleString()} {symbol}</span>
+              {couponValid ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-white/60 font-black uppercase tracking-[2px]">Original Price</span>
+                    <span className="text-white/40 line-through">{currentCurrency === 'BDT' ? rawStarterBDT.toLocaleString() : rawStarterUSDT.toLocaleString()} {symbol}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-success font-bold">Discount ({couponDiscountPct}%)</span>
+                    <span className="text-success">-{currentCurrency === 'BDT' ? discountBDT.toLocaleString() : discountUSDT.toLocaleString()} {symbol}</span>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-amber-500/20 pt-2">
+                    <span className="text-white text-xs font-black uppercase tracking-[2px]">To Pay</span>
+                    <span className="text-2xl sm:text-3xl font-black text-white">
+                      {startPrice?.toLocaleString()} <span className="text-amber-400 text-base">{symbol}</span>
+                    </span>
+                  </div>
+                  <p className="text-[9px] text-text-muted">via {couponValid.affiliateName}</p>
                 </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-white/60 text-xs font-black uppercase tracking-[2px]">To Pay</span>
+                    <span className="text-2xl sm:text-3xl font-black text-white">
+                      {startPrice?.toLocaleString()} <span className="text-amber-400 text-base">{symbol}</span>
+                    </span>
+                  </div>
+                  {plan.enableInstallments && (
+                    <div className="flex items-center justify-between py-3 border-t border-amber-500/10 text-[11px] text-white/60">
+                      <span>Start from</span>
+                      <span className="text-white font-bold">{startPrice?.toLocaleString()} {symbol}</span>
+                    </div>
+                  )}
+                </>
               )}
               <div className="flex items-center justify-between pt-3 border-t border-amber-500/10">
                 <span className="text-[9px] font-black uppercase tracking-widest text-white/40">Total Plan</span>
@@ -871,11 +897,11 @@ function VIPCheckoutModal({
                 <input type="text" value={form.couponCode} onChange={(e) => { setForm({ ...form, couponCode: e.target.value }); setCouponValid(null); }}
                   placeholder="Enter coupon code"
                   className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-3.5 sm:p-4 text-white text-sm placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all uppercase" />
-                <button onClick={async () => {
+                <button type="button" onClick={async () => {
                   if (!form.couponCode) return;
                   setCouponChecking(true);
                   try {
-                    const res = await fetch(`/api/affiliate/coupons/validate?code=${form.couponCode}`);
+                    const res = await fetch(`/api/affiliate/coupons/validate?code=${encodeURIComponent(form.couponCode)}`);
                     if (res.ok) {
                       const data = await res.json();
                       if (data.valid) { setCouponValid(data.coupon); toast.success(`${data.coupon.discountPercent}% discount applied!`); }
@@ -889,8 +915,20 @@ function VIPCheckoutModal({
                 </button>
               </div>
               {couponValid && (
-                <div className="mt-2 p-3 rounded-xl bg-success/10 border border-success/20">
-                  <p className="text-xs text-success font-bold">{couponValid.discountPercent}% discount from {couponValid.affiliateName}</p>
+                <div className="mt-2 p-3 rounded-xl bg-success/10 border border-success/20 text-xs space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/60 font-bold">Original</span>
+                    <span className="text-white/50 line-through">{currentCurrency === 'BDT' ? rawStarterBDT.toLocaleString() : rawStarterUSDT.toLocaleString()} {symbol}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-success font-bold">Discount ({couponValid.discountPercent}%)</span>
+                    <span className="text-success">-{currentCurrency === 'BDT' ? discountBDT.toLocaleString() : discountUSDT.toLocaleString()} {symbol}</span>
+                  </div>
+                  <div className="border-t border-success/20 pt-1 flex items-center justify-between font-black">
+                    <span className="text-white">To Pay</span>
+                    <span className="text-white">{startPrice?.toLocaleString()} {symbol}</span>
+                  </div>
+                  <p className="text-[9px] text-text-muted pt-0.5">via {couponValid.affiliateName}</p>
                 </div>
               )}
             </div>
@@ -949,7 +987,7 @@ function VIPCheckoutModal({
                 </span>
               ) : (
                 <>
-                  <span>{selectedMethod ? `Pay ${startPrice?.toLocaleString()} ${symbol}` : `Get VIP Access — ${startPrice?.toLocaleString()} ${symbol}`}</span>
+                  <span>{selectedMethod ? `Pay ${startPrice?.toLocaleString()} ${symbol}${couponValid ? ` (SAVE ${couponDiscountPct}%)` : ''}` : `Get VIP Access — ${startPrice?.toLocaleString()} ${symbol}${couponValid ? ` (SAVE ${couponDiscountPct}%)` : ''}`}</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </>
               )}

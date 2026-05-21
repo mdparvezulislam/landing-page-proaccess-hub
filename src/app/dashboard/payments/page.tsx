@@ -6,12 +6,15 @@ import { useUserMembership, useUserPayments, useSubmitPayment } from '@/hooks/us
 import { useSettings } from '@/hooks/useCMS';
 import { CreditCard, DollarSign, Upload, ArrowRight, CheckCircle2, X, AlertTriangle, Globe, Loader2, Send, Copy, Check, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { useCurrencyStore } from '@/store/useCurrencyStore';
 
 export default function PaymentsPage() {
   const { data: membership } = useUserMembership();
   const { data: payments } = useUserPayments();
   const { data: siteData } = useSettings();
   const submitPayment = useSubmitPayment();
+  const { currentCurrency, toggleCurrency, convertPrice } = useCurrencyStore();
+  const fmtBDT = (bdt: number) => { const p = convertPrice(bdt); return `${p.currency === 'BDT' ? '৳' : '$'}${p.amount.toLocaleString()}`; };
 
   const [amountBDT, setAmountBDT] = useState(membership?.nextDueAmountBDT || 0);
   const [amountUSDT, setAmountUSDT] = useState(membership?.nextDueAmountUSDT || 0);
@@ -64,10 +67,18 @@ export default function PaymentsPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-3 lg:space-y-8 pb-8 lg:pb-20">
       <div>
-        <h2 className="text-xl lg:text-4xl font-black tracking-tighter flex items-center gap-2 lg:gap-4">
-          <CreditCard className="w-5 h-5 lg:w-8 lg:h-8 text-amber-500" /> Payments
-        </h2>
-        <p className="text-text-muted text-[11px] lg:text-sm mt-0.5 lg:mt-1">Submit your payment and track approval</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl lg:text-4xl font-black tracking-tighter flex items-center gap-2 lg:gap-4">
+              <CreditCard className="w-5 h-5 lg:w-8 lg:h-8 text-amber-500" /> Payments
+            </h2>
+            <p className="text-text-muted text-[11px] lg:text-sm mt-0.5 lg:mt-1">Submit your payment and track approval</p>
+          </div>
+          <button onClick={toggleCurrency}
+            className="px-3 py-2 lg:px-4 lg:py-2.5 rounded-xl bg-white/[0.02] border border-white/10 text-[10px] lg:text-xs font-black uppercase tracking-widest text-text-muted hover:text-white hover:bg-white/[0.05] transition-all flex items-center gap-2 shrink-0">
+            <Globe className="w-3.5 h-3.5 lg:w-4 lg:h-4" /> {currentCurrency === 'BDT' ? '৳ BDT' : '$ USDT'}
+          </button>
+        </div>
       </div>
 
       {/* Due Summary */}
@@ -75,8 +86,7 @@ export default function PaymentsPage() {
         className="grid grid-cols-2 md:grid-cols-4 gap-2 lg:gap-4">
         <div className="p-3 lg:p-5 rounded-[16px] lg:rounded-[24px] bg-amber-500/5 border border-amber-500/10">
           <p className="text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-amber-500 mb-0.5 lg:mb-1">Next Due Amount</p>
-          <p className="text-lg lg:text-3xl font-black text-amber-500">{stats.nextDue?.toLocaleString()} BDT</p>
-          <p className="text-[10px] lg:text-sm text-text-muted">{stats.nextDueUSDT} USDT</p>
+          <p className="text-lg lg:text-3xl font-black text-amber-500">{fmtBDT(stats.nextDue || 0)}</p>
         </div>
         <div className="p-3 lg:p-5 rounded-[16px] lg:rounded-[24px] bg-info/5 border border-info/10">
           <p className="text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-info mb-0.5 lg:mb-1">Next Due Date</p>
@@ -87,7 +97,7 @@ export default function PaymentsPage() {
         </div>
         <div className="p-3 lg:p-5 rounded-[16px] lg:rounded-[24px] bg-white/[0.02] border border-white/5">
           <p className="text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-text-muted mb-0.5 lg:mb-1">Remaining Total</p>
-          <p className="text-lg lg:text-3xl font-black text-white">{stats.remaining?.toLocaleString()} BDT</p>
+          <p className="text-lg lg:text-3xl font-black text-white">{fmtBDT(stats.remaining || 0)}</p>
         </div>
         <div className="p-3 lg:p-5 rounded-[16px] lg:rounded-[24px] bg-white/[0.02] border border-white/5">
           <p className="text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-text-muted mb-0.5 lg:mb-1">Progress</p>
@@ -198,7 +208,7 @@ export default function PaymentsPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 lg:gap-3 flex-wrap">
-                    <span className="text-sm lg:text-base font-black text-white">{p.amountBDT?.toLocaleString()} BDT</span>
+                    <span className="text-sm lg:text-base font-black text-white">{fmtBDT(p.amountBDT || 0)}</span>
                     <span className={`px-2 lg:px-2.5 py-0.5 rounded-full text-[8px] lg:text-[9px] font-black uppercase tracking-wider ${
                       p.status === 'approved' ? 'bg-success/10 text-success' :
                       p.status === 'rejected' ? 'bg-red-500/10 text-red-500' :

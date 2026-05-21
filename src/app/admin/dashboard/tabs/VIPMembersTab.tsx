@@ -44,6 +44,7 @@ export default function VIPMembersTab() {
   const createReminder = useCreateVIPReminder();
   const createNotification = useCreateVIPNotification();
   const { currentCurrency, convertPrice } = useCurrencyStore();
+  const fmtBDT = (bdt: number) => { const p = convertPrice(bdt); return `${p.currency === 'BDT' ? '৳' : '$'}${p.amount.toLocaleString()}`; };
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
 
@@ -235,7 +236,7 @@ export default function VIPMembersTab() {
             { label: 'Pending', value: stats.pendingMembers, icon: Hourglass, color: 'text-amber-500' },
             { label: 'Banned', value: stats.bannedMembers, icon: Ban, color: 'text-red-500' },
             { label: 'Payments', value: stats.totalPayments, icon: CreditCard, color: 'text-primary' },
-            { label: 'USDT Revenue', value: `${stats.totalRevenueUSDT?.toLocaleString()}`, icon: TrendingUp, color: 'text-secondary' },
+            { label: 'Revenue', value: fmtBDT(stats.totalRevenueBDT || 0), icon: TrendingUp, color: 'text-secondary' },
           ].map((s, i) => (
             <div key={i} className="p-4 rounded-2xl bg-white/[0.02] border border-white/5">
               <div className="flex items-center gap-2 mb-2">
@@ -326,6 +327,11 @@ export default function VIPMembersTab() {
                         <span>Progress: {member.paymentProgress || 0}%</span>
                         <span>Due: {new Date(member.nextDueDate).toLocaleDateString()}</span>
                         {member.status === 'overdue' && <span className="text-red-400 font-bold">OVERDUE</span>}
+                        {member.couponCode && (
+                          <span className="px-1.5 py-0.5 rounded-lg bg-success/10 text-success text-[7px] font-black border border-success/20">
+                            {member.discountPercent || ''}% OFF · {member.couponCode}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
@@ -375,8 +381,7 @@ export default function VIPMembersTab() {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
-                        <span className="font-bold">{p.amountBDT?.toLocaleString()} BDT</span>
-                        {p.amountUSDT > 0 && <span className="text-text-muted text-sm">/ {p.amountUSDT} USDT</span>}
+                        <span className="font-bold">{fmtBDT(p.amountBDT || 0)}</span>
                         <span className="text-text-muted text-sm">{p.paymentMethod}</span>
                         <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${p.status === 'approved' ? 'bg-success/10 text-success' : p.status === 'rejected' ? 'bg-red-500/10 text-red-500' : 'bg-amber-500/10 text-amber-500'}`}>
                           {p.status === 'approved' ? 'Approved' : p.status === 'rejected' ? 'Rejected' : 'Pending'}
@@ -571,6 +576,8 @@ export default function VIPMembersTab() {
 }
 
 function MemberDetailModal({ member, payments, planName, onClose, onStatusChange, onExtendDue, onMarkPaid, onSaveNote, onDelete, onApprovePayment, onOpenRejectModal, customAmountBDT, customAmountUSDT, setCustomAmountBDT, setCustomAmountUSDT }: any) {
+  const { convertPrice } = useCurrencyStore();
+  const fmtBDT = (bdt: number) => { const p = convertPrice(bdt); return `${p.currency === 'BDT' ? '৳' : '$'}${p.amount.toLocaleString()}`; };
   const [noteDraft, setNoteDraft] = useState(member.adminNote || '');
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 lg:p-10 bg-black/80 backdrop-blur-xl">
@@ -614,20 +621,18 @@ function MemberDetailModal({ member, payments, planName, onClose, onStatusChange
           {/* Financial Summary */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-5 rounded-2xl bg-success/5 border border-success/10">
-              <p className="text-[10px] font-black uppercase tracking-widest text-success mb-1">Paid (BDT)</p>
-              <p className="text-2xl font-black text-success">{member.totalPaidBDT?.toLocaleString()} BDT</p>
-              <p className="text-sm text-success/60">{member.totalPaidUSDT} USDT</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-success mb-1">Paid</p>
+              <p className="text-2xl font-black text-success">{fmtBDT(member.totalPaidBDT || 0)}</p>
             </div>
             <div className="p-5 rounded-2xl bg-amber-500/5 border border-amber-500/10">
-              <p className="text-[10px] font-black uppercase tracking-widest text-amber-500 mb-1">Remaining (BDT)</p>
-              <p className="text-2xl font-black text-amber-500">{member.remainingAmountBDT?.toLocaleString()} BDT</p>
-              <p className="text-sm text-amber-500/60">{member.remainingAmountUSDT} USDT</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-amber-500 mb-1">Remaining</p>
+              <p className="text-2xl font-black text-amber-500">{fmtBDT(member.remainingAmountBDT || 0)}</p>
             </div>
             <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5">
               <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-1">Next Renewal</p>
               <p className="text-2xl font-black">{new Date(member.nextDueDate).toLocaleDateString()}</p>
               <div className="flex items-center gap-2 mt-2">
-                <p className="text-sm text-text-muted">{member.nextDueAmountBDT?.toLocaleString()} BDT / {member.nextDueAmountUSDT} USDT</p>
+                <p className="text-sm text-text-muted">{fmtBDT(member.nextDueAmountBDT || 0)}</p>
               </div>
               {(() => {
                 const days = Math.ceil((new Date(member.nextDueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
@@ -639,6 +644,15 @@ function MemberDetailModal({ member, payments, planName, onClose, onStatusChange
               })()}
             </div>
           </div>
+
+          {/* Coupon / Discount Info */}
+          {member.couponCode && (
+            <div className="p-5 rounded-2xl bg-success/5 border border-success/10">
+              <p className="text-[10px] font-black uppercase tracking-widest text-success mb-1">Discount Applied</p>
+              <p className="text-lg font-black text-success">{member.couponCode}</p>
+              <p className="text-sm text-success/80">-{fmtBDT(member.discountAmount || 0)} ({member.discountPercent}% off on starter)</p>
+            </div>
+          )}
 
           {/* Ban Reason */}
           {member.banReason && (
@@ -723,7 +737,7 @@ function MemberDetailModal({ member, payments, planName, onClose, onStatusChange
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
-                        <span className="font-bold">{p.amountBDT?.toLocaleString()} BDT</span>
+                        <span className="font-bold">{fmtBDT(p.amountBDT || 0)}</span>
                         <span className="text-text-muted text-sm">{p.transactionId}</span>
                       </div>
                       <p className="text-xs text-text-muted">{new Date(p.paymentDate).toLocaleString()} • {p.paymentMethod}</p>

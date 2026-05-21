@@ -30,7 +30,7 @@ import { useCurrencyStore } from '@/store/useCurrencyStore';
 
 export default function CheckoutPage() {
   const { language, selectedOrderContext } = useStore();
-  const { convertPrice, currentCurrency } = useCurrencyStore();
+  const { convertPrice, currentCurrency, toggleCurrency } = useCurrencyStore();
   const { data: siteData, isLoading: settingsLoading } = useSettings();
   const router = useRouter();
 
@@ -106,6 +106,15 @@ export default function CheckoutPage() {
   const { product, plan } = selectedOrderContext;
   const { amount, currency } = isHydrated ? convertPrice(plan.priceTk) : { amount: plan.priceTk, currency: 'BDT' };
 
+  const originalPrice = plan.priceTk;
+  const couponDiscountPct = couponValid?.discountPercent || 0;
+  const discountBDT = Math.round(originalPrice * couponDiscountPct / 100);
+  const finalPriceBDT = originalPrice - discountBDT;
+  const originalPriceDisplay = isHydrated ? convertPrice(originalPrice) : { amount: originalPrice, currency: 'BDT' };
+  const finalPriceDisplay = isHydrated ? convertPrice(finalPriceBDT) : { amount: finalPriceBDT, currency: 'BDT' };
+  const discountDisplay = isHydrated ? convertPrice(discountBDT) : { amount: discountBDT, currency: 'BDT' };
+  const sym = (c?: string) => c === 'BDT' ? '৳' : '$';
+
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('Copied to clipboard');
@@ -122,23 +131,29 @@ export default function CheckoutPage() {
 
     try {
       const affiliateRef = typeof window !== 'undefined' ? (document.cookie.replace(/(?:(?:^|.*;\s*)affiliate_ref\s*\=\s*([^;]*).*$)|^.*$/, "$1") || localStorage.getItem('affiliate_ref') || '') : '';
+      const payload: any = {
+        productName: product.titleEn,
+        plan: plan.nameEn,
+        amount: couponValid ? finalPriceBDT : plan.priceTk,
+        originalAmount: plan.priceTk,
+        customerName: formData.name,
+        telegramUsername: formData.telegram.replace('@', ''),
+        paymentNumber: selectedMethod?.number || '',
+        transactionId: formData.transactionId,
+        screenshotUrl: formData.screenshot || '',
+        status: 'Pending',
+        couponCode: formData.couponCode || '',
+        affiliateCode: affiliateRef || '',
+        source: 'product',
+      };
+      if (couponValid) {
+        payload.discountPercent = couponValid.discountPercent;
+        payload.discountAmount = discountBDT;
+      }
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          productName: product.titleEn,
-          plan: plan.nameEn,
-          amount: plan.priceTk,
-          customerName: formData.name,
-          telegramUsername: formData.telegram.replace('@', ''),
-          paymentNumber: selectedMethod?.number || '',
-          transactionId: formData.transactionId,
-          screenshotUrl: formData.screenshot || '',
-          status: 'Pending',
-          couponCode: formData.couponCode || '',
-          affiliateCode: affiliateRef || '',
-          source: 'product',
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
@@ -162,16 +177,23 @@ export default function CheckoutPage() {
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/10 blur-[150px] rounded-full" />
       </div>
 
-      <div className="container mx-auto px-1 lg:px-6 max-w-7xl">
-        <Link href="/" className="inline-flex items-center gap-2 text-text-muted hover:text-text-primary mb-4 transition-all group font-black uppercase text-[10px] tracking-[2px] ml-2">
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          {t('Back', 'পিছনে')}
-        </Link>
+      <div className="w-full max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-8 xl:px-12">
+        <div className="flex items-center justify-between mb-4 lg:mb-6">
+          <Link href="/" className="inline-flex items-center gap-2 text-text-muted hover:text-text-primary transition-all group font-black uppercase text-[10px] tracking-[2px]">
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            {t('Back', 'পিছনে')}
+          </Link>
+          <button onClick={toggleCurrency}
+            className="px-3 lg:px-4 py-2 rounded-xl bg-white/[0.02] border border-white/10 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-text-muted hover:text-white hover:bg-white/[0.05] transition-all flex items-center gap-1.5 lg:gap-2">
+            <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            {currentCurrency === 'BDT' ? '৳ BDT' : '$ USDT'}
+          </button>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 lg:gap-12 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-8 xl:gap-12 items-start">
 
           {/* Left: Summary & Payment */}
-          <div className="lg:col-span-7 space-y-2 lg:space-y-8">
+          <div className="lg:col-span-7 space-y-3 lg:space-y-6 xl:space-y-8">
             {/* Summary Card */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -203,28 +225,32 @@ export default function CheckoutPage() {
                   </div>
                 </div>
                 <div className="text-right flex flex-col items-end">
-                  {plan.originalPriceTk && plan.originalPriceTk > plan.priceTk && (
+                  {(plan.originalPriceTk && plan.originalPriceTk > plan.priceTk) || couponValid ? (
                     <div className="flex items-center gap-1.5 opacity-40 line-through mb-1">
                       <span className="text-xs lg:text-lg font-bold">
-                        {isHydrated ? convertPrice(plan.originalPriceTk).amount : plan.originalPriceTk}
+                        {isHydrated ? (plan.originalPriceTk && plan.originalPriceTk > plan.priceTk ? convertPrice(plan.originalPriceTk).amount : originalPriceDisplay.amount) : plan.priceTk}
                       </span>
-                      <span className="text-[8px] lg:text-xs font-black uppercase">{currency}</span>
+                      <span className="text-[8px] lg:text-xs font-black uppercase">{isHydrated ? (plan.originalPriceTk && plan.originalPriceTk > plan.priceTk ? convertPrice(plan.originalPriceTk).currency : originalPriceDisplay.currency) : currency}</span>
                     </div>
-                  )}
+                  ) : null}
                   <span className="text-xl lg:text-5xl font-black text-text-primary tracking-tighter flex items-baseline gap-0.5">
-                    {amount} <span className="text-[10px] lg:text-lg opacity-40 uppercase">{currency}</span>
+                    {couponValid ? finalPriceDisplay.amount : amount} <span className="text-[10px] lg:text-lg opacity-40 uppercase">{couponValid ? finalPriceDisplay.currency : currency}</span>
                   </span>
                   <div className="flex flex-col items-end gap-1 mt-1">
                     {currentCurrency === 'USDT' && (
                       <span className="text-[8px] lg:text-sm font-black text-white/20 uppercase tracking-tighter">
-                        ({plan.priceTk} BDT)
+                        ({couponValid ? finalPriceBDT : plan.priceTk} BDT)
                       </span>
                     )}
-                    {plan.originalPriceTk && plan.originalPriceTk > plan.priceTk && (
+                    {couponValid ? (
+                      <span className="px-2 py-0.5 rounded-md bg-success/10 text-success text-[7px] lg:text-[9px] font-black uppercase tracking-widest border border-success/20">
+                        {t('SAVE', 'সঞ্চয়')} {sym(discountDisplay.currency)}{discountDisplay.amount} ({couponDiscountPct}%)
+                      </span>
+                    ) : plan.originalPriceTk && plan.originalPriceTk > plan.priceTk ? (
                       <span className="px-2 py-0.5 rounded-md bg-success/10 text-success text-[7px] lg:text-[9px] font-black uppercase tracking-widest border border-success/20">
                         {t('SAVE', 'সঞ্চয়')} {isHydrated ? convertPrice(plan.originalPriceTk - plan.priceTk).amount : (plan.originalPriceTk - plan.priceTk)} {currency}
                       </span>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               </div>
@@ -386,12 +412,12 @@ export default function CheckoutPage() {
                     <input type="text" value={formData.couponCode} onChange={(e) => { setFormData({ ...formData, couponCode: e.target.value }); setCouponValid(null); }}
                       className="flex-1 bg-white/[0.03] border border-white/10 rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-5 text-text-primary focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all font-black uppercase text-sm lg:text-base tracking-[1px]"
                       placeholder="PARVEZ5" />
-                    <button onClick={async () => {
+                    <button type="button" onClick={async () => {
                       if (!formData.couponCode) return;
                       setCouponChecking(true);
                       try {
-                        const res = await fetch(`/api/affiliate/coupons/validate?code=${formData.couponCode}`);
-                        if (res.ok) { const d = await res.json(); if (d.valid) { setCouponValid(d.coupon); toast.success(`${d.coupon.discountPercent}% discount!`); } else { setCouponValid(null); toast.error('Invalid coupon'); } }
+                        const res = await fetch(`/api/affiliate/coupons/validate?code=${encodeURIComponent(formData.couponCode)}`);
+                        if (res.ok) { const d = await res.json(); if (d.valid) { setCouponValid(d.coupon); toast.success(`${d.coupon.discountPercent}% discount applied!`); } else { setCouponValid(null); toast.error('Invalid coupon'); } }
                         else { setCouponValid(null); toast.error('Invalid coupon'); }
                       } catch { setCouponValid(null); toast.error('Failed'); }
                       finally { setCouponChecking(false); }
@@ -401,8 +427,20 @@ export default function CheckoutPage() {
                     </button>
                   </div>
                   {couponValid && (
-                    <div className="mt-2 p-3 rounded-xl bg-success/10 border border-success/20">
-                      <p className="text-xs text-success font-bold">{couponValid.discountPercent}% discount from {couponValid.affiliateName}</p>
+                    <div className="mt-2 p-3 lg:p-4 rounded-xl bg-success/10 border border-success/20 space-y-1.5">
+                      <div className="flex items-center justify-between text-[10px] lg:text-xs">
+                        <span className="text-text-muted font-bold">{t('Original Price', 'মূল মূল্য')}</span>
+                        <span className="text-white/60 line-through">{sym(originalPriceDisplay.currency)}{originalPriceDisplay.amount}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-[10px] lg:text-xs">
+                        <span className="text-success font-bold">{t('Discount', 'ডিসকাউন্ট')} ({couponValid.discountPercent}%)</span>
+                        <span className="text-success">-{sym(discountDisplay.currency)}{discountDisplay.amount}</span>
+                      </div>
+                      <div className="border-t border-success/20 pt-1.5 flex items-center justify-between text-sm lg:text-base">
+                        <span className="text-white font-black">{t('Final Price', 'চূড়ান্ত মূল্য')}</span>
+                        <span className="text-white font-black">{sym(finalPriceDisplay.currency)}{finalPriceDisplay.amount} <span className="text-[9px] opacity-40 uppercase">{finalPriceDisplay.currency}</span></span>
+                      </div>
+                      <p className="text-[9px] text-text-muted mt-1">via {couponValid.affiliateName}</p>
                     </div>
                   )}
                 </div>

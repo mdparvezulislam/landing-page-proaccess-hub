@@ -29,6 +29,7 @@ export interface IAffiliateUser extends Document {
   promotionMethod: string;
   rejectionNote: string;
   approvalNote: string;
+  referredBy: string;
 }
 
 function generateAffiliateCode(name: string): string {
@@ -66,11 +67,12 @@ const AffiliateUserSchema = new Schema<IAffiliateUser>({
   promotionMethod: { type: String, default: '' },
   rejectionNote: { type: String, default: '' },
   approvalNote: { type: String, default: '' },
+  referredBy: { type: String, default: '' },
 }, { timestamps: true });
 
 AffiliateUserSchema.pre('save', function () {
   if (this.affiliateCode && !this.referralLink) {
-    this.referralLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://proaccessvip.com'}?ref=${this.affiliateCode}`;
+    this.referralLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://proaccessvip.com'}/affiliate/register?ref=${this.affiliateCode}`;
   }
 });
 

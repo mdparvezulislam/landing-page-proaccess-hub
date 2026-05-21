@@ -11,50 +11,96 @@ import AffiliateNotification from '@/models/AffiliateNotification';
 async function processCommissionForVIPPayment(payment: any, member: any) {
   try {
     const orderId = member.membershipId;
-    const referral = await AffiliateReferral.findOne({ orderId });
-    if (!referral) return;
 
-    if (referral.commissionStatus !== 'pending') return;
+    const originalReferral = await AffiliateReferral.findOne({ orderId });
+    if (!originalReferral) return;
 
-    referral.orderStatus = 'completed';
-    referral.paymentId = payment._id.toString();
-    referral.commissionStatus = 'pending';
-    await referral.save();
+    const existingForPayment = await AffiliateReferral.findOne({ paymentId: payment._id.toString() });
+    if (existingForPayment) return;
 
-    const wallet = await AffiliateWallet.findOne({ affiliateId: referral.affiliateId });
+    const affiliateId = originalReferral.affiliateId;
+    const commissionPercent = originalReferral.commissionPercent;
+    const isFirstPayment = originalReferral.paymentId === payment._id.toString();
+
+    let commissionAmount: number;
+    let description: string;
+    let note: string;
+
+    if (isFirstPayment) {
+      commissionAmount = originalReferral.commissionAmount;
+      description = `Commission for ${originalReferral.productName}`;
+      note = 'Commission from VIP payment approval';
+      originalReferral.orderStatus = 'completed';
+      originalReferral.commissionStatus = 'approved';
+      originalReferral.commissionApprovedAt = new Date();
+      await originalReferral.save();
+    } else {
+      commissionAmount = (payment.amountBDT * commissionPercent) / 100;
+      description = `Commission for ${originalReferral.productName} (installment)`;
+      note = 'Commission from VIP installment payment';
+      await AffiliateReferral.create({
+        buyerName: originalReferral.buyerName,
+        buyerPhone: originalReferral.buyerPhone,
+        buyerEmail: originalReferral.buyerEmail,
+        buyerTelegram: originalReferral.buyerTelegram,
+        affiliateId,
+        couponCode: originalReferral.couponCode,
+        discountPercent: 0,
+        commissionPercent,
+        source: 'vip_plan',
+        productId: originalReferral.productId,
+        productName: originalReferral.productName,
+        planName: originalReferral.planName,
+        orderAmount: payment.amountBDT,
+        discountAmount: 0,
+        commissionAmount,
+        currency: 'BDT',
+        orderId,
+        paymentId: payment._id.toString(),
+        orderStatus: 'completed',
+        commissionStatus: 'approved',
+        commissionApprovedAt: new Date(),
+      });
+    }
+
+    const wallet = await AffiliateWallet.findOne({ affiliateId });
     if (wallet) {
-      wallet.pendingBalance += referral.commissionAmount;
-      wallet.lifetimeEarnings += referral.commissionAmount;
+      wallet.availableBalance += commissionAmount;
+      wallet.lifetimeEarnings += commissionAmount;
       wallet.lastUpdated = new Date();
       await wallet.save();
     } else {
       await AffiliateWallet.create({
-        affiliateId: referral.affiliateId,
-        pendingBalance: referral.commissionAmount,
-        lifetimeEarnings: referral.commissionAmount,
+        affiliateId,
+        availableBalance: commissionAmount,
+        lifetimeEarnings: commissionAmount,
       });
     }
 
-    await AffiliateUser.findByIdAndUpdate(referral.affiliateId, {
-      $inc: { totalSales: 1, totalCommission: referral.commissionAmount, pendingBalance: referral.commissionAmount, lifetimeEarnings: referral.commissionAmount },
-    });
+    const incFields: Record<string, number> = {
+      totalCommission: commissionAmount,
+      availableBalance: commissionAmount,
+      lifetimeEarnings: commissionAmount,
+    };
+    if (isFirstPayment) incFields.totalSales = 1;
+    await AffiliateUser.findByIdAndUpdate(affiliateId, { $inc: incFields });
 
     await AffiliateTransaction.create({
-      affiliateId: referral.affiliateId,
+      affiliateId,
       type: 'referral_commission',
-      amount: referral.commissionAmount,
-      balanceBefore: wallet ? wallet.availableBalance : 0,
+      amount: commissionAmount,
+      balanceBefore: wallet ? wallet.availableBalance - commissionAmount : 0,
       balanceAfter: wallet ? wallet.availableBalance : 0,
-      source: { referralId: referral._id.toString(), note: 'Commission from VIP payment approval' },
-      status: 'pending',
-      description: `Commission for ${referral.productName}`,
+      source: { referralId: originalReferral._id.toString(), note },
+      status: 'completed',
+      description,
     });
 
     await AffiliateNotification.create({
-      affiliateId: referral.affiliateId,
+      affiliateId,
       type: 'new_commission',
-      title: 'New Commission!',
-      message: `VIP sale completed! You earned $${referral.commissionAmount.toFixed(2)} commission. It's pending admin approval.`,
+      title: 'New Commission Approved!',
+      message: `VIP ${isFirstPayment ? 'sale' : 'installment'} completed! You earned ৳${commissionAmount.toFixed(2)} commission. It's available for withdrawal.`,
     });
   } catch (err) {
     console.error('Commission processing error:', err);
@@ -93,12 +139,17 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         const nextDueDate = new Date(now);
         nextDueDate.setDate(nextDueDate.getDate() + 30);
 
+        const nextDueBDT = newRemainingBDT <= 0 ? 0 : member.monthlyBDT > 0 ? Math.min(member.monthlyBDT, newRemainingBDT) : newRemainingBDT;
+        const nextDueUSDT = newRemainingUSDT <= 0 ? 0 : member.monthlyUSDT > 0 ? Math.min(member.monthlyUSDT, newRemainingUSDT) : newRemainingUSDT;
+
         await VIPMembershipUser.findByIdAndUpdate(payment.membershipUserId, {
           $set: {
             totalPaidBDT: newPaidBDT,
             totalPaidUSDT: newPaidUSDT,
             remainingAmountBDT: newRemainingBDT,
             remainingAmountUSDT: newRemainingUSDT,
+            nextDueAmountBDT: nextDueBDT,
+            nextDueAmountUSDT: nextDueUSDT,
             paymentProgress: progress,
             status: newRemainingBDT <= 0 ? 'completed' : 'active',
             nextDueDate,

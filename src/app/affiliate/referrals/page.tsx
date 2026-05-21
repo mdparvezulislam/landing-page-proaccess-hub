@@ -3,12 +3,15 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAffiliateReferrals } from '@/hooks/useAffiliate';
-import { Users, Search, Filter, ExternalLink } from 'lucide-react';
+import { useCurrencyStore } from '@/store/useCurrencyStore';
+import { Users, Search, Filter, ExternalLink, Globe } from 'lucide-react';
 
 export default function AffiliateReferralsPage() {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState('');
   const { data, isLoading } = useAffiliateReferrals(page);
+  const { currentCurrency, toggleCurrency, convertPrice } = useCurrencyStore();
+  const fmtBDT = (bdt: number) => { const p = convertPrice(bdt); return `${p.currency === 'BDT' ? '৳' : '$'}${p.amount.toFixed(2)}`; };
 
   const referrals = data?.referrals || [];
   const pagination = data?.pagination || { total: 0, page: 1, pages: 1 };
@@ -36,9 +39,15 @@ export default function AffiliateReferralsPage() {
 
   return (
     <div className="space-y-8 pb-20">
-      <div>
-        <h1 className="text-3xl lg:text-5xl font-black tracking-tighter mb-2">Referrals</h1>
-        <p className="text-text-muted text-sm font-medium">Track all your referred customers and commissions</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl lg:text-5xl font-black tracking-tighter mb-2">Referrals</h1>
+          <p className="text-text-muted text-sm font-medium">Track all your referred customers and commissions</p>
+        </div>
+        <button onClick={toggleCurrency}
+          className="px-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/10 text-xs font-black uppercase tracking-widest text-text-muted hover:text-white hover:bg-white/[0.05] transition-all flex items-center gap-2">
+          <Globe className="w-4 h-4" /> {currentCurrency === 'BDT' ? '৳ BDT' : '$ USDT'}
+        </button>
       </div>
 
       <div className="flex items-center gap-3">
@@ -87,11 +96,11 @@ export default function AffiliateReferralsPage() {
                 </div>
                 <div className="flex items-center gap-4 lg:gap-6">
                   <div className="text-right">
-                    <p className="text-sm font-bold">{ref.orderAmount?.toFixed(2)} {ref.currency}</p>
+                    <p className="text-sm font-bold">{fmtBDT(ref.orderAmount || 0)}</p>
                     <p className="text-[9px] text-text-muted">Amount</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-success">${ref.commissionAmount?.toFixed(2)}</p>
+                    <p className="text-sm font-bold text-success">{fmtBDT(ref.commissionAmount || 0)}</p>
                     <p className="text-[9px] text-text-muted">Commission</p>
                   </div>
                   <div className="flex flex-col items-end gap-1">

@@ -22,7 +22,12 @@ function fetchJson(url: string, options?: RequestInit) {
 
 function AdminAffiliatesTab() {
   const [activeSubTab, setActiveSubTab] = useState('overview');
+  const { currentCurrency, toggleCurrency, convertPrice } = useCurrencyStore();
   const queryClient = useQueryClient();
+  const fmt = (val: number) => {
+    const { amount, currency } = convertPrice(val);
+    return { amount: amount.toLocaleString(), currency, symbol: currency === 'BDT' ? '৳' : '$' };
+  };
 
   const { data: affiliates, isLoading: loadingAffiliates } = useQuery({
     queryKey: ['admin-affiliates'],
@@ -115,15 +120,19 @@ function AdminAffiliatesTab() {
   ];
 
   return (
-    <div className="space-y-10 pb-20">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-5xl font-black tracking-tighter mb-2 flex items-center gap-4">
-            <Users className="w-10 h-10 text-primary" /> Affiliates
-          </h2>
-          <p className="text-text-muted font-black uppercase text-[10px] tracking-[4px]">Manage affiliate partners, commissions, and payouts</p>
+      <div className="space-y-10 pb-20">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-5xl font-black tracking-tighter mb-2 flex items-center gap-4">
+              <Users className="w-10 h-10 text-primary" /> Affiliates
+            </h2>
+            <p className="text-text-muted font-black uppercase text-[10px] tracking-[4px]">Manage affiliate partners, commissions, and payouts</p>
+          </div>
+          <button onClick={toggleCurrency}
+            className="px-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/10 text-xs font-black uppercase tracking-widest text-text-muted hover:text-white hover:bg-white/[0.05] transition-all flex items-center gap-2">
+            <Globe className="w-4 h-4" /> {currentCurrency === 'BDT' ? '৳ BDT' : '$ USDT'}
+          </button>
         </div>
-      </div>
 
       <div className="flex items-center gap-2 border-b border-white/5 pb-2 overflow-x-auto">
         {tabs.map(tab => {
@@ -139,14 +148,14 @@ function AdminAffiliatesTab() {
 
       <AnimatePresence mode="wait">
         <motion.div key={activeSubTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
-          {activeSubTab === 'overview' && <OverviewTab analytics={analytics} affiliates={affiliates} />}
+          {activeSubTab === 'overview' && <OverviewTab analytics={analytics} affiliates={affiliates} fmt={fmt} />}
           {activeSubTab === 'affiliates' && (
-            <AffiliatesListTab affiliates={affiliates} loading={loadingAffiliates} onUpdate={(id: string, data: any) => updateAffiliate.mutate({ id, data })} onUpdateCoupon={(affiliateId: string, data: any) => updateCoupon.mutate({ affiliateId, data })} />
+            <AffiliatesListTab affiliates={affiliates} loading={loadingAffiliates} fmt={fmt} onUpdate={(id: string, data: any) => updateAffiliate.mutate({ id, data })} onUpdateCoupon={(affiliateId: string, data: any) => updateCoupon.mutate({ affiliateId, data })} />
           )}
           {activeSubTab === 'withdrawals' && (
             <WithdrawalsTab withdrawals={withdrawals} onProcess={(id: string, data: any) => processWithdrawal.mutate({ id, data })} />
           )}
-          {activeSubTab === 'analytics' && <AnalyticsTab analytics={analytics} affiliates={affiliates} />}
+          {activeSubTab === 'analytics' && <AnalyticsTab analytics={analytics} affiliates={affiliates} fmt={fmt} />}
           {activeSubTab === 'settings' && (
             <SettingsTab settings={globalSettings} onSave={(data: any) => updateSettings.mutate(data)} />
           )}
@@ -156,10 +165,12 @@ function AdminAffiliatesTab() {
   );
 }
 
-function OverviewTab({ analytics, affiliates }: any) {
+function OverviewTab({ analytics, affiliates, fmt }: any) {
   const a = analytics || {};
   const affs = affiliates || [];
   const pendingCount = affs.filter((a: any) => a.status === 'pending').length;
+  const tc = fmt(a.totalCommission ?? 0);
+  const pp = fmt(a.pendingPayouts ?? 0);
 
   const stats = [
     { label: 'Total Affiliates', value: a.totalAffiliates ?? affs.length, icon: Users, color: 'text-primary' },
@@ -167,8 +178,8 @@ function OverviewTab({ analytics, affiliates }: any) {
     { label: 'Pending Approval', value: pendingCount, icon: Shield, color: 'text-warning', pulse: pendingCount > 0 },
     { label: 'Total Referrals', value: a.totalReferrals ?? 0, icon: ShoppingCart, color: 'text-amber-500' },
     { label: 'Total Sales', value: a.totalSales ?? 0, icon: TrendingUp, color: 'text-secondary' },
-    { label: 'Total Commission', value: `$${(a.totalCommission ?? 0).toFixed(2)}`, icon: DollarSign, color: 'text-success' },
-    { label: 'Pending Payouts', value: `$${(a.pendingPayouts ?? 0).toFixed(2)}`, icon: Clock, color: 'text-warning' },
+    { label: 'Total Commission', value: `${tc.symbol}${tc.amount}`, icon: DollarSign, color: 'text-success' },
+    { label: 'Pending Payouts', value: `${pp.symbol}${pp.amount}`, icon: Clock, color: 'text-warning' },
     { label: 'Conversion Rate', value: `${(a.conversionRate ?? 0).toFixed(1)}%`, icon: Percent, color: 'text-info' },
   ];
 
@@ -208,7 +219,7 @@ function OverviewTab({ analytics, affiliates }: any) {
   );
 }
 
-function AffiliatesListTab({ affiliates, loading, onUpdate, onUpdateCoupon }: any) {
+function AffiliatesListTab({ affiliates, loading, fmt, onUpdate, onUpdateCoupon }: any) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [viewAffiliate, setViewAffiliate] = useState<any>(null);
@@ -287,7 +298,7 @@ function AffiliatesListTab({ affiliates, loading, onUpdate, onUpdateCoupon }: an
                 </div>
                 <div className="flex items-center gap-4 lg:gap-6 text-center flex-wrap">
                   <div>
-                    <p className="text-sm font-bold">${(aff.totalCommission || 0).toFixed(2)}</p>
+                    <p className="text-sm font-bold">{(() => { const f = fmt(aff.totalCommission || 0); return f.symbol + f.amount; })()}</p>
                     <p className="text-[8px] text-text-muted font-bold uppercase tracking-widest">Earned</p>
                   </div>
                   <div>
@@ -534,6 +545,8 @@ function ActionModal({ affiliate, action, onClose, onConfirm }: any) {
 
 function AffiliateDetailModal({ affiliate, onClose, onUpdate, onUpdateCoupon }: any) {
   const [actionModal, setActionModal] = useState<{ action: string } | null>(null);
+  const { convertPrice } = useCurrencyStore();
+  const dfmt = (val: number) => { const { amount, currency } = convertPrice(val); return { amount: amount.toLocaleString(), currency, symbol: currency === 'BDT' ? '৳' : '$' }; };
 
   const statusColor: Record<string, string> = {
     pending: 'bg-warning/10 text-warning border-warning/20',
@@ -639,7 +652,7 @@ function AffiliateDetailModal({ affiliate, onClose, onUpdate, onUpdateCoupon }: 
 
           <div className="grid grid-cols-3 gap-3">
             <div className="p-4 rounded-xl bg-success/5 border border-success/10 text-center">
-              <p className="text-lg font-black text-success">${(affiliate.totalCommission || 0).toFixed(2)}</p>
+              <p className="text-lg font-black text-success">{(() => { const { symbol, amount } = dfmt(affiliate.totalCommission || 0); return symbol + amount; })()}</p>
               <p className="text-[8px] text-text-muted font-black uppercase tracking-widest">Earned</p>
             </div>
             <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/10 text-center">
@@ -689,7 +702,11 @@ function AffiliateDetailModal({ affiliate, onClose, onUpdate, onUpdateCoupon }: 
 
 function SettingsTab({ settings, onSave }: any) {
   const [form, setForm] = useState({ ...settings });
-  const { usdtRate } = useCurrencyStore();
+  const { usdtRate, convertPrice } = useCurrencyStore();
+  const fmt = (val: number) => {
+    const { amount, currency } = convertPrice(val);
+    return { amount: amount.toLocaleString(), currency, symbol: currency === 'BDT' ? '৳' : '$' };
+  };
 
   React.useEffect(() => {
     if (settings) setForm({ ...settings });
@@ -776,14 +793,14 @@ function SettingsTab({ settings, onSave }: any) {
               <label className="text-[10px] font-black uppercase tracking-[2px] text-text-muted ml-1">Minimum Withdrawal</label>
               <input type="number" value={form.minWithdrawal} onChange={(e) => setForm((p: any) => ({ ...p, minWithdrawal: Math.max(0, Number(e.target.value)) }))}
                 className="admin-input w-full text-white bg-white/[0.02] border-white/10" />
-              <p className="text-[9px] text-text-muted">${form.minWithdrawal || 5} USD = ৳{bdtMin.toLocaleString()} BDT (at {usdtRate} rate)</p>
+              <p className="text-[9px] text-text-muted">${form.minWithdrawal || 5} USD = {fmt(bdtMin).symbol}{fmt(bdtMin).amount} {fmt(bdtMin).currency} (at {usdtRate} rate)</p>
             </div>
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-[2px] text-text-muted ml-1">Maximum Withdrawal — 0 = unlimited</label>
               <input type="number" value={form.maxWithdrawal} onChange={(e) => setForm((p: any) => ({ ...p, maxWithdrawal: Math.max(0, Number(e.target.value)) }))}
                 className="admin-input w-full text-white bg-white/[0.02] border-white/10" />
               {bdtMax !== null && (
-                <p className="text-[9px] text-text-muted">${form.maxWithdrawal} USD = ৳{bdtMax.toLocaleString()} BDT (at {usdtRate} rate)</p>
+                <p className="text-[9px] text-text-muted">${form.maxWithdrawal} USD = {fmt(bdtMax).symbol}{fmt(bdtMax).amount} {fmt(bdtMax).currency} (at {usdtRate} rate)</p>
               )}
               {form.maxWithdrawal === 0 && (
                 <p className="text-[9px] text-text-muted">No upper limit (0 = unlimited)</p>
@@ -827,6 +844,11 @@ function SettingsTab({ settings, onSave }: any) {
 
 function WithdrawalsTab({ withdrawals, onProcess }: any) {
   const [action, setAction] = useState<{ id: string; status: string; note: string } | null>(null);
+  const { convertPrice } = useCurrencyStore();
+  const fmt = (val: number) => {
+    const { amount, currency } = convertPrice(val);
+    return { amount: amount.toLocaleString(), currency, symbol: currency === 'BDT' ? '৳' : '$' };
+  };
 
   const list = withdrawals || [];
 
@@ -855,7 +877,7 @@ function WithdrawalsTab({ withdrawals, onProcess }: any) {
                     <Wallet className="w-5 h-5 text-amber-500" />
                   </div>
                   <div>
-                    <p className="text-base font-bold">{wd.currency === 'BDT' ? '৳' : '$'}{wd.amount?.toFixed(2)} via {wd.paymentMethod}</p>
+                    <p className="text-base font-bold">{wd.currency === 'BDT' ? `${fmt(wd.amount).symbol}${fmt(wd.amount).amount}` : `$${wd.amount?.toFixed(2)}`} via {wd.paymentMethod}</p>
                     <p className="text-xs text-text-muted">{wd.accountInfo?.accountNumber} {wd.accountInfo?.accountHolder ? `• ${wd.accountInfo.accountHolder}` : ''}</p>
                     {wd.affiliateName && <p className="text-[9px] text-primary font-bold">Affiliate: {wd.affiliateName}</p>}
                     <p className="text-[9px] text-text-muted">{new Date(wd.createdAt).toLocaleString()}</p>
@@ -924,7 +946,7 @@ function WithdrawalsTab({ withdrawals, onProcess }: any) {
   );
 }
 
-function AnalyticsTab({ analytics, affiliates }: any) {
+function AnalyticsTab({ analytics, affiliates, fmt }: any) {
   const affs = affiliates || [];
   const a = analytics || {};
 
@@ -945,7 +967,7 @@ function AnalyticsTab({ analytics, affiliates }: any) {
                     <p className="text-[8px] text-text-muted">{aff.totalSales || 0} sales</p>
                   </div>
                 </div>
-                <p className="text-sm font-bold text-success">${(aff.totalCommission || 0).toFixed(2)}</p>
+                <p className="text-sm font-bold text-success">{(() => { const f = fmt(aff.totalCommission || 0); return f.symbol + f.amount; })()}</p>
               </div>
             ))}
           </div>
@@ -955,10 +977,10 @@ function AnalyticsTab({ analytics, affiliates }: any) {
           <h3 className="text-lg font-black mb-4 flex items-center gap-2"><TrendingUp className="w-5 h-5 text-primary" /> Performance Metrics</h3>
           <div className="space-y-4">
             {[
-              { label: 'Avg. Commission per Sale', value: `$${(a.avgCommissionPerSale ?? 0).toFixed(2)}`, color: 'text-success' },
+              { label: 'Avg. Commission per Sale', value: (() => { const f = fmt(a.avgCommissionPerSale ?? 0); return f.symbol + f.amount; })(), color: 'text-success' },
               { label: 'Avg. Referrals per Affiliate', value: (a.avgReferralsPerAffiliate ?? 0).toFixed(1), color: 'text-primary' },
-              { label: 'Total Discounts Given', value: `$${(a.totalDiscounts ?? 0).toFixed(2)}`, color: 'text-amber-500' },
-              { label: 'Total Paid Out', value: `$${(a.totalPaidOut ?? 0).toFixed(2)}`, color: 'text-secondary' },
+              { label: 'Total Discounts Given', value: (() => { const f = fmt(a.totalDiscounts ?? 0); return f.symbol + f.amount; })(), color: 'text-amber-500' },
+              { label: 'Total Paid Out', value: (() => { const f = fmt(a.totalPaidOut ?? 0); return f.symbol + f.amount; })(), color: 'text-secondary' },
             ].map((metric) => (
               <div key={metric.label} className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5">
                 <span className="text-xs font-bold text-text-muted">{metric.label}</span>

@@ -3,9 +3,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useAffiliateDashboard } from '@/hooks/useAffiliate';
+import { useCurrencyStore } from '@/store/useCurrencyStore';
 import {
   DollarSign, Users, TrendingUp, ShoppingCart, MousePointerClick,
-  Percent, Wallet, Gift, Copy, ExternalLink, RefreshCw,
+  Percent, Wallet, Gift, Copy, ExternalLink, RefreshCw, Globe,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -34,10 +35,16 @@ function StatCard({ icon: Icon, label, value, sub, color, delay }: any) {
 
 export default function AffiliateDashboardPage() {
   const { data, isLoading } = useAffiliateDashboard();
+  const { currentCurrency, convertPrice, toggleCurrency } = useCurrencyStore();
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('Copied to clipboard!');
+  };
+
+  const fmt = (usdAmount: number) => {
+    const { amount, currency } = convertPrice(usdAmount);
+    return { amount: amount.toLocaleString(), currency, symbol: currency === 'BDT' ? '৳' : '$' };
   };
 
   if (isLoading) {
@@ -51,12 +58,25 @@ export default function AffiliateDashboardPage() {
   const wallet = data?.wallet || { availableBalance: 0, pendingBalance: 0, withdrawnBalance: 0, lifetimeEarnings: 0 };
   const stats = data?.stats || { totalReferrals: 0, totalSales: 0, totalCommission: 0, conversionRate: 0 };
   const recent = data?.recentReferrals || [];
+  const bal = fmt(wallet.availableBalance);
+  const pend = fmt(wallet.pendingBalance);
+  const comm = fmt(stats.totalCommission);
+  const withdr = fmt(wallet.withdrawnBalance);
+  const life = fmt(wallet.lifetimeEarnings);
+
+  const sym = (c?: string) => c === 'BDT' ? '৳' : '$';
 
   return (
     <div className="space-y-8 pb-20">
-      <div>
-        <h1 className="text-3xl lg:text-5xl font-black tracking-tighter mb-2">Affiliate Dashboard</h1>
-        <p className="text-text-muted text-sm font-medium">Track your performance, referrals, and earnings</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl lg:text-5xl font-black tracking-tighter mb-2">Affiliate Dashboard</h1>
+          <p className="text-text-muted text-sm font-medium">Track your performance, referrals, and earnings</p>
+        </div>
+        <button onClick={toggleCurrency}
+          className="px-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/10 text-xs font-black uppercase tracking-widest text-text-muted hover:text-white hover:bg-white/[0.05] transition-all flex items-center gap-2">
+          <Globe className="w-4 h-4" /> {currentCurrency === 'BDT' ? '৳ BDT' : '$ USDT'}
+        </button>
       </div>
 
       <div className="p-5 lg:p-8 rounded-3xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20 relative overflow-hidden">
@@ -67,10 +87,10 @@ export default function AffiliateDashboardPage() {
           </div>
           <div className="flex-1">
             <p className="text-xs font-black uppercase tracking-widest text-primary mb-1">Your Referral Link</p>
-            <p className="text-sm lg:text-lg font-bold text-white/80 break-all">{data?.referralLink || 'Loading...'}</p>
+            <p className="text-sm lg:text-lg font-bold text-white/80 break-all">{data?.affiliateCode ? `${window.location.origin}/affiliate/register?ref=${data.affiliateCode}` : 'Loading...'}</p>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => copyToClipboard(data?.referralLink || '')}
+            <button onClick={() => copyToClipboard(data?.affiliateCode ? `${window.location.origin}/affiliate/register?ref=${data.affiliateCode}` : '')}
               className="px-5 py-3 rounded-2xl bg-primary text-white text-xs font-black uppercase tracking-widest hover:bg-primary/80 transition-all flex items-center gap-2">
               <Copy className="w-4 h-4" /> Copy Link
             </button>
@@ -79,13 +99,13 @@ export default function AffiliateDashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-        <StatCard icon={DollarSign} label="Available Balance" value={`$${wallet.availableBalance.toFixed(2)}`} sub={`$${wallet.lifetimeEarnings.toFixed(2)} lifetime`} color="text-success" delay={0} />
-        <StatCard icon={Wallet} label="Pending Balance" value={`$${wallet.pendingBalance.toFixed(2)}`} sub="Awaiting approval" color="text-warning" delay={0.05} />
-        <StatCard icon={TrendingUp} label="Total Commission" value={`$${stats.totalCommission.toFixed(2)}`} sub="All time earnings" color="text-primary" delay={0.1} />
+        <StatCard icon={DollarSign} label="Available Balance" value={`${bal.symbol}${bal.amount}`} sub={`${life.symbol}${life.amount} lifetime`} color="text-success" delay={0} />
+        <StatCard icon={Wallet} label="Pending Balance" value={`${pend.symbol}${pend.amount}`} sub="Awaiting approval" color="text-warning" delay={0.05} />
+        <StatCard icon={TrendingUp} label="Total Commission" value={`${comm.symbol}${comm.amount}`} sub="All time earnings" color="text-primary" delay={0.1} />
         <StatCard icon={Users} label="Total Referrals" value={stats.totalReferrals} sub={`${stats.totalSales} conversions`} color="text-secondary" delay={0.15} />
-        <StatCard icon={ShoppingCart} label="Total Sales" value={stats.totalSales} sub={`${stats.totalCommission.toFixed(2)} earned`} color="text-amber-500" delay={0.2} />
+        <StatCard icon={ShoppingCart} label="Total Sales" value={stats.totalSales} sub={`${comm.symbol}${comm.amount} earned`} color="text-amber-500" delay={0.2} />
         <StatCard icon={Percent} label="Conversion Rate" value={`${stats.conversionRate}%`} sub="Referral to sale" color="text-info" delay={0.25} />
-        <StatCard icon={MousePointerClick} label="Withdrawn" value={`$${wallet.withdrawnBalance.toFixed(2)}`} sub="Total paid out" color="text-white" delay={0.3} />
+        <StatCard icon={MousePointerClick} label="Withdrawn" value={`${withdr.symbol}${withdr.amount}`} sub="Total paid out" color="text-white" delay={0.3} />
       </div>
 
       {recent.length > 0 && (
@@ -107,7 +127,7 @@ export default function AffiliateDashboardPage() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-success">+${ref.commissionAmount?.toFixed(2)}</p>
+                  <p className="text-sm font-bold text-success">+{sym(ref.currency)}{ref.commissionAmount?.toFixed(2)}</p>
                   <span className={`text-[9px] font-bold uppercase tracking-widest ${ref.orderStatus === 'completed' ? 'text-success' : ref.orderStatus === 'pending' ? 'text-warning' : 'text-red-400'}`}>
                     {ref.orderStatus}
                   </span>

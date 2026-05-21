@@ -49,8 +49,9 @@ async function processProductReferral(data: any, orderId: string) {
   if (aff && data.telegramUsername && data.telegramUsername.replace('@', '') === aff.telegramUsername.replace('@', '')) return;
   if (aff && data.customerName && data.customerName.toLowerCase() === aff.fullName.toLowerCase()) return;
 
-  const discountAmount = (amount * discountPercent) / 100;
-  const commissionAmount = (amount * commissionPercent) / 100;
+  const effectiveAmount = data.originalAmount && data.originalAmount > amount ? data.originalAmount : amount;
+  const effectiveDiscount = (effectiveAmount * discountPercent) / 100;
+  const commissionAmount = (effectiveAmount * commissionPercent) / 100;
 
   const existing = await AffiliateReferral.findOne({ orderId });
   if (existing) return;
@@ -65,8 +66,8 @@ async function processProductReferral(data: any, orderId: string) {
     source: source || 'product',
     productName: productName || '',
     planName: plan || '',
-    orderAmount: amount || 0,
-    discountAmount,
+    orderAmount: effectiveAmount,
+    discountAmount: effectiveDiscount,
     commissionAmount,
     currency: 'BDT',
     orderId,
@@ -174,38 +175,43 @@ export async function PATCH(req: Request) {
     const order = await Order.findByIdAndUpdate(id, updateData, { new: true });
     if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
 
-    if (updateData.status === 'Completed' && prevOrder?.status !== 'Completed') {
+    const approvedStatuses = ['Completed', 'completed', 'active'];
+    if (approvedStatuses.includes(updateData.status) && !approvedStatuses.includes(prevOrder?.status || '')) {
       const referral = await AffiliateReferral.findOne({ orderId: order._id.toString() });
       if (referral && referral.commissionStatus === 'pending') {
         referral.orderStatus = 'completed';
+        referral.commissionStatus = 'approved';
+        referral.commissionApprovedAt = new Date();
         await referral.save();
 
         const wallet = await AffiliateWallet.findOne({ affiliateId: referral.affiliateId });
         if (wallet) {
-          wallet.pendingBalance += referral.commissionAmount;
+          wallet.availableBalance += referral.commissionAmount;
           wallet.lifetimeEarnings += referral.commissionAmount;
           wallet.lastUpdated = new Date();
           await wallet.save();
         }
 
         await AffiliateUser.findByIdAndUpdate(referral.affiliateId, {
-          $inc: { totalSales: 1, totalCommission: referral.commissionAmount, pendingBalance: referral.commissionAmount, lifetimeEarnings: referral.commissionAmount },
+          $inc: { totalSales: 1, totalCommission: referral.commissionAmount, availableBalance: referral.commissionAmount, lifetimeEarnings: referral.commissionAmount },
         });
 
         await AffiliateTransaction.create({
           affiliateId: referral.affiliateId,
           type: 'referral_commission',
           amount: referral.commissionAmount,
+          balanceBefore: wallet ? wallet.availableBalance - referral.commissionAmount : 0,
+          balanceAfter: wallet ? wallet.availableBalance : 0,
           source: { referralId: referral._id.toString(), note: 'Commission from product order approval' },
-          status: 'pending',
+          status: 'completed',
           description: `Commission for ${referral.productName}`,
         });
 
         await AffiliateNotification.create({
           affiliateId: referral.affiliateId,
           type: 'new_commission',
-          title: 'New Commission!',
-          message: `Product sale completed! You earned $${referral.commissionAmount.toFixed(2)} commission.`,
+          title: 'New Commission Approved!',
+          message: `Product sale completed! You earned ৳${referral.commissionAmount.toFixed(2)} commission. It's available for withdrawal.`,
         });
       }
     }

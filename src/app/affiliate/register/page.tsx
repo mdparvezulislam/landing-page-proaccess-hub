@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAffiliateRegister } from '@/hooks/useAffiliate';
 import { Eye, EyeOff, ArrowRight, TrendingUp, Check, Globe, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -10,6 +10,18 @@ import { toast } from 'sonner';
 import { translations, Lang } from '@/lib/affiliateLang';
 
 export default function AffiliateRegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-bg-dark flex items-center justify-center p-4">
+        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-xl animate-spin" />
+      </div>
+    }>
+      <RegisterForm />
+    </Suspense>
+  );
+}
+
+function RegisterForm() {
   const [lang, setLang] = useState<Lang>('en');
   const [form, setForm] = useState({
     fullName: '', email: '', telegramUsername: '', password: '',
@@ -17,9 +29,25 @@ export default function AffiliateRegisterPage() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [registered, setRegistered] = useState(false);
+  const [referredBy, setReferredBy] = useState('');
   const register = useAffiliateRegister();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = translations[lang];
+
+  useEffect(() => {
+    const ref = searchParams.get('ref');
+    if (ref) {
+      setReferredBy(ref);
+      document.cookie = `affiliate_ref=${ref}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`;
+      localStorage.setItem('affiliate_ref', ref);
+    } else {
+      const stored = typeof window !== 'undefined'
+        ? document.cookie.replace(/(?:(?:^|.*;\s*)affiliate_ref\s*\=\s*([^;]*).*$)|^.*$/, "$1") || localStorage.getItem('affiliate_ref') || ''
+        : '';
+      if (stored) setReferredBy(stored);
+    }
+  }, [searchParams]);
 
   const update = (field: string, val: string) => setForm(prev => ({ ...prev, [field]: val }));
 
@@ -44,6 +72,7 @@ export default function AffiliateRegisterPage() {
         telegramUsername: form.telegramUsername,
         password: form.password,
         promotionMethod: form.promotionMethod,
+        referredBy,
       });
       if (result.success) {
         setRegistered(true);

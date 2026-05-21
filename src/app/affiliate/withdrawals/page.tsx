@@ -40,7 +40,8 @@ export default function AffiliateWithdrawalsPage() {
   const [form, setForm] = useState({ amount: '', paymentMethod: 'bkash', accountNumber: '', accountHolder: '' });
   const [activeTab, setActiveTab] = useState<'withdrawals' | 'history'>('withdrawals');
 
-  const { currentCurrency, usdtRate } = useCurrencyStore();
+  const { currentCurrency, usdtRate, convertPrice } = useCurrencyStore();
+  const fmtBDT = (bdt: number) => { const p = convertPrice(bdt); return `${p.currency === 'BDT' ? '৳' : '$'}${p.amount.toLocaleString()}`; };
 
   const withdrawals = data?.withdrawals || [];
   const transactions = data?.transactions || [];
@@ -56,6 +57,7 @@ export default function AffiliateWithdrawalsPage() {
     }
     return { amount: usdAmount.toFixed(2), currency: 'USDT', symbol: '$' };
   };
+  const sym = (c: string) => c === 'BDT' ? '৳' : '$';
 
   const minInCurrency = formatInCurrency(limits.minWithdrawal);
   const maxInCurrency = limits.maxWithdrawal > 0 ? formatInCurrency(limits.maxWithdrawal) : null;
@@ -259,14 +261,14 @@ export default function AffiliateWithdrawalsPage() {
                         <div>
                           <div className="flex items-center gap-2">
                             <p className="text-sm font-bold">
-                              {wd.currency === 'BDT' ? '৳' : '$'}{wd.amount?.toFixed(2)}
+                              {wd.currency === 'BDT' ? fmtBDT(wd.amount) : `$${wd.amount?.toFixed(2)}`}
                             </p>
                             <span className="text-[8px] text-text-muted font-bold uppercase tracking-widest">via {mConfig.label}</span>
                           </div>
                           <p className="text-[10px] text-text-muted">
                             {wd.accountInfo?.accountNumber}
                             {wd.accountInfo?.accountHolder ? ` • ${wd.accountInfo.accountHolder}` : ''}
-                            <span className="ml-2 text-[8px] font-bold">{wd.currency || 'BDT'}</span>
+                            <span className="ml-2 text-[8px] font-bold">{sym(wd.currency || 'BDT')} {wd.currency || 'BDT'}</span>
                           </p>
                         </div>
                       </div>
@@ -318,7 +320,7 @@ export default function AffiliateWithdrawalsPage() {
                       </div>
                       <div className="text-right">
                         <p className={`text-sm font-bold ${tx.amount >= 0 ? 'text-success' : 'text-red-400'}`}>
-                          {tx.amount >= 0 ? '+' : ''}{tx.amount.toFixed(2)}
+                          {tx.amount >= 0 ? '+' : ''}{(() => { const p = convertPrice(Math.abs(tx.amount)); return `${p.currency === 'BDT' ? '৳' : '$'}${p.amount.toFixed(2)}`; })()}
                         </p>
                         <span className={`text-[8px] font-black uppercase tracking-widest ${tx.status === 'completed' ? 'text-success' : tx.status === 'pending' ? 'text-warning' : 'text-red-400'}`}>
                           {tx.status}

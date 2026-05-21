@@ -10,6 +10,10 @@ export interface IOrder extends Document {
   transactionId: string;
   screenshotUrl: string;
   status: 'Pending' | 'Completed' | 'Rejected';
+  couponCode: string;
+  discountPercent: number;
+  discountAmount: number;
+  originalAmount: number;
   createdAt: Date;
 }
 
@@ -23,6 +27,10 @@ const OrderSchema = new Schema<IOrder>({
   transactionId: { type: String, required: true, unique: true },
   screenshotUrl: { type: String },
   status: { type: String, enum: ['Pending', 'Completed', 'Rejected'], default: 'Pending' },
+  couponCode: { type: String, default: '' },
+  discountPercent: { type: Number, default: 0 },
+  discountAmount: { type: Number, default: 0 },
+  originalAmount: { type: Number, default: 0 },
 }, { timestamps: true });
 
 export default mongoose.models.Order || mongoose.model<IOrder>('Order', OrderSchema);

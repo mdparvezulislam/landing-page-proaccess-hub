@@ -3,11 +3,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useUserPayments, useUserMembership } from '@/hooks/useVIPDashboard';
-import { History, CheckCircle2, X, Clock, DollarSign, Calendar, AlertTriangle, Crown } from 'lucide-react';
+import { History, CheckCircle2, X, Clock, DollarSign, Calendar, AlertTriangle, Crown, Globe } from 'lucide-react';
+import { useCurrencyStore } from '@/store/useCurrencyStore';
 
 export default function PaymentHistoryPage() {
   const { data: payments } = useUserPayments();
   const { data: membership } = useUserMembership();
+  const { currentCurrency, toggleCurrency, convertPrice } = useCurrencyStore();
+  const fmtBDT = (bdt: number) => { const p = convertPrice(bdt); return `${p.currency === 'BDT' ? '৳' : '$'}${p.amount.toLocaleString()}`; };
 
   const allPayments = payments || [];
 
@@ -30,10 +33,18 @@ export default function PaymentHistoryPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-3 lg:space-y-8 pb-8 lg:pb-20">
       <div>
-        <h2 className="text-xl lg:text-4xl font-black tracking-tighter flex items-center gap-2 lg:gap-4">
-          <History className="w-5 h-5 lg:w-8 lg:h-8 text-amber-500" /> Payment History
-        </h2>
-        <p className="text-text-muted text-[11px] lg:text-sm mt-0.5 lg:mt-1">Complete timeline of your payments</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl lg:text-4xl font-black tracking-tighter flex items-center gap-2 lg:gap-4">
+              <History className="w-5 h-5 lg:w-8 lg:h-8 text-amber-500" /> Payment History
+            </h2>
+            <p className="text-text-muted text-[11px] lg:text-sm mt-0.5 lg:mt-1">Complete timeline of your payments</p>
+          </div>
+          <button onClick={toggleCurrency}
+            className="px-3 py-2 lg:px-4 lg:py-2.5 rounded-xl bg-white/[0.02] border border-white/10 text-[10px] lg:text-xs font-black uppercase tracking-widest text-text-muted hover:text-white hover:bg-white/[0.05] transition-all flex items-center gap-2 shrink-0">
+            <Globe className="w-3.5 h-3.5 lg:w-4 lg:h-4" /> {currentCurrency === 'BDT' ? '৳ BDT' : '$ USDT'}
+          </button>
+        </div>
       </div>
 
       {/* Summary */}
@@ -53,7 +64,7 @@ export default function PaymentHistoryPage() {
         </div>
         <div className="p-3 lg:p-5 rounded-[16px] lg:rounded-[24px] bg-white/[0.02] border border-white/5">
           <p className="text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-text-muted mb-0.5 lg:mb-1">Total Paid</p>
-          <p className="text-sm lg:text-3xl font-black text-white">{allPayments.filter((p: any) => p.status === 'approved').reduce((a: number, p: any) => a + p.amountBDT, 0).toLocaleString()} BDT</p>
+          <p className="text-sm lg:text-3xl font-black text-white">{fmtBDT(allPayments.filter((p: any) => p.status === 'approved').reduce((a: number, p: any) => a + p.amountBDT, 0))}</p>
         </div>
       </motion.div>
 
@@ -93,8 +104,7 @@ export default function PaymentHistoryPage() {
                 <div className={`flex-1 p-3 lg:p-5 rounded-xl lg:rounded-2xl border ${getStatusColor(isApproved ? 'approved' : isRejected ? 'rejected' : 'pending')} ${isApproved ? 'bg-success/[0.02]' : isRejected ? 'bg-red-500/[0.02]' : 'bg-white/[0.02]'}`}>
                   <div className="flex items-center justify-between mb-1.5 lg:mb-2 gap-2">
                     <div className="flex items-center gap-2 lg:gap-3">
-                      <span className="text-sm lg:text-xl font-black text-white">{payment.amountBDT?.toLocaleString()} BDT</span>
-                      {payment.amountUSDT > 0 && <span className="text-[10px] lg:text-sm text-text-muted">/ {payment.amountUSDT} USDT</span>}
+                      <span className="text-sm lg:text-xl font-black text-white">{fmtBDT(payment.amountBDT || 0)}</span>
                     </div>
                     <span className={`px-2 lg:px-3 py-0.5 lg:py-1 rounded-full text-[8px] lg:text-[9px] font-black uppercase tracking-wider whitespace-nowrap ${
                       isApproved ? 'bg-success/10 text-success' :

@@ -29,9 +29,11 @@ import {
   AlertTriangle,
   CheckSquare,
   Square,
+  Globe,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { useCurrencyStore } from '@/store/useCurrencyStore';
 
 const STATUS_COLORS: Record<string, string> = {
   Pending: "bg-warning/10 text-warning border-warning/20 shadow-lg shadow-warning/5",
@@ -45,6 +47,9 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function OrdersTab() {
+  const { currentCurrency, toggleCurrency, convertPrice } = useCurrencyStore();
+  const fmtBDT = (bdt: number) => { const p = convertPrice(bdt); return `${p.currency === 'BDT' ? '৳' : '$'}${p.amount.toLocaleString()}`; };
+
   const { data: orders, isLoading: ordersLoading } = useOrders();
   const { data: productOrders, isLoading: productLoading } = useProductOrders();
   const { mutate: updateOrder } = useUpdateOrder();
@@ -169,10 +174,18 @@ export default function OrdersTab() {
       {/* Header & Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 items-end">
         <div className="lg:col-span-4">
-          <h2 className="text-2xl lg:text-5xl font-black tracking-tighter mb-1 lg:mb-2">Order Desk</h2>
-          <p className="text-text-muted font-black uppercase text-[8px] lg:text-[10px] tracking-[2px] lg:tracking-[4px]">
-            Real-time transaction processing
-          </p>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl lg:text-5xl font-black tracking-tighter mb-1 lg:mb-2">Order Desk</h2>
+              <p className="text-text-muted font-black uppercase text-[8px] lg:text-[10px] tracking-[2px] lg:tracking-[4px]">
+                Real-time transaction processing
+              </p>
+            </div>
+            <button onClick={toggleCurrency}
+              className="px-3 py-2 lg:px-4 lg:py-2.5 rounded-xl bg-white/[0.02] border border-white/10 text-[10px] lg:text-xs font-black uppercase tracking-widest text-text-muted hover:text-white hover:bg-white/[0.05] transition-all flex items-center gap-2 shrink-0">
+              <Globe className="w-3.5 h-3.5 lg:w-4 lg:h-4" /> {currentCurrency === 'BDT' ? '৳ BDT' : '$ USDT'}
+            </button>
+          </div>
         </div>
         <div className="lg:col-span-8 grid grid-cols-4 gap-2 lg:gap-4">
           <div className="glass-card rounded-[16px] lg:rounded-[32px] p-3 lg:p-6 border-white/5 bg-gradient-to-br from-warning/10 to-transparent">
@@ -189,7 +202,7 @@ export default function OrdersTab() {
           </div>
           <div className="glass-card rounded-[16px] lg:rounded-[32px] p-3 lg:p-6 border-white/5 bg-gradient-to-br from-amber-500/10 to-transparent">
             <p className="text-[8px] lg:text-[10px] font-black uppercase text-amber-400 tracking-[1px] lg:tracking-[2px] mb-0.5 lg:mb-1">Revenue</p>
-            <h4 className="text-xl lg:text-3xl font-black text-white">৳{stats.revenue.toLocaleString()}</h4>
+            <h4 className="text-xl lg:text-3xl font-black text-white">{fmtBDT(stats.revenue)}</h4>
           </div>
         </div>
       </div>
@@ -348,6 +361,8 @@ export default function OrdersTab() {
 }
 
 function OrderListItem({ order, idx, isSelected, onToggleSelect, onStatusChange, onView, onBan }: any) {
+  const { convertPrice } = useCurrencyStore();
+  const fmtBDT = (bdt: number) => { const p = convertPrice(bdt); return `${p.currency === 'BDT' ? '৳' : '$'}${p.amount.toLocaleString()}`; };
   const isProduct = order._orderType === "product";
   const status = order.status || "Pending";
   const statusStyle = STATUS_COLORS[status] || STATUS_COLORS.Pending;
@@ -419,8 +434,13 @@ function OrderListItem({ order, idx, isSelected, onToggleSelect, onStatusChange,
             </span>
           </div>
           <div className="flex items-center gap-2 text-[9px] lg:text-[10px] text-text-muted font-bold uppercase tracking-widest">
-            <span>৳{(order.amount || order.priceBDT || 0).toLocaleString()}</span>
+            <span>{fmtBDT(order.amount || order.priceBDT || 0)}</span>
             {order.paymentNumber && <span>via {order.paymentNumber}</span>}
+            {order.originalAmount && order.originalAmount > (order.amount || 0) && (
+              <span className="px-1.5 py-0.5 rounded-lg bg-success/10 text-success text-[7px] lg:text-[8px] font-black border border-success/20">
+                {order.discountPercent || ''}% OFF
+              </span>
+            )}
           </div>
         </div>
 
@@ -508,6 +528,8 @@ function OrderListItem({ order, idx, isSelected, onToggleSelect, onStatusChange,
 }
 
 function OrderDetailModal({ order, onClose, onStatusChange }: any) {
+  const { convertPrice } = useCurrencyStore();
+  const fmtBDT = (bdt: number) => { const p = convertPrice(bdt); return `${p.currency === 'BDT' ? '৳' : '$'}${p.amount.toLocaleString()}`; };
   const isProduct = order._orderType === "product";
   const { mutate: updateProductOrder } = useUpdateProductOrder();
   const { mutate: banProductOrder } = useBanProductOrder();
@@ -545,7 +567,7 @@ function OrderDetailModal({ order, onClose, onStatusChange }: any) {
         { label: "Telegram", value: order.telegramUsername || "—", icon: Send },
         { label: "Product", value: order.productTitleEn || "—", icon: Package },
         { label: "Plan", value: order.planNameEn || "—" },
-        { label: "Price", value: `৳${(order.priceBDT || 0).toLocaleString()}`, icon: CreditCard },
+        { label: "Price", value: fmtBDT(order.priceBDT || 0), icon: CreditCard },
         { label: "Duration", value: order.duration || "Lifetime" },
         { label: "Joined", value: new Date(order.joinedAt).toLocaleString(), icon: Clock },
         { label: "Activated", value: order.activatedAt ? new Date(order.activatedAt).toLocaleString() : "—", icon: CheckCircle2 },
@@ -560,9 +582,14 @@ function OrderDetailModal({ order, onClose, onStatusChange }: any) {
         { label: "Telegram", value: `@${order.telegramUsername}`, icon: Send },
         { label: "Package", value: order.productName, icon: Package },
         { label: "Plan", value: order.plan },
-        { label: "Amount", value: `৳${(order.amount || 0).toLocaleString()}`, icon: CreditCard },
+        { label: "Amount", value: fmtBDT(order.amount || 0), icon: CreditCard },
         { label: "TRX ID", value: order.transactionId, icon: Hash },
         { label: "Payment #", value: order.paymentNumber, icon: Phone },
+        ...(order.couponCode ? [
+          { label: "Coupon", value: order.couponCode, icon: CreditCard },
+          { label: "Original Price", value: fmtBDT(order.originalAmount || 0), icon: CreditCard },
+          { label: "Discount", value: `-${fmtBDT(order.discountAmount || 0)} (${order.discountPercent || 0}%)`, icon: CreditCard },
+        ] : []),
         { label: "Ordered", value: new Date(order.createdAt).toLocaleString(), icon: Clock },
       ];
 

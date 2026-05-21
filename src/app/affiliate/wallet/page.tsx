@@ -3,9 +3,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useAffiliateWallet } from '@/hooks/useAffiliate';
+import { useCurrencyStore } from '@/store/useCurrencyStore';
 import {
   Wallet, DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight,
-  Clock, CheckCircle, XCircle, RefreshCw,
+  Clock, CheckCircle, XCircle, RefreshCw, Globe,
 } from 'lucide-react';
 
 const typeConfig: Record<string, { label: string; color: string; icon: any }> = {
@@ -18,6 +19,12 @@ const typeConfig: Record<string, { label: string; color: string; icon: any }> = 
 
 export default function AffiliateWalletPage() {
   const { data, isLoading } = useAffiliateWallet();
+  const { currentCurrency, convertPrice, toggleCurrency } = useCurrencyStore();
+
+  const fmt = (usdAmount: number) => {
+    const { amount, currency } = convertPrice(usdAmount);
+    return { amount: amount.toLocaleString(), currency, symbol: currency === 'BDT' ? '৳' : '$' };
+  };
 
   if (isLoading) {
     return (
@@ -29,12 +36,22 @@ export default function AffiliateWalletPage() {
 
   const wallet = data?.wallet || { availableBalance: 0, pendingBalance: 0, withdrawnBalance: 0, lifetimeEarnings: 0 };
   const transactions = data?.transactions || [];
+  const bal = fmt(wallet.availableBalance);
+  const pend = fmt(wallet.pendingBalance);
+  const withdr = fmt(wallet.withdrawnBalance);
+  const life = fmt(wallet.lifetimeEarnings);
 
   return (
     <div className="space-y-8 pb-20">
-      <div>
-        <h1 className="text-3xl lg:text-5xl font-black tracking-tighter mb-2">Wallet</h1>
-        <p className="text-text-muted text-sm font-medium">Track your earnings, balance, and transaction history</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl lg:text-5xl font-black tracking-tighter mb-2">Wallet</h1>
+          <p className="text-text-muted text-sm font-medium">Track your earnings, balance, and transaction history</p>
+        </div>
+        <button onClick={toggleCurrency}
+          className="px-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/10 text-xs font-black uppercase tracking-widest text-text-muted hover:text-white hover:bg-white/[0.05] transition-all flex items-center gap-2">
+          <Globe className="w-4 h-4" /> {currentCurrency === 'BDT' ? '৳ BDT' : '$ USDT'}
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -45,7 +62,7 @@ export default function AffiliateWalletPage() {
             <div className="w-10 h-10 rounded-xl bg-success/20 flex items-center justify-center mb-4">
               <DollarSign className="w-5 h-5 text-success" />
             </div>
-            <p className="text-3xl lg:text-5xl font-black tracking-tight mb-1">${wallet.availableBalance.toFixed(2)}</p>
+            <p className="text-3xl lg:text-5xl font-black tracking-tight mb-1">{bal.symbol}{bal.amount}</p>
             <p className="text-xs font-bold uppercase tracking-widest text-success">Available Balance</p>
           </div>
         </motion.div>
@@ -57,7 +74,7 @@ export default function AffiliateWalletPage() {
             <div className="w-10 h-10 rounded-xl bg-warning/20 flex items-center justify-center mb-4">
               <Clock className="w-5 h-5 text-warning" />
             </div>
-            <p className="text-3xl lg:text-5xl font-black tracking-tight mb-1">${wallet.pendingBalance.toFixed(2)}</p>
+            <p className="text-3xl lg:text-5xl font-black tracking-tight mb-1">{pend.symbol}{pend.amount}</p>
             <p className="text-xs font-bold uppercase tracking-widest text-warning">Pending Balance</p>
           </div>
         </motion.div>
@@ -68,9 +85,9 @@ export default function AffiliateWalletPage() {
             <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center mb-4">
               <Wallet className="w-5 h-5 text-white" />
             </div>
-            <p className="text-3xl lg:text-5xl font-black tracking-tight mb-1">${wallet.withdrawnBalance.toFixed(2)}</p>
+            <p className="text-3xl lg:text-5xl font-black tracking-tight mb-1">{withdr.symbol}{withdr.amount}</p>
             <p className="text-xs font-bold uppercase tracking-widest text-text-muted">Withdrawn</p>
-            <p className="text-[10px] text-text-muted/60 mt-2">Lifetime: ${wallet.lifetimeEarnings.toFixed(2)}</p>
+            <p className="text-[10px] text-text-muted/60 mt-2">Lifetime: {life.symbol}{life.amount}</p>
           </div>
         </motion.div>
       </div>
@@ -109,7 +126,7 @@ export default function AffiliateWalletPage() {
                   </div>
                   <div className="text-right">
                     <p className={`text-sm font-bold ${isCredit ? 'text-success' : 'text-red-400'}`}>
-                      {isCredit ? '+' : '-'}${Math.abs(tx.amount).toFixed(2)}
+                      {isCredit ? '+' : '-'}{bal.symbol}{Math.abs(tx.amount).toFixed(2)}
                     </p>
                     <span className={`text-[9px] font-bold uppercase tracking-widest ${tx.status === 'completed' ? 'text-success' : tx.status === 'pending' ? 'text-warning' : 'text-red-400'}`}>
                       {tx.status}

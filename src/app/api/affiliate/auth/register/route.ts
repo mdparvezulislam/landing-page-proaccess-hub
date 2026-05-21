@@ -9,7 +9,7 @@ import { hashPassword, createAffiliateToken } from '@/lib/affiliateAuth';
 export async function POST(req: Request) {
   try {
     await connectDB();
-    const { fullName, email, telegramUsername, password, promotionMethod } = await req.json();
+    const { fullName, email, telegramUsername, password, promotionMethod, referredBy } = await req.json();
 
     if (!fullName || !email || !password) {
       return NextResponse.json({ error: 'Full name, email, and password are required' }, { status: 400 });
@@ -30,7 +30,15 @@ export async function POST(req: Request) {
     const rand = Math.random().toString(36).substring(2, 5);
     const affiliateCode = `${codeBase}${rand}`;
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://proaccessvip.com';
-    const referralLink = `${siteUrl}?ref=${affiliateCode}`;
+    const referralLink = `${siteUrl}/affiliate/register?ref=${affiliateCode}`;
+
+    let referredById = '';
+    if (referredBy) {
+      const referrer = await AffiliateUser.findOne({ affiliateCode: referredBy });
+      if (referrer) {
+        referredById = referrer._id.toString();
+      }
+    }
 
     const user = await AffiliateUser.create({
       fullName,
@@ -42,6 +50,7 @@ export async function POST(req: Request) {
       status: 'pending',
       ipAddress: ip,
       promotionMethod: promotionMethod || '',
+      referredBy: referredById,
     });
 
     await AffiliateCoupon.create({

@@ -39,7 +39,7 @@ export function useAffiliateLogin() {
 export function useAffiliateRegister() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { fullName: string; email: string; telegramUsername: string; password: string; promotionMethod?: string }) =>
+    mutationFn: (data: { fullName: string; email: string; telegramUsername: string; password: string; promotionMethod?: string; referredBy?: string }) =>
       fetchJson('/api/affiliate/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
