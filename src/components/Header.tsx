@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStore } from "../store/useStore";
 import { Menu, X, ArrowRight, Zap, ChevronRight, Crown } from "lucide-react";
@@ -11,14 +11,7 @@ export const Header = ({ data }: { data: any }) => {
   const { language, setLanguage } = useStore();
   const settings = data?.site || {};
   const navbar = data?.navbar || { items: [] };
-  const [scrolled, setScrolled] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
-
-  useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handler);
-    return () => window.removeEventListener("scroll", handler);
-  }, []);
 
   const t = (en: string, bn: string) =>
     language === "en" ? en || "" : bn || "";
@@ -27,13 +20,7 @@ export const Header = ({ data }: { data: any }) => {
   );
 
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-700 ${
-        scrolled
-          ? "bg-[#020617]/70 backdrop-blur-2xl border-b border-white/5 py-3 lg:py-4 shadow-2xl"
-          : "bg-transparent py-6 lg:py-8"
-      }`}
-    >
+    <nav className="fixed top-0 left-0 right-0 z-[100] bg-[#020617] border-b border-white/5 py-3 lg:py-4 shadow-2xl">
       <div className="container mx-auto px-4 lg:px-6 flex items-center justify-between">
         {/* Logo Section */}
         <Link

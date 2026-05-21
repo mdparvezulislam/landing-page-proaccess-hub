@@ -61,21 +61,54 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         style: { background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', fontSize: '14px', fontWeight: 'bold' }
       }} />
 
+      {/* Mobile bottom navigation — all 4 tabs visible */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-bg-dark/95 backdrop-blur-2xl border-t border-white/5 safe-area-bottom">
+        <div className="flex items-center justify-around px-1 py-1">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.id;
+            return (
+              <button key={item.id} onClick={() => router.push(item.id)}
+                className={`flex flex-col items-center gap-0.5 py-2 px-2 rounded-xl transition-all relative ${isActive ? 'text-white' : 'text-white/30 hover:text-white/60'}`}>
+                <div className={`w-7 h-7 rounded-xl flex items-center justify-center transition-all ${isActive ? 'bg-amber-500/15' : ''}`}>
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-amber-500' : ''}`} />
+                </div>
+                <span className={`text-[7px] font-black uppercase tracking-widest ${isActive ? 'text-amber-500' : ''}`}>{item.label}</span>
+                {isActive && <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-amber-500" />}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Mobile floating menu button — opens sidebar drawer with user info + logout */}
+      <button onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="fixed top-4 right-4 z-50 lg:hidden w-10 h-10 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-2xl flex items-center justify-center hover:bg-white/10 transition-all shadow-2xl">
+        {sidebarOpen ? <X className="w-4 h-4 text-white" /> : <Menu className="w-4 h-4 text-white" />}
+      </button>
+
       {/* Mobile Overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} fixed inset-y-0 left-0 z-50 lg:relative lg:inset-auto w-72 lg:w-72 lg:transition-all lg:duration-500 flex flex-col bg-white/[0.02] border-r border-white/5 min-h-screen flex-shrink-0`}>
-        <div className="p-3 lg:p-6 flex items-center gap-3 lg:gap-4 border-b border-white/5">
-          <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/20">
-            <Crown className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
+      {/* Mobile drawer / Desktop sidebar */}
+      <aside className={`${sidebarOpen ? 'translate-y-0 lg:translate-x-0' : 'translate-y-full lg:translate-x-0 lg:translate-y-0'} fixed inset-x-0 bottom-0 z-50 lg:inset-y-0 lg:inset-auto lg:left-0 lg:relative rounded-t-[32px] lg:rounded-t-none lg:w-72 flex flex-col bg-white/[0.02] border-t lg:border-t-0 lg:border-r border-white/5 min-h-0 lg:min-h-screen flex-shrink-0 transition-transform duration-300 max-h-[85vh] lg:max-h-none overflow-y-auto`}>
+        <div className="sticky top-0 bg-white/[0.02] backdrop-blur-2xl p-4 lg:p-6 flex items-center gap-3 lg:gap-4 border-b border-white/5">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-3 lg:gap-4">
+              <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/20">
+                <Crown className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
+              </div>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <p className="text-xs lg:text-sm font-black tracking-tight leading-tight">VIP Portal</p>
+                <p className="text-[7px] lg:text-[8px] text-amber-500 font-black uppercase tracking-widest">Member Dashboard</p>
+              </motion.div>
+            </div>
+            <button onClick={() => setSidebarOpen(false)} className="lg:hidden w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all">
+              <X className="w-4 h-4" />
+            </button>
           </div>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <p className="text-xs lg:text-sm font-black tracking-tight leading-tight">VIP Portal</p>
-            <p className="text-[7px] lg:text-[8px] text-amber-500 font-black uppercase tracking-widest">Member Dashboard</p>
-          </motion.div>
         </div>
 
         <nav className="flex-1 p-2 lg:p-4 space-y-1 lg:space-y-2">
@@ -121,21 +154,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
-        <header className="h-14 lg:h-20 bg-white/[0.01] border-b border-white/5 px-3 lg:px-6 flex items-center justify-between sticky top-0 z-30 backdrop-blur-xl">
-          <button onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="w-9 h-9 lg:w-10 lg:h-10 rounded-lg lg:rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all border border-white/10">
-            {sidebarOpen ? <X className="w-3.5 h-3.5 lg:w-4 lg:h-4" /> : <Menu className="w-3.5 h-3.5 lg:w-4 lg:h-4" />}
-          </button>
-
-          <div className="flex items-center gap-2 lg:gap-4">
-            <div className="flex items-center gap-1.5 lg:gap-2 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
-              <Shield className="w-2.5 h-2.5 lg:w-3 lg:h-3 text-amber-500" />
-              <span className="text-[8px] lg:text-[9px] font-black uppercase tracking-widest text-amber-500 capitalize">{session.status}</span>
-            </div>
-          </div>
-        </header>
-
+      <div className="flex-1 flex flex-col min-h-screen overflow-hidden pt-14 lg:pt-0 pb-[68px] lg:pb-0">
         <main className="flex-1 overflow-y-auto p-3 lg:p-10 bg-[#020617]">
           <AnimatePresence mode="wait">
             <motion.div

@@ -170,19 +170,57 @@ export default function AffiliateLayout({ children }: { children: React.ReactNod
         style: { background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', fontSize: '14px', fontWeight: 'bold' },
       }} />
 
+      {/* Mobile bottom navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-bg-dark/95 backdrop-blur-2xl border-t border-white/5 safe-area-bottom">
+        <div className="flex items-center justify-around px-2 py-1">
+          {navItems.slice(0, 5).map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.id;
+            return (
+              <button key={item.id} onClick={() => router.push(item.id)}
+                className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all relative ${isActive ? 'text-white' : 'text-white/30 hover:text-white/60'}`}>
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${isActive ? 'bg-primary/15' : ''}`}>
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-primary' : ''}`} />
+                </div>
+                <span className={`text-[8px] font-black uppercase tracking-widest ${isActive ? 'text-primary' : ''}`}>
+                  {translations[lang][item.labelKey as keyof typeof translations.en]}
+                </span>
+                {isActive && <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />}
+              </button>
+            );
+          })}
+          <button onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl text-white/30 hover:text-white/60 transition-all">
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${sidebarOpen ? 'bg-primary/15' : ''}`}>
+              <Menu className={`w-4 h-4 ${sidebarOpen ? 'text-primary' : ''}`} />
+            </div>
+            <span className={`text-[8px] font-black uppercase tracking-widest ${sidebarOpen ? 'text-primary' : ''}`}>More</span>
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile drawer overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} fixed inset-y-0 left-0 z-50 lg:relative lg:inset-auto w-72 lg:w-72 flex flex-col bg-white/[0.02] border-r border-white/5 min-h-screen flex-shrink-0 transition-transform duration-300`}>
-        <div className="p-3 lg:p-6 flex items-center gap-3 lg:gap-4 border-b border-white/5">
-          <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/20">
-            <TrendingUp className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
+      {/* Mobile drawer / Desktop sidebar */}
+      <aside className={`${sidebarOpen ? 'translate-y-0 lg:translate-x-0' : 'translate-y-full lg:translate-x-0 lg:translate-y-0'} fixed inset-x-0 bottom-0 z-50 lg:inset-y-0 lg:inset-auto lg:left-0 lg:relative rounded-t-[32px] lg:rounded-t-none lg:w-72 flex flex-col bg-white/[0.02] border-t lg:border-t-0 lg:border-r border-white/5 min-h-0 lg:min-h-screen flex-shrink-0 transition-transform duration-300 max-h-[85vh] lg:max-h-none overflow-y-auto`}>
+        <div className="sticky top-0 bg-white/[0.02] backdrop-blur-2xl p-4 lg:p-6 flex items-center gap-3 lg:gap-4 border-b border-white/5">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-3 lg:gap-4">
+              <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/20">
+                <TrendingUp className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
+              </div>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <p className="text-xs lg:text-sm font-black tracking-tight leading-tight">Affiliate Hub</p>
+                <p className="text-[7px] lg:text-[8px] text-primary font-black uppercase tracking-widest">Partner Program</p>
+              </motion.div>
+            </div>
+            <button onClick={() => setSidebarOpen(false)} className="lg:hidden w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all">
+              <X className="w-4 h-4" />
+            </button>
           </div>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <p className="text-xs lg:text-sm font-black tracking-tight leading-tight">Affiliate Hub</p>
-            <p className="text-[7px] lg:text-[8px] text-primary font-black uppercase tracking-widest">Partner Program</p>
-          </motion.div>
         </div>
 
         <nav className="flex-1 p-2 lg:p-4 space-y-1 lg:space-y-2">
@@ -230,20 +268,7 @@ export default function AffiliateLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
-        <header className="h-14 lg:h-20 bg-white/[0.01] border-b border-white/5 px-3 lg:px-6 flex items-center justify-between sticky top-0 z-30 backdrop-blur-xl">
-          <button onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="w-9 h-9 lg:w-10 lg:h-10 rounded-lg lg:rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all border border-white/10">
-            {sidebarOpen ? <X className="w-3.5 h-3.5 lg:w-4 lg:h-4" /> : <Menu className="w-3.5 h-3.5 lg:w-4 lg:h-4" />}
-          </button>
-          <div className="flex items-center gap-2 lg:gap-4">
-            <div className={`flex items-center gap-1.5 lg:gap-2 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full border ${user.status === 'active' ? 'bg-success/10 border-success/20 text-success' : 'bg-warning/10 border-warning/20 text-warning'}`}>
-              <div className={`w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full ${user.status === 'active' ? 'bg-success' : 'bg-warning'}`} />
-              <span className="text-[8px] lg:text-[9px] font-black uppercase tracking-widest capitalize">{user.status}</span>
-            </div>
-          </div>
-        </header>
-
+      <div className="flex-1 flex flex-col min-h-screen overflow-hidden pb-[68px] lg:pb-0">
         <main className="flex-1 overflow-y-auto p-3 lg:p-10 bg-[#020617]">
           <AnimatePresence mode="wait">
             <motion.div key={pathname} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>

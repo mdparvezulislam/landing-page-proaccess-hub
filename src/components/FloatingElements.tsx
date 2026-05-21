@@ -11,7 +11,7 @@ export const FloatingElements = ({ data }: { data: any }) => {
   const t = (en: string, bn: string) => (language === "en" ? en : bn);
 
   return (
-    <>
+    <div className="hidden lg:block">
       {/* Floating Telegram Support */}
       <div className="fixed bottom-28 left-6 lg:left-8 z-[150]">
         <motion.a
@@ -31,29 +31,6 @@ export const FloatingElements = ({ data }: { data: any }) => {
           </div>
         </motion.a>
       </div>
-
-      {/* Sticky Bottom CTA (Always visible on mobile) */}
-      <div className="fixed bottom-0 left-0 right-0 z-[140] lg:hidden">
-        <div className="p-4 pb-5">
-          <div className="rounded-[32px] p-5 flex items-center justify-between border border-amber-500/30 shadow-2xl backdrop-blur-3xl overflow-hidden relative" style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.12), rgba(0,0,0,0.6))" }}>
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500" />
-            <div className="relative z-10">
-              <p className="text-[9px] font-black text-amber-400 uppercase tracking-[2px] mb-1">
-                VIP Membership
-              </p>
-              <p className="text-sm font-black text-white tracking-tight">
-                {t("Get Lifetime Access Now", "আজই লাইফটাইম অ্যাক্সেস নিন")}
-              </p>
-            </div>
-            <a
-              href="#vip"
-              className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-8 py-4 rounded-[20px] font-black text-[11px] uppercase tracking-widest shadow-xl shadow-amber-500/20 relative z-10"
-            >
-              {t("Access Now", "এক্সেস নিন")}
-            </a>
-          </div>
-        </div>
-      </div>
-    </>
+    </div>
   );
 };

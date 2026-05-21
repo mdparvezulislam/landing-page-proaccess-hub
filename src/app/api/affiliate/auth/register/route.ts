@@ -53,14 +53,21 @@ export async function POST(req: Request) {
       referredBy: referredById,
     });
 
+    const couponCode = `${fullName.replace(/[^a-zA-Z0-9]/g, '').substring(0, 6).toUpperCase()}${Math.floor(Math.random() * 9) + 1}`;
+
     await AffiliateCoupon.create({
       affiliateId: user._id,
-      couponCode: `${fullName.replace(/[^a-zA-Z0-9]/g, '').substring(0, 6).toUpperCase()}${Math.floor(Math.random() * 9) + 1}`,
+      couponCode,
       discountPercent: 5,
       commissionPercent: 20,
       usageLimit: 0,
       active: true,
     });
+
+    // Update referral link to include coupon code
+    const updatedReferralLink = `${siteUrl}/affiliate/register?ref=${affiliateCode}&coupon=${couponCode}`;
+    await AffiliateUser.findByIdAndUpdate(user._id, { referralLink: updatedReferralLink });
+    user.referralLink = updatedReferralLink;
 
     await AffiliateWallet.create({
       affiliateId: user._id,

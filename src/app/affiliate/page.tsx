@@ -49,13 +49,13 @@ export default function AffiliateLandingPage() {
               <h1 className="text-5xl lg:text-7xl font-black tracking-tighter leading-[1.1] mb-6">
                 Earn{' '}
                 <span className="bg-gradient-to-r from-primary via-primary-light to-secondary bg-clip-text text-transparent">
-                  20% Commission
+                  Up to 50%
                 </span>
                 <br />
-                on Every Sale
+                Commission on Every Sale
               </h1>
               <p className="text-lg lg:text-xl text-text-muted mb-8 max-w-lg leading-relaxed">
-                Join the Pro Access VIP affiliate program and earn generous commissions by sharing your unique referral link with your audience.
+                Join the Pro Access VIP affiliate program. Earn <strong className="text-white">10–50% commission</strong> on every sale. Your buyers get <strong className="text-white">5–15% discount</strong> with your coupon code.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/affiliate/register"
@@ -72,21 +72,25 @@ export default function AffiliateLandingPage() {
             <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
               className="relative">
               <div className="p-8 lg:p-10 rounded-[40px] bg-white/[0.02] border border-white/5 backdrop-blur-2xl">
-                <div className="text-center mb-8">
-                  <p className="text-5xl lg:text-7xl font-black text-success">20%</p>
+                <div className="text-center mb-6">
+                  <p className="text-5xl lg:text-7xl font-black text-success">10–50%</p>
                   <p className="text-lg text-text-muted font-bold uppercase tracking-widest mt-2">Commission Rate</p>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5">
-                    <span className="text-sm text-text-muted">VIP Plan Price</span>
-                    <span className="text-lg font-black">$100</span>
+                    <span className="text-sm text-text-muted">VIP Starter (3,000 BDT)</span>
+                    <span className="text-base font-black">$24</span>
+                  </div>
+                  <div className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                    <span className="text-sm text-text-muted">VIP Official (5,000 BDT)</span>
+                    <span className="text-base font-black">$40</span>
                   </div>
                   <div className="flex items-center justify-between p-4 rounded-2xl bg-success/5 border border-success/10">
-                    <span className="text-sm text-text-muted">Buyer Pays (5% off)</span>
-                    <span className="text-lg font-black text-success">$95</span>
+                    <span className="text-sm text-text-muted">Buyer Pays (15% off)</span>
+                    <span className="text-lg font-black text-success">$34</span>
                   </div>
                   <div className="flex items-center justify-between p-4 rounded-2xl bg-primary/5 border border-primary/10">
-                    <span className="text-sm text-text-muted">You Earn</span>
+                    <span className="text-sm text-text-muted">You Earn (50% commission)</span>
                     <span className="text-lg font-black text-primary">$20</span>
                   </div>
                 </div>
@@ -104,10 +108,10 @@ export default function AffiliateLandingPage() {
         <div className="container mx-auto max-w-6xl px-4">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { label: 'Commission Rate', value: '20%', icon: Percent },
-              { label: 'Buyer Discount', value: '5%', icon: Gift },
+              { label: 'Commission Rate', value: 'Up to 50%', icon: Percent },
+              { label: 'Buyer Discount', value: '5–15%', icon: Gift },
               { label: 'Payout Methods', value: '3', icon: Wallet },
-              { label: 'Min. Withdrawal', value: '$5', icon: DollarSign },
+              { label: 'Min. Withdrawal', value: '$2.50', icon: DollarSign },
             ].map((stat, idx) => {
               const Icon = stat.icon;
               return (
@@ -137,7 +141,7 @@ export default function AffiliateLandingPage() {
             {[
               { step: '01', title: 'Sign Up', desc: 'Create your affiliate account in seconds. No approval needed — get started immediately.', icon: Users },
               { step: '02', title: 'Share Your Link', desc: 'Get a unique referral link and coupon code. Share them on social media, YouTube, Telegram, or your blog.', icon: ShareIcon },
-              { step: '03', title: 'Earn Commissions', desc: 'When someone buys using your link or coupon, you earn 20% commission. Track everything in real-time.', icon: DollarSign },
+              { step: '03', title: 'Earn Commissions', desc: 'When someone buys using your link or coupon, you earn up to 50% commission. Track everything in real-time.', icon: DollarSign },
             ].map((item, idx) => {
               const Icon = item.icon;
               return (
@@ -166,12 +170,12 @@ export default function AffiliateLandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { title: '20% Commission', desc: 'Earn 20% on every sale you refer. No caps, no limits.', icon: TrendingUp, color: 'text-success' },
-              { title: 'Real-Time Dashboard', desc: 'Track clicks, conversions, and earnings in real-time.', icon: BarChart3, color: 'text-primary' },
-              { title: 'Unique Coupon Code', desc: 'Get a personalized coupon to share with your audience.', icon: TicketPercent, color: 'text-secondary' },
-              { title: 'Instant Payouts', desc: 'Withdraw your earnings via Binance, bKash, or Nagad.', icon: Wallet, color: 'text-amber-500' },
-              { title: 'Referral Link', desc: 'Your own unique trackable link for unlimited sharing.', icon: LinkIcon, color: 'text-info' },
-              { title: 'Dedicated Support', desc: 'Get help from our team whenever you need it.', icon: Shield, color: 'text-primary' },
+              { title: 'Up to 50% Commission', desc: 'Earn 10–50% commission on every sale. Set your own rate with custom coupon codes — no caps, no limits.', icon: TrendingUp, color: 'text-success' },
+              { title: 'Real-Time Dashboard', desc: 'Track clicks, conversions, and earnings in real-time with a full analytics dashboard.', icon: BarChart3, color: 'text-primary' },
+              { title: 'Custom Coupon Code', desc: 'Get a personalized coupon code. Your buyers get 5–15% off, you earn commission on every sale.', icon: TicketPercent, color: 'text-secondary' },
+              { title: 'Fast Payouts', desc: 'Withdraw as low as $2.50 via Binance, bKash, or Nagad. Commissions are available as soon as admin approves.', icon: Wallet, color: 'text-amber-500' },
+              { title: 'Referral Link', desc: 'Your own unique trackable link for unlimited sharing across social media, YouTube, Telegram, and more.', icon: LinkIcon, color: 'text-info' },
+              { title: 'Dedicated Support', desc: 'Get help from our team whenever you need it via Telegram or email.', icon: Shield, color: 'text-primary' },
             ].map((feature, idx) => {
               const Icon = feature.icon;
               return (
@@ -210,9 +214,9 @@ export default function AffiliateLandingPage() {
                 <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-1">Buyer Pays</p>
               </div>
               {[
-                { product: 'VIP Plan ($100)', earn: '$20', buyer: '$95' },
-                { product: 'VIP Plan ($200)', earn: '$40', buyer: '$190' },
-                { product: 'Products (varies)', earn: '20%', buyer: '5% off' },
+                { product: 'VIP Starter — 3,000 BDT', earn: 'Up to 1,500 BDT', buyer: '2,550 BDT (15% off)' },
+                { product: 'VIP Official — 5,000 BDT', earn: 'Up to 2,500 BDT', buyer: '4,250 BDT (15% off)' },
+                { product: 'Products & VIP installments', earn: '10–50% commission', buyer: '5–15% off coupon' },
               ].map((row, idx) => (
                 <React.Fragment key={idx}>
                   <div className={`p-6 lg:p-8 ${idx < 2 ? 'border-b' : ''} border-r border-white/5`}>
@@ -242,10 +246,10 @@ export default function AffiliateLandingPage() {
           <div className="space-y-3">
             {[
               { q: 'How do I become an affiliate?', a: 'Simply register through our sign-up page. Once approved, you\'ll get your unique referral link and coupon code to start promoting immediately.' },
-              { q: 'How much commission do I earn?', a: 'You earn 20% commission on every sale made through your referral link or coupon code. Your buyers also get a 5% discount.' },
-              { q: 'When do I get paid?', a: 'Commissions are credited as pending when the sale is completed. Once an admin approves the commission, it becomes available for withdrawal in your wallet.' },
-              { q: 'What are the payout methods?', a: 'We support Binance, bKash, and Nagad. You can add your account details in your affiliate settings.' },
-              { q: 'Is there a minimum withdrawal?', a: 'Yes, the minimum withdrawal amount is $5. There is no maximum limit.' },
+              { q: 'How much commission do I earn?', a: 'You earn 10–50% commission on every sale made through your referral link or coupon code. Your custom coupon gives your buyers 5–15% off their purchase. The exact commission rate depends on your coupon settings.' },
+              { q: 'When do I get paid?', a: 'Commissions are credited to your available balance as soon as the admin approves the payment. You can withdraw immediately — no waiting period.' },
+              { q: 'What are the payout methods?', a: 'We support Binance, bKash, and Nagad. You can add your account details in your affiliate dashboard settings.' },
+              { q: 'Is there a minimum withdrawal?', a: 'Yes, the minimum withdrawal amount is $2.50. There is no maximum limit.' },
               { q: 'Can I share my referral link anywhere?', a: 'Yes! Share it on social media, YouTube, Telegram groups, blogs, or anywhere your audience is. Just follow ethical marketing practices.' },
             ].map((faq, idx) => (
               <motion.div key={idx} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: idx * 0.03 }}
@@ -275,7 +279,7 @@ export default function AffiliateLandingPage() {
             <div className="relative z-10">
               <Crown className="w-16 h-16 text-primary mx-auto mb-6" />
               <h2 className="text-4xl lg:text-6xl font-black tracking-tighter mb-4">Ready to Start Earning?</h2>
-              <p className="text-text-muted text-lg mb-8 max-w-xl mx-auto">Join hundreds of affiliates earning 20% commission on every sale. Sign up in minutes.</p>
+              <p className="text-text-muted text-lg mb-8 max-w-xl mx-auto">Join hundreds of affiliates earning up to 50% commission on every sale. Sign up in minutes.</p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link href="/affiliate/register"
                   className="inline-flex items-center gap-3 px-10 py-6 rounded-2xl bg-primary text-white font-black uppercase text-xs tracking-widest hover:bg-primary/80 transition-all shadow-xl shadow-primary/20 group text-base">

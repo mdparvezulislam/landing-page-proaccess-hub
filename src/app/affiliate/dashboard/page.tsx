@@ -87,10 +87,10 @@ export default function AffiliateDashboardPage() {
           </div>
           <div className="flex-1">
             <p className="text-xs font-black uppercase tracking-widest text-primary mb-1">Your Referral Link</p>
-            <p className="text-sm lg:text-lg font-bold text-white/80 break-all">{data?.affiliateCode ? `${window.location.origin}/affiliate/register?ref=${data.affiliateCode}` : 'Loading...'}</p>
+            <p className="text-sm lg:text-lg font-bold text-white/80 break-all">{data?.referralLink || 'Loading...'}</p>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => copyToClipboard(data?.affiliateCode ? `${window.location.origin}/affiliate/register?ref=${data.affiliateCode}` : '')}
+            <button onClick={() => copyToClipboard(data?.referralLink || '')}
               className="px-5 py-3 rounded-2xl bg-primary text-white text-xs font-black uppercase tracking-widest hover:bg-primary/80 transition-all flex items-center gap-2">
               <Copy className="w-4 h-4" /> Copy Link
             </button>
