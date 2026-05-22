@@ -51,7 +51,7 @@ export const TelegramCTA = ({ data }: { data: TelegramSettings }) => {
             
             <div className="flex flex-col sm:flex-row gap-4 lg:gap-6 w-full sm:w-auto">
               <a
-                href={settings.telegramLink}
+                href={"https://t.me/Agent_47VIP"}
                 target="_blank"
                 rel="noreferrer"
                 className="px-8 lg:px-12 py-4 lg:py-6 bg-white text-primary font-black rounded-2xl lg:rounded-3xl flex items-center justify-center gap-3 transition-all hover:scale-105 active:scale-95 shadow-2xl text-sm lg:text-lg"
@@ -60,7 +60,7 @@ export const TelegramCTA = ({ data }: { data: TelegramSettings }) => {
                 {t('Message on Telegram', 'টেলিগ্রামে মেসেজ করুন')}
               </a>
               <a
-                href={settings.telegramLink}
+                href={"https://t.me/+xsG4uPsYufgyMWQ9"}
                 target="_blank"
                 rel="noreferrer"
                 className="px-8 lg:px-12 py-4 lg:py-6 bg-white/20 backdrop-blur-xl border border-white/30 text-white font-black rounded-2xl lg:rounded-3xl flex items-center justify-center gap-3 transition-all hover:bg-white/30 text-sm lg:text-lg"
